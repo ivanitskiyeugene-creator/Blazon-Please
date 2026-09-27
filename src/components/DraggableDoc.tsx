@@ -10,11 +10,12 @@ interface Props {
   containerRef: React.RefObject<HTMLDivElement | null>;
   children: ReactNode;
   showClose?: boolean;
+  actionLabel?: string;
   onClose?: () => void;
   onRef?: (el: HTMLDivElement | null) => void;
 }
 
-export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, children, showClose, onClose, onRef }: Props) {
+export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, children, showClose, actionLabel = "УБРАТЬ", onClose, onRef }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,15 +102,19 @@ export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, ch
       >
         <span>{label}</span>
         {showClose && (
-          <span
-            style={{ cursor: "pointer", padding: "0 2px" }}
-            onPointerDown={(e) => {
-              e.stopPropagation();
+          <button
+            type="button"
+            data-nodrag
+            className="doc-action"
+            title={actionLabel}
+            aria-label={`${actionLabel}: ${label}`}
+            onClick={(event) => {
+              event.stopPropagation();
               onClose?.();
             }}
           >
-            ✕
-          </span>
+            {actionLabel}
+          </button>
         )}
       </div>
       {children}

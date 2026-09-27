@@ -173,79 +173,58 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
     <div className="stamp-drawer-layer" aria-hidden={!open}>
       <AnimatePresence>
         {open && (
-          <>
-            <motion.div
-              key="left-stamp-cassette"
-              className="stamp-rig stamp-rig--left"
-              initial={{ x: "-110%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-110%" }}
-              transition={{ type: "spring", stiffness: 250, damping: 28 }}
-            >
-              <div className="stamp-rig__scaler">
-                <div className="stamp-rig__rail"><i /><i /><i /></div>
-                <div className="stamp-rig__shell">
-                  <div className="stamp-rig__caption">ЛЕВАЯ КАССЕТА // ОТКАЗ</div>
-                  <div className="stamp-rig__machines">
+          <motion.div
+            key="center-stamp-cassette"
+            className="stamp-rig stamp-rig--center"
+            initial={{ x: "-50%", y: -170 }}
+            animate={{ x: "-50%", y: 0 }}
+            exit={{ x: "-50%", y: -170 }}
+            transition={{ type: "spring", stiffness: 250, damping: 28 }}
+          >
+            <div className="stamp-rig__scaler">
+              <div className="stamp-rig__rail stamp-rig__rail--left"><i /><i /><i /></div>
+              <div className="stamp-rig__rail stamp-rig__rail--right"><i /><i /><i /></div>
+              <div className="stamp-rig__shell">
+                <div className="stamp-rig__caption">ШТЕМПЕЛЬНАЯ КАССЕТА // КПП-7</div>
+                <div className="stamp-rig__machines">
+                  <StampButton
+                    type="DENY"
+                    label="ОТКАЗ"
+                    color="#741713"
+                    dark="#3b0907"
+                    textColor="#f0a18e"
+                    pressed={pressing === "DENY"}
+                    disabled={locked}
+                    onHit={hit}
+                  />
+                  {detainUnlocked && (
                     <StampButton
-                      type="DENY"
-                      label="ОТКАЗ"
-                      color="#741713"
-                      dark="#3b0907"
-                      textColor="#f0a18e"
-                      pressed={pressing === "DENY"}
-                      disabled={locked}
+                      type="DETAIN"
+                      label="АРЕСТ"
+                      color="#605514"
+                      dark="#302806"
+                      textColor="#e3c94c"
+                      pressed={pressing === "DETAIN"}
+                      disabled={locked || !hasEvidence}
                       onHit={hit}
                     />
-                    {detainUnlocked && (
-                      <StampButton
-                        type="DETAIN"
-                        label="АРЕСТ"
-                        color="#605514"
-                        dark="#302806"
-                        textColor="#e3c94c"
-                        pressed={pressing === "DETAIN"}
-                        disabled={locked || !hasEvidence}
-                        onHit={hit}
-                      />
-                    )}
-                  </div>
-                  <span className="stamp-rig__bolt stamp-rig__bolt--a" />
-                  <span className="stamp-rig__bolt stamp-rig__bolt--b" />
+                  )}
+                  <StampButton
+                    type="ADMIT"
+                    label="ВХОД"
+                    color="#24551f"
+                    dark="#0d2d0b"
+                    textColor="#a6d887"
+                    pressed={pressing === "ADMIT"}
+                    disabled={locked}
+                    onHit={hit}
+                  />
                 </div>
+                <span className="stamp-rig__bolt stamp-rig__bolt--a" />
+                <span className="stamp-rig__bolt stamp-rig__bolt--b" />
               </div>
-            </motion.div>
-
-            <motion.div
-              key="right-stamp-cassette"
-              className="stamp-rig stamp-rig--right"
-              initial={{ x: "110%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "110%" }}
-              transition={{ type: "spring", stiffness: 250, damping: 28 }}
-            >
-              <div className="stamp-rig__scaler">
-                <div className="stamp-rig__rail"><i /><i /><i /></div>
-                <div className="stamp-rig__shell">
-                  <div className="stamp-rig__caption">ПРАВАЯ КАССЕТА // ВХОД</div>
-                  <div className="stamp-rig__machines">
-                    <StampButton
-                      type="ADMIT"
-                      label="ВХОД"
-                      color="#24551f"
-                      dark="#0d2d0b"
-                      textColor="#a6d887"
-                      pressed={pressing === "ADMIT"}
-                      disabled={locked}
-                      onHit={hit}
-                    />
-                  </div>
-                  <span className="stamp-rig__bolt stamp-rig__bolt--a" />
-                  <span className="stamp-rig__bolt stamp-rig__bolt--b" />
-                </div>
-              </div>
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -143,16 +143,13 @@
   pointer-events: none;
 }
 
-.stamp-rig--left { left: -2px; }
-.stamp-rig--right { right: -2px; }
+.stamp-rig--center {
+  left: 50%;
+}
 
 .stamp-rig__scaler {
   position: relative;
-  transform-origin: top left;
-}
-
-.stamp-rig--right .stamp-rig__scaler {
-  transform-origin: top right;
+  transform-origin: top center;
 }
 
 .stamp-rig__rail {
@@ -168,8 +165,8 @@
   box-shadow: inset 0 0 0 2px #6b5948, 4px 4px 0 #090705;
 }
 
-.stamp-rig--left .stamp-rig__rail { right: 100%; }
-.stamp-rig--right .stamp-rig__rail { left: 100%; }
+.stamp-rig__rail--left { right: 100%; }
+.stamp-rig__rail--right { left: 100%; }
 
 .stamp-rig__rail i {
   width: 7px;

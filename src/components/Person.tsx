@@ -1,10 +1,20 @@
+import { useLayoutEffect, useRef } from "react";
 import type { PersonSpec } from "../game/types";
 
 const SKINS = ["#b88f70", "#9e7454", "#815238"];
 const SKIN_DARK = ["#8d674d", "#785139", "#643d2a"];
 const HAIRS = ["#17120f", "#625b54", "#8a6a3d"];
 const COATS = ["#332c27", "#29362f", "#3a2828", "#27313b", "#4a3c28", "#2c251f"];
+const COAT_SHADOWS = ["#211c19", "#1b2722", "#281b1b", "#19232c", "#30271a", "#1d1815"];
 
+const SPRITE_W = 48;
+const SPRITE_H = 60;
+
+/**
+ * Ручной 48×60 bitmap-спрайт. Каждый элемент лица и одежды рисуется
+ * целочисленными прямоугольниками прямо в пиксельный canvas — без генератора,
+ * сглаживания и векторных кривых.
+ */
 export function Person({
   spec,
   width = 150,
@@ -16,119 +26,189 @@ export function Person({
   gray?: boolean;
   className?: string;
 }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const skin = SKINS[spec.skin % SKINS.length];
-  const skinDark = SKIN_DARK[spec.skin % SKINS.length];
+  const skinDark = SKIN_DARK[spec.skin % SKIN_DARK.length];
   const hair = HAIRS[spec.hairTone % HAIRS.length];
   const coat = COATS[spec.coat % COATS.length];
-  const ink = "#1c1712";
+  const coatDark = COAT_SHADOWS[spec.coat % COAT_SHADOWS.length];
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    ctx.clearRect(0, 0, SPRITE_W, SPRITE_H);
+    ctx.imageSmoothingEnabled = false;
+
+    const rect = (x: number, y: number, w: number, h: number, color: string) => {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    };
+
+    const ink = "#120f0c";
+    const metal = "#958266";
+    const scarf = "#92201c";
+    const scarfDark = "#5f1512";
+
+    // Куртка: ступенчатый силуэт сначала целиком обводится тёмными пикселями.
+    rect(15, 34, 18, 2, ink);
+    rect(11, 36, 26, 3, ink);
+    rect(8, 39, 32, 4, ink);
+    rect(6, 43, 36, 17, ink);
+    rect(16, 35, 16, 2, coat);
+    rect(12, 37, 24, 3, coat);
+    rect(9, 40, 30, 4, coat);
+    rect(7, 44, 34, 16, coat);
+    // Жёсткая теневая половина вместо плавного градиента.
+    rect(25, 37, 11, 3, coatDark);
+    rect(25, 40, 14, 4, coatDark);
+    rect(25, 44, 16, 16, coatDark);
+    // Плечевые швы и лацканы.
+    rect(10, 42, 8, 2, coatDark);
+    rect(31, 42, 7, 2, ink);
+    rect(17, 36, 3, 3, coatDark);
+    rect(20, 39, 3, 3, coatDark);
+    rect(29, 36, 3, 3, ink);
+    rect(26, 39, 3, 3, ink);
+    rect(23, 43, 3, 17, ink);
+    rect(26, 45, 1, 1, metal);
+    rect(26, 51, 1, 1, metal);
+    rect(11, 49, 2, 1, coatDark);
+    rect(36, 54, 2, 1, coat);
+
+    // Шея.
+    rect(18, 27, 12, 10, ink);
+    rect(20, 28, 8, 8, skinDark);
+    rect(20, 28, 4, 7, skin);
+
+    // Голова с намеренно ломаным восьмиугольным контуром.
+    rect(17, 6, 14, 2, ink);
+    rect(15, 8, 18, 3, ink);
+    rect(14, 11, 20, 16, ink);
+    rect(16, 27, 16, 3, ink);
+    rect(18, 30, 12, 2, ink);
+    rect(16, 9, 16, 18, skin);
+    rect(18, 7, 12, 2, skin);
+    rect(17, 27, 14, 2, skin);
+    rect(19, 29, 10, 2, skin);
+    // Правая половина лица в фиксированной тени.
+    rect(27, 9, 5, 18, skinDark);
+    rect(27, 27, 4, 2, skinDark);
+    rect(14, 16, 2, 6, skinDark);
+    rect(32, 16, 2, 6, skinDark);
+    rect(14, 17, 1, 3, skin);
+    rect(33, 17, 1, 3, skin);
+
+    // Брови, глаза, нос и рот — отдельные настоящие пиксели.
+    rect(18, 14, 6, 1, hair);
+    rect(26, 14, 5, 1, hair);
+    rect(19, 16, 2, 2, ink);
+    rect(28, 16, 2, 2, ink);
+    rect(20, 16, 1, 1, "#c7b88f");
+    rect(28, 16, 1, 1, "#c7b88f");
+    rect(24, 18, 2, 5, skinDark);
+    rect(25, 22, 2, 1, ink);
+    rect(21, 25, 7, 1, skinDark);
+    if (spec.female) rect(22, 25, 5, 1, "#71302b");
+
+    // Волосы и головные уборы собираются только из прямоугольных кластеров.
+    if (spec.hairStyle === "flat") {
+      rect(16, 6, 16, 4, hair);
+      rect(14, 9, 4, 5, hair);
+      rect(29, 9, 4, 3, hair);
+    }
+    if (spec.hairStyle === "side") {
+      rect(16, 5, 16, 4, hair);
+      rect(14, 8, 7, 8, hair);
+      rect(21, 8, 10, 2, hair);
+      rect(29, 9, 4, 3, hair);
+    }
+    if (spec.hairStyle === "mop") {
+      rect(15, 4, 18, 3, hair);
+      rect(13, 7, 22, 5, hair);
+      rect(14, 12, 4, 7, hair);
+      rect(31, 11, 4, 8, hair);
+      rect(19, 10, 3, 3, hair);
+      rect(26, 10, 3, 2, hair);
+    }
+    if (spec.hairStyle === "bun") {
+      rect(16, 5, 16, 4, hair);
+      rect(14, 8, 20, 4, hair);
+      rect(14, 11, 4, 10, hair);
+      rect(31, 11, 3, 10, hair);
+      rect(21, 2, 8, 4, hair);
+      rect(23, 1, 4, 2, hair);
+    }
+    if (spec.hairStyle === "bald") {
+      rect(14, 11, 3, 8, hair);
+      rect(31, 11, 3, 8, hair);
+      rect(17, 7, 3, 1, hair);
+    }
+    if (spec.hairStyle === "cap") {
+      rect(14, 4, 20, 3, "#211c18");
+      rect(12, 7, 24, 5, "#3d342b");
+      rect(16, 5, 15, 2, "#685744");
+      rect(12, 12, 16, 2, "#211c18");
+      rect(14, 12, 12, 1, "#806c52");
+    }
+    if (spec.hairStyle === "ushanka") {
+      rect(13, 2, 22, 3, "#302820");
+      rect(11, 5, 26, 7, "#5c5042");
+      rect(13, 5, 22, 2, "#80705d");
+      rect(11, 11, 5, 11, "#504439");
+      rect(32, 11, 5, 11, "#504439");
+      rect(23, 7, 3, 3, scarf);
+      rect(24, 6, 1, 5, "#b4382e");
+    }
+
+    // Усы, борода и очки.
+    if (spec.facial === "mustache" || spec.facial === "glassesMustache") {
+      rect(20, 23, 4, 2, hair);
+      rect(25, 23, 4, 2, hair);
+      rect(23, 24, 3, 2, hair);
+    }
+    if (spec.facial === "beard") {
+      rect(16, 22, 3, 7, hair);
+      rect(30, 22, 3, 7, hair);
+      rect(18, 27, 13, 4, hair);
+      rect(20, 31, 9, 2, hair);
+      rect(22, 25, 6, 1, skinDark);
+    }
+    if (spec.facial === "glasses" || spec.facial === "glassesMustache") {
+      rect(17, 15, 7, 5, ink);
+      rect(18, 16, 5, 3, skinDark);
+      rect(26, 15, 7, 5, ink);
+      rect(27, 16, 5, 3, skinDark);
+      rect(24, 17, 2, 1, ink);
+      rect(14, 16, 3, 1, ink);
+      rect(33, 16, 2, 1, ink);
+      rect(19, 16, 1, 1, "#d8c9a8");
+      rect(28, 16, 1, 1, "#d8c9a8");
+    }
+
+    if (spec.redScarf) {
+      rect(15, 34, 18, 2, scarfDark);
+      rect(17, 35, 14, 3, scarf);
+      rect(22, 38, 5, 10, scarfDark);
+      rect(23, 39, 3, 8, scarf);
+    }
+  }, [coat, coatDark, hair, skin, skinDark, spec]);
 
   return (
-    <svg
-      width={width}
-      height={(width * 150) / 120}
-      viewBox="0 0 120 150"
-      shapeRendering="crispEdges"
-      className={className}
-      style={gray ? { filter: "grayscale(1) contrast(1.15) brightness(0.92)" } : undefined}
-    >
-      {/* body / coat */}
-      <polygon points="14,150 24,96 42,84 78,84 96,96 106,150" fill={coat} />
-      <polygon points="78,84 96,96 106,150 60,150 60,84" fill="rgba(0,0,0,0.18)" />
-      {/* lapels */}
-      <polygon points="52,84 60,96 48,102" fill="rgba(0,0,0,0.4)" />
-      <polygon points="68,84 60,96 72,102" fill="rgba(0,0,0,0.55)" />
-      {/* buttons */}
-      <rect x="58" y="108" width="4" height="4" fill="rgba(216,201,168,0.5)" />
-      <rect x="58" y="124" width="4" height="4" fill="rgba(216,201,168,0.5)" />
-
-      {/* neck */}
-      <rect x="53" y="70" width="14" height="16" fill={skinDark} />
-
-      {/* head */}
-      <rect x="42" y="28" width="36" height="42" fill={skin} />
-      <rect x="66" y="28" width="12" height="42" fill="rgba(0,0,0,0.10)" />
-      {/* ears */}
-      <rect x="38" y="44" width="5" height="9" fill={skin} />
-      <rect x="77" y="44" width="5" height="9" fill={skin} />
-
-      {/* eyes */}
-      <rect x="49" y="46" width="5" height="5" fill={ink} />
-      <rect x="66" y="46" width="5" height="5" fill={ink} />
-      {/* brows */}
-      <rect x="48" y="41" width="8" height="2.5" fill={hair} />
-      <rect x="64" y="41" width="8" height="2.5" fill={hair} />
-      {/* nose */}
-      <rect x="58" y="50" width="4" height="7" fill={skinDark} />
-      {/* mouth */}
-      <rect x="53" y="62" width="13" height="2.5" fill={skinDark} />
-
-      {/* hair */}
-      {spec.hairStyle === "flat" && <rect x="40" y="22" width="40" height="10" fill={hair} />}
-      {spec.hairStyle === "side" && (
-        <g fill={hair}>
-          <rect x="40" y="22" width="40" height="9" />
-          <rect x="40" y="28" width="9" height="14" />
-        </g>
-      )}
-      {spec.hairStyle === "mop" && (
-        <g fill={hair}>
-          <rect x="38" y="20" width="44" height="12" />
-          <rect x="38" y="30" width="7" height="16" />
-          <rect x="75" y="30" width="7" height="16" />
-        </g>
-      )}
-      {spec.hairStyle === "bun" && (
-        <g fill={hair}>
-          <rect x="40" y="21" width="40" height="11" />
-          <rect x="40" y="30" width="6" height="20" />
-          <rect x="74" y="30" width="6" height="20" />
-          <rect x="54" y="14" width="12" height="9" />
-        </g>
-      )}
-      {spec.hairStyle === "bald" && <rect x="40" y="34" width="5" height="14" fill={hair} />}
-      {spec.hairStyle === "cap" && (
-        <g>
-          <rect x="39" y="18" width="42" height="12" fill="#3a3129" />
-          <rect x="42" y="30" width="30" height="5" fill="#2c251f" />
-        </g>
-      )}
-      {spec.hairStyle === "ushanka" && (
-        <g>
-          <rect x="37" y="12" width="46" height="15" fill="#5d5245" />
-          <rect x="37" y="12" width="46" height="5" fill="#6e6252" />
-          <rect x="37" y="24" width="9" height="26" fill="#5d5245" />
-          <rect x="74" y="24" width="9" height="26" fill="#5d5245" />
-          <rect x="57" y="16" width="6" height="6" fill="#8f211d" />
-        </g>
-      )}
-
-      {/* facial */}
-      {(spec.facial === "mustache" || spec.facial === "glassesMustache") && (
-        <rect x="52" y="58" width="16" height="4.5" fill={hair} />
-      )}
-      {spec.facial === "beard" && (
-        <g fill={hair}>
-          <rect x="44" y="60" width="32" height="11" />
-          <rect x="44" y="46" width="5" height="18" />
-          <rect x="71" y="46" width="5" height="18" />
-          <rect x="52" y="61.5" width="16" height="2.5" fill={skinDark} />
-        </g>
-      )}
-      {(spec.facial === "glasses" || spec.facial === "glassesMustache") && (
-        <g stroke={ink} strokeWidth="2" fill="none">
-          <rect x="45" y="43" width="13" height="10" />
-          <rect x="62" y="43" width="13" height="10" />
-          <path d="M58 47h4M45 46h-5M75 46h5" />
-        </g>
-      )}
-
-      {/* красный шарф */}
-      {spec.redScarf && (
-        <g>
-          <polygon points="38,84 82,84 78,94 42,94" fill="#a12622" />
-          <polygon points="52,94 64,94 60,120 50,118" fill="#8c1f1c" />
-        </g>
-      )}
-    </svg>
+    <canvas
+      ref={canvasRef}
+      width={SPRITE_W}
+      height={SPRITE_H}
+      className={`pixel-person ${className}`}
+      aria-hidden="true"
+      style={{
+        width,
+        height: (width * SPRITE_H) / SPRITE_W,
+        display: "block",
+        imageRendering: "pixelated",
+        filter: gray ? "grayscale(1) contrast(1.18) brightness(0.9)" : undefined,
+      }}
+    />
   );
 }

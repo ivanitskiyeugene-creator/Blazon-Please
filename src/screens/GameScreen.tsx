@@ -123,6 +123,8 @@ export function GameScreen({
   });
   const timers = useRef<number[]>([]);
   const done = useRef(false);
+  const finalizingEntrant = useRef(false);
+  const decisionCommitted = useRef(false);
 
   const entrant: EntrantSpec | null = i < entrants.length ? entrants[i] : null;
   const detainUnlocked = day.n >= 3;
@@ -168,6 +170,8 @@ export function GameScreen({
     setStampMarks([]);
     setEntrantVisible(false);
     setNeedCall(true);
+    finalizingEntrant.current = false;
+    decisionCommitted.current = false;
   }, [i]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const callNext = () => {
@@ -228,20 +232,7 @@ export function GameScreen({
       setTrayDocs(remainingDocs);
       sfx.paper();
 
-      if (remainingDocs.length === 0) {
-        // Все документы возвращены — принимаем решение по ПОСЛЕДНЕМУ штампу.
-        const lastStamp = stampMarks.at(-1)?.type;
-        if (lastStamp) decide(lastStamp);
-        later(800, () => {
-          setStage("exit");
-          sfx.walk();
-          later(750, () => {
-            setEntrantVisible(false);
-            setNeedCall(true);
-            setI((q) => q + 1);
-          });
-        });
-      }
+      if (remainingDocs.length === 0) finishEntrantReturn();
       return;
     }
     if (onDesk) {
@@ -337,7 +328,8 @@ export function GameScreen({
   };
 
   const decide = (d: Decision, opts?: { bribe?: boolean }) => {
-    if ((stage !== "review" && stage !== "stamped") || !entrant) return;
+    if ((stage !== "review" && stage !== "stamped") || !entrant || decisionCommitted.current) return;
+    decisionCommitted.current = true;
     const e0 = entrant;
     // При обычной проверке звук уже сыграл в момент физического удара штампа.
     // Отдельно озвучиваем только решение через взятку без кассеты.
@@ -384,6 +376,33 @@ export function GameScreen({
 
     // После штампа игрок должен ВЕРНУТЬ все документы посетителю вручную.
     // Уход начнётся автоматически, когда trayDocs опустеет.
+  };
+
+  function finishEntrantReturn() {
+    if (finalizingEntrant.current) return;
+    const finalDecision = stampMarks.at(-1)?.type ?? stamped;
+    if (!decisionCommitted.current && !finalDecision) return;
+
+    finalizingEntrant.current = true;
+    if (!decisionCommitted.current && finalDecision) decide(finalDecision);
+    setStampOpen(false);
+    later(800, () => {
+      setStage("exit");
+      sfx.walk();
+      later(750, () => {
+        setEntrantVisible(false);
+        setNeedCall(true);
+        setI((q) => q + 1);
+      });
+    });
+  }
+
+  const returnAllDocs = () => {
+    if (stage !== "stamped" || trayDocs.length === 0) return;
+    setDesk((docs) => docs.filter((doc) => doc.id === "book" || doc.id === "news"));
+    setTrayDocs([]);
+    sfx.paper();
+    finishEntrantReturn();
   };
 
   const showDocs = entrantVisible && (stage === "review" || stage === "stamped" || stage === "exit");
@@ -785,7 +804,10 @@ export function GameScreen({
                   <DraggableDoc
                     key={`${d.id}-${i}`}
                     x={d.x} y={d.y} z={d.z}
-                    label={DOC_LABEL[d.id]} showClose onClose={() => toggleDeskDoc(d.id)}
+                    label={DOC_LABEL[d.id]}
+                    showClose
+                    actionLabel={stage === "stamped" && d.id !== "book" && d.id !== "news" ? "ОТДАТЬ" : "УБРАТЬ"}
+                    onClose={() => toggleDeskDoc(d.id)}
                     containerRef={deskRef}
                     onFront={() => bringToFront(d.id)}
                     onMove={(nx, ny) =>
@@ -879,13 +901,21 @@ export function GameScreen({
                         <span className="pixel-icon">{docIcon(id)}</span>
                         <div className="text-left">
                           <div className="text-[9px] font-bold text-[#cbb89a] leading-tight">{DOC_LABEL[id].toUpperCase()}</div>
-                          <div className="text-[7px] text-[#8a7e74] uppercase">{desk.some(d => d.id === id) ? "убрать со стола" : "выложить на стол"}</div>
+                          <div className="text-[7px] text-[#8a7e74] uppercase">
+                            {stage === "stamped" ? "отдать посетителю" : desk.some(d => d.id === id) ? "убрать со стола" : "выложить на стол"}
+                          </div>
                         </div>
                       </button>
                     ))}
                   </div>
                   {stage === "stamped" && trayDocs.length > 0 && (
-                    <div className="absolute bottom-1 right-2 text-[8px] uppercase font-bold text-[#cc2020] animate-pulse">верни документы</div>
+                    <button
+                      type="button"
+                      className="mt-2 w-full border-2 border-[#8f211d] bg-[#3b100e] px-3 py-2 text-[9px] uppercase tracking-wider text-[#e0b19e] hover:bg-[#5a1713]"
+                      onClick={returnAllDocs}
+                    >
+                      Отдать все документы посетителю
+                    </button>
                   )}
                 </div>
               </div>

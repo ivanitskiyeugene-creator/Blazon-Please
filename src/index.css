@@ -627,6 +627,23 @@ svg:not(.lucide) {
   border-bottom: 2px solid #090705;
 }
 
+.doc-action {
+  height: 14px;
+  padding: 0 4px;
+  border: 1px solid #75604b;
+  background: #2d241d;
+  color: #d2aa38;
+  font-family: var(--font-pixel);
+  font-size: 5px;
+  line-height: 12px;
+  cursor: pointer;
+}
+
+.doc-action:hover {
+  border-color: #d2aa38;
+  background: #4a1814;
+}
+
 .inv-chip {
   background: #1a1511;
   box-shadow: 3px 3px 0 #070605;
