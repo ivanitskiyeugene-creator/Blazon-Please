@@ -314,12 +314,12 @@ export function GameScreen({
     if (entrant?.agent === "neighbor") f.metNeighbor = true;
     // предметы от агентов
     if (o.credits && entrant?.agent === "west") {
-      setInventory((inv) => [...inv, { id: "env_" + Date.now(), icon: "💰", name: "Конверт", desc: o.credits + " ₳ от Коула", from: "ЭДВАРД КОУЛ" }]);
+      setInventory((inv) => [...inv, { id: "env_" + Date.now(), icon: "₳", name: "Конверт", desc: o.credits + " ₳ от Коула", from: "ЭДВАРД КОУЛ" }]);
     }
     if (entrant?.agent === "neighbor" && o.neighbor && o.neighbor >= 2) {
       setInventory((inv) => {
         if (inv.some((it) => it.id === "apple")) return inv;
-        return [...inv, { id: "apple", icon: "🍎", name: "Яблоко", desc: "Белый налив из Краснославии", from: "БОГДАН ТИХИЙ" }];
+        return [...inv, { id: "apple", icon: "ЯБ", name: "Яблоко", desc: "Белый налив из Краснославии", from: "БОГДАН ТИХИЙ" }];
       });
     }
     setOfferOpen(false);
@@ -360,7 +360,7 @@ export function GameScreen({
         result.current.hidden += 1;
         result.current.flags.bribe = true;
         later(360, () => sfx.coin());
-        setInventory((inv) => [...inv, { id: "bribe_" + Date.now(), icon: "💵", name: "Купюры", desc: (e.bribe ?? 0) + " ₳ — взятка", from: e.passport.name }]);
+        setInventory((inv) => [...inv, { id: "bribe_" + Date.now(), icon: "₳", name: "Купюры", desc: (e.bribe ?? 0) + " ₳ — взятка", from: e.passport.name }]);
         setReaction("Кто заметит один денёк? Никто. Приятно иметь дело.");
       } else if (d === e.expected) {
         result.current.correct += 1;
@@ -417,16 +417,16 @@ export function GameScreen({
   };
 
   const serviceItems: { id: DocId; label: string; icon: string }[] = [
-    { id: "book", label: "КНИЖКА", icon: "📘" },
-    { id: "news", label: "ГАЗЕТА", icon: "📰" },
+    { id: "book", label: "КНИЖКА", icon: "КН" },
+    { id: "news", label: "ГАЗЕТА", icon: "ГЗ" },
   ];
 
   const docIcon = (id: DocId) => ({
-    passport: "📕",
-    permit: "📄",
-    party: "🪪",
-    book: "📘",
-    news: "📰",
+    passport: "ПС",
+    permit: "РЗ",
+    party: "КП",
+    book: "КН",
+    news: "ГЗ",
   }[id]);
 
   return (
@@ -505,8 +505,8 @@ export function GameScreen({
             </div>
 
             {/* вид сверху / наружу + громкоговоритель */}
-            <div className="relative border-b-2 border-[var(--color-line)]" style={{ background: "linear-gradient(180deg,#46382c,#31261d)", height: 90 }}>
-              <div className="absolute inset-x-0 top-0 h-5" style={{ background: "repeating-linear-gradient(90deg,#5a4a3c 0 18px,#4a3a2c 18px 36px)" }} />
+            <div className="harsh-wall relative border-b-2 border-[var(--color-line)]" style={{ height: 90 }}>
+              <div className="absolute inset-x-0 top-0 h-5 border-b-2 border-[#17120f]" style={{ background: "url('images/desk-tile.svg') repeat" }} />
               <div className="absolute inset-x-6 top-8 h-8 border-y-2 border-[#6f6658] bg-[#7b766f] opacity-35" />
               <button
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 panel px-3 py-1.5 hover:border-[var(--color-gold)] transition-colors"
@@ -515,7 +515,7 @@ export function GameScreen({
                 disabled={!needCall}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-[18px]">📢</span>
+                  <span className="pixel-icon">ВЫЗ</span>
                   <span className="font-head text-[12px] uppercase tracking-widest text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
                     СЛЕДУЮЩИЙ
                   </span>
@@ -533,7 +533,7 @@ export function GameScreen({
               <div
                 className="absolute -top-2 left-1/2 -translate-x-1/2 w-72 h-80 opacity-[0.13] pointer-events-none z-[6]"
                 style={{
-                  background: "linear-gradient(to bottom, #e8c34a, transparent 75%)",
+                  background: "linear-gradient(to bottom, rgba(210,170,56,.22) 0 22%, rgba(210,170,56,.12) 22% 48%, rgba(210,170,56,.05) 48% 72%, transparent 72%)",
                   clipPath: "polygon(36% 0, 64% 0, 100% 100%, 0% 100%)",
                 }}
               />
@@ -588,7 +588,7 @@ export function GameScreen({
                       {/* хотспот лица для сверки с фото */}
                       <button
                         type="button"
-                        className={`absolute rounded ${
+                        className={`absolute ${
                           proven.includes("face") ? "fld fld-proven" : sel.includes("face") ? "fld fld-sel" : "fld"
                         }`}
                         style={{ left: "31%", top: "13%", width: "38%", height: "26%" }}
@@ -612,7 +612,7 @@ export function GameScreen({
                       className="panel px-2.5 py-2 text-[10px] uppercase tracking-widest text-[var(--color-bone)] hover:border-[var(--color-gold)] transition-colors"
                       onClick={() => handoverDoc(id)}
                     >
-                      <span className="mr-1">{docIcon(id)}</span>{id === "passport" ? "паспорт" : id === "permit" ? "пропуск" : "карточка"}
+                      <span className="pixel-icon mr-1">{docIcon(id)}</span>{id === "passport" ? "паспорт" : id === "permit" ? "пропуск" : "карточка"}
                     </button>
                   ))}
                 </div>
@@ -716,25 +716,21 @@ export function GameScreen({
             {/* ПОВЕРХНОСТЬ СТОЛА */}
             <div
               ref={deskRef}
-              className="relative flex-1 overflow-hidden min-h-[300px]"
-              style={{
-                background: "repeating-linear-gradient(94deg, #4a3c2b 0 38px, #453827 38px 76px), linear-gradient(160deg,#4a3c2b,#3a2f21)",
-                boxShadow: "inset 0 0 60px rgba(0,0,0,0.55)",
-              }}
+              className="desk-surface relative flex-1 overflow-hidden min-h-[300px]"
             >
               <div className="absolute inset-0 dither opacity-50 pointer-events-none" />
               <div className="absolute right-4 bottom-4 opacity-[0.07] pointer-events-none">
                 <AtomEmblem size={200} color="#e8c34a" />
               </div>
-              <div className="absolute left-[58%] top-[8%] w-16 h-16 rounded-full pointer-events-none"
-                style={{ border: "3px solid rgba(40,28,16,0.35)" }} />
+              <div className="absolute left-[58%] top-[8%] w-16 h-16 pointer-events-none"
+                style={{ border: "4px dashed rgba(20,14,10,0.42)", transform: "rotate(9deg)" }} />
               {!showDocs && !rareMsg && (
                 <div className="absolute inset-0 grid place-items-center text-[var(--color-ash)] text-xs uppercase tracking-[0.3em]">
                   — стол пуст —
                 </div>
               )}
               {rareMsg && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] z-[55] paper-tex text-[#2b241c] px-3 py-2 border-2 border-[#7c1d18] shadow-xl text-center text-xs italic">
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] z-[55] paper-tex text-[#2b241c] px-3 py-2 border-2 border-[#7c1d18] shadow-[5px_5px_0_#070605] text-center text-xs italic">
                   {rareMsg}
                 </div>
               )}
@@ -821,7 +817,7 @@ export function GameScreen({
                     onClick={present}
                   >
                     <span className="inline-flex items-center gap-1.5">
-                      🔍 Предъявить
+                      !! Предъявить
                     </span>
                   </button>
                   {sel.length > 0 && (
@@ -848,7 +844,7 @@ export function GameScreen({
                       data-on={desk.some((d) => d.id === it.id)}
                       onClick={() => toggleDeskDoc(it.id)}
                     >
-                      <span className="text-sm mr-1">{it.icon}</span>{it.label}
+                      <span className="pixel-icon mr-1">{it.icon}</span>{it.label}
                     </button>
                   ))}
                 </div>
@@ -856,7 +852,7 @@ export function GameScreen({
 
               {/* НОВЫЙ ЛОТОК ДОКУМЕНТОВ */}
               <div className="mt-auto mb-1">
-                <div className="relative p-2.5 bg-[#1d1814] border-2 border-[#3a322a] shadow-inner" style={{ minHeight: 90 }}>
+                <div className="relative p-2.5 bg-[#1d1814] border-2 border-[#3a322a] shadow-[inset_0_0_0_3px_#100c09]" style={{ minHeight: 90 }}>
                   <div className="absolute top-1 left-2 text-[8px] uppercase tracking-widest text-[#5a5048]">Документы на лотке</div>
                   <div className="flex gap-2 flex-wrap items-start mt-3">
                     {trayDocs.length === 0 ? (
@@ -868,7 +864,7 @@ export function GameScreen({
                         style={{ borderStyle: desk.some(d => d.id === id) ? "dashed" : "solid", opacity: desk.some(d => d.id === id) ? 0.6 : 1 }}
                         onClick={() => toggleDeskDoc(id)}
                       >
-                        <span className="text-lg group-hover:scale-110 transition-transform">{docIcon(id)}</span>
+                        <span className="pixel-icon">{docIcon(id)}</span>
                         <div className="text-left">
                           <div className="text-[9px] font-bold text-[#cbb89a] leading-tight">{DOC_LABEL[id].toUpperCase()}</div>
                           <div className="text-[7px] text-[#8a7e74] uppercase">{desk.some(d => d.id === id) ? "на столе" : "в лотке"}</div>
@@ -893,8 +889,8 @@ export function GameScreen({
                       key={it.id}
                       className="group relative w-10 h-10 bg-[#241f1a] border border-[#3a322a] hover:border-[#e8c34a] flex items-center justify-center cursor-help transition-colors"
                     >
-                      <span className="text-xl">{it.icon}</span>
-                      <div className="absolute bottom-full left-0 mb-2 w-40 p-2 bg-[#1d1815] border-2 border-[#4a3e33] text-[9px] text-[#cbb89a] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-2xl">
+                      <span className="pixel-item">{it.icon}</span>
+                      <div className="absolute bottom-full left-0 mb-2 w-40 p-2 bg-[#1d1815] border-2 border-[#4a3e33] text-[9px] text-[#cbb89a] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[5px_5px_0_#070605]">
                         <div className="font-bold border-b border-[#3a322a] pb-1 mb-1 uppercase tracking-wider">{it.name}</div>
                         <div className="italic opacity-80">{it.desc}</div>
                         {it.from && <div className="mt-1 text-[#8a7e74] text-[8px]">ОТ: {it.from}</div>}

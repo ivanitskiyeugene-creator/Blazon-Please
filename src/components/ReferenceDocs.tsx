@@ -18,7 +18,7 @@ export function BookDoc({ day, s }: { day: DayConfig; s: SelProps }) {
   return (
     <div className="doc select-none w-[360px]" style={{ background: "#4b3b2b" }}>
       {/* обложка-корешок */}
-      <div className="doc-grip !h-[18px] !text-[7px]" style={{ background: "repeating-linear-gradient(-45deg, rgba(0,0,0,0.35) 0 5px, rgba(255,255,255,0.05) 5px 10px)" }}>
+      <div className="doc-grip !h-[18px] !text-[7px]">
         <span>КНИЖКА ИНСПЕКТОРА</span>
       </div>
       {/* вкладки */}

@@ -5,18 +5,15 @@ export function BoothDecor({ date }: { date: string }) {
   return (
     <>
       {/* обои-стена с потёками */}
-      <div
-        className="absolute inset-0"
-        style={{ background: "repeating-linear-gradient(to bottom, #443729 0 26px, #3d3124 26px 28px)" }}
-      />
+      <div className="harsh-wall absolute inset-0" />
       {/* мягкий свет от лампы по стене */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 70% 45% at 50% 6%, rgba(232,195,74,0.22), transparent 70%)" }}
+        style={{ background: "linear-gradient(to bottom, rgba(210,170,56,.16) 0 18%, rgba(210,170,56,.08) 18% 36%, transparent 36%)" }}
       />
       <div
         className="absolute inset-x-0 bottom-0 h-28 opacity-55 pointer-events-none"
-        style={{ background: "linear-gradient(to top, #1a130d, transparent)" }}
+        style={{ background: "linear-gradient(to top, #110d0a 0 38%, #1a130daa 38% 68%, transparent 68%)" }}
       />
       {/* трубы отопления справа */}
       <svg className="absolute right-0 top-0 h-full w-10 opacity-95 pointer-events-none" viewBox="0 0 40 400" preserveAspectRatio="none">
@@ -80,7 +77,7 @@ export function BoothDecor({ date }: { date: string }) {
 
       {/* портрет председателя */}
       <div className="absolute right-[46px] top-[86px] pointer-events-none opacity-95">
-        <div className="border-2 border-[#87704f] bg-[#33291f] p-1 rotate-[1.5deg] shadow-lg">
+        <div className="border-2 border-[#87704f] bg-[#33291f] p-1 rotate-[1.5deg] shadow-[4px_4px_0_#120e0b]">
           <svg width="46" height="54" viewBox="0 0 46 54">
             <rect width="46" height="54" fill="#4a3b2c" />
             <circle cx="23" cy="20" r="11" fill="#8a7157" />
@@ -121,7 +118,7 @@ export function BoothDecor({ date }: { date: string }) {
       </div>
       {/* отрывной календарь на стене */}
       <div className="absolute left-[14px] top-[152px] pointer-events-none">
-        <div className="paper-tex border border-[#5c4f3d] px-2 py-1 text-center rotate-[-2deg] shadow">
+        <div className="paper-tex border-2 border-[#5c4f3d] px-2 py-1 text-center rotate-[-2deg] shadow-[3px_3px_0_#120e0b]">
           <div className="text-[6px] uppercase text-[#2b241c99] leading-none">пост №7</div>
           <div className="font-head text-[11px] text-[#7c1d18] leading-tight" style={{ fontFamily: "var(--font-head)" }}>
             {date}

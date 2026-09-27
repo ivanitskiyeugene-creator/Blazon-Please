@@ -53,9 +53,9 @@ export function TitleScreen({
             >
               <AtomEmblem size={44} />
               <div className="pixel-text text-[9px] sm:text-[10px] text-[var(--color-gold)] leading-relaxed">
-                Аргелийская Советская
+                Аргелийский Союз
                 <br />
-                Социалистическая Республика
+                Социалистических Республик
               </div>
             </motion.div>
 
@@ -178,12 +178,11 @@ export function TitleScreen({
           >
             <div className="relative overflow-hidden">
               <img
-                src="images/poster.jpg"
-                alt="Пропагандистский плакат АССР"
-                className="w-full h-[500px] object-cover"
-                style={{ filter: "saturate(0.9) contrast(1.05)" }}
+                src="images/poster-pixel.png"
+                alt="Пиксельный плакат АССР: инспектор смотрит на реактор за границей"
+                className="pixel-art w-full h-[500px] object-cover"
               />
-              <div className="absolute inset-0 dither" />
+              <div className="poster-halftone absolute inset-0" />
               <div className="absolute bottom-0 inset-x-0 bg-[var(--color-coal)] border-t-2 border-[var(--color-line)] px-4 py-3">
                 <div className="pixel-text text-[8px] text-[var(--color-gold)] leading-relaxed">
                   «АТОМ СМОТРИТ НА ГРАНИЦУ. ГРАНИЦА — ЭТО ТЫ.»

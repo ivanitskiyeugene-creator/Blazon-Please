@@ -382,3 +382,332 @@ body {
 ::-webkit-scrollbar-track { background: var(--color-coal); }
 ::-webkit-scrollbar-thumb { background: var(--color-line); border: 2px solid var(--color-coal); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-ash); }
+
+/* ========================================================================== */
+/* PIXEL OVERHAUL — грубая 16-битная печать, металл и грязная бумага         */
+/* ========================================================================== */
+:root {
+  --color-ink: #0d0b09;
+  --color-coal: #17130f;
+  --color-panel: #211b16;
+  --color-panel2: #292119;
+  --color-line: #5a4637;
+  --color-ash: #85715f;
+  --color-bone: #c9b68e;
+  --color-paper: #c8b78f;
+  --color-paper2: #b8a67d;
+  --color-state: #8f211d;
+  --color-state2: #bb3028;
+  --color-blood: #551410;
+  --color-gold: #d2aa38;
+  --color-gold2: #96711f;
+  --font-head: "Press Start 2P", monospace;
+}
+
+* {
+  scrollbar-color: var(--color-line) var(--color-coal);
+}
+
+html {
+  background: #080706;
+}
+
+body {
+  background-color: var(--color-ink);
+  background-image: url("/images/metal-tile.svg");
+  image-rendering: pixelated;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: none;
+}
+
+button,
+input,
+textarea,
+select,
+.panel,
+.doc,
+.frame,
+.bubble {
+  border-radius: 0 !important;
+}
+
+img,
+canvas,
+.pixel-art,
+svg.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+svg:not(.lucide) {
+  shape-rendering: crispEdges;
+}
+
+.crt::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.34) 2px,
+    rgba(0, 0, 0, 0.34) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+.crt::after {
+  background:
+    linear-gradient(90deg, rgba(90, 18, 15, 0.06) 0 2px, transparent 2px 5px),
+    linear-gradient(rgba(210, 170, 56, 0.025) 0 1px, transparent 1px 4px);
+  background-size: 5px 100%, 100% 4px;
+  box-shadow: inset 0 0 0 5px #090705, inset 18px 0 #09070555, inset -18px 0 #09070555;
+}
+
+.noise-layer {
+  opacity: 0.22;
+  background-image: url("/images/metal-tile.svg");
+  background-size: 32px 32px;
+  animation: noiseShift 0.55s steps(2, jump-none) infinite;
+}
+
+.dither,
+.dither-red {
+  background-size: 4px 4px;
+  image-rendering: pixelated;
+}
+
+.paper-tex {
+  background-color: var(--color-paper);
+  background-image: url("/images/paper-tile.svg");
+  background-size: 48px 48px;
+}
+
+.rays {
+  background-color: #17120f;
+  background-image:
+    linear-gradient(90deg, transparent 0 49%, #3b1714 49% 51%, transparent 51%),
+    url("/images/metal-tile.svg");
+  background-size: 96px 100%, 32px 32px;
+}
+
+.frame {
+  border: 4px solid #72513c;
+  outline: 4px solid #0b0907;
+  box-shadow: 10px 10px 0 #070605;
+}
+
+.panel {
+  background-color: var(--color-panel);
+  background-image: url("/images/metal-tile.svg");
+  background-size: 32px 32px;
+  border: 2px solid var(--color-line);
+  box-shadow: inset 0 0 0 1px #0b0907, 4px 4px 0 #090705;
+}
+
+.bolt {
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+  background: #90765f;
+  border: 2px solid #211912;
+  box-shadow: none;
+}
+
+.font-head,
+.pixel-text,
+.btn-soviet,
+.btn-ghost,
+.stamp-btn {
+  font-family: var(--font-pixel) !important;
+}
+
+.text-glow-red {
+  text-shadow: 3px 0 #4f100d, -2px 0 #4f100d, 0 3px #4f100d;
+}
+
+.text-glow-gold {
+  text-shadow: 3px 0 #5f4514, -2px 0 #5f4514, 0 3px #5f4514;
+}
+
+.fringe {
+  text-shadow: -4px 0 #6d1713, 4px 0 #35402b, 0 5px #070605;
+}
+
+.btn-soviet {
+  background: var(--color-state);
+  border: 3px solid #4e110e;
+  box-shadow: 5px 5px 0 #070605;
+  transition: none;
+}
+
+.btn-soviet:hover {
+  filter: none;
+  color: #f0d666;
+  background: #a92a23;
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 #070605;
+}
+
+.btn-soviet:active {
+  transform: translate(4px, 4px);
+  box-shadow: 1px 1px 0 #070605;
+}
+
+.btn-ghost {
+  background: #15110e;
+  border: 2px solid var(--color-line);
+  box-shadow: 3px 3px 0 #070605;
+  transition: none;
+}
+
+.btn-ghost:hover {
+  background: #2c2118;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  transform: translate(-1px, -1px);
+}
+
+.stamp-btn {
+  border-width: 3px;
+  box-shadow: 4px 4px 0 #080604;
+  transition: none;
+}
+
+.stamp-btn:hover:not(:disabled) {
+  filter: none;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #080604;
+}
+
+.imprint > span {
+  border-radius: 0;
+  mask-image: none;
+  background-image: url("/images/paper-tile.svg");
+  box-shadow: 3px 3px 0 currentColor;
+}
+
+.doc {
+  border: 2px solid #35291e;
+  box-shadow: 7px 7px 0 rgba(4, 3, 2, 0.72);
+  image-rendering: pixelated;
+}
+
+.doc-row {
+  border-bottom-style: dashed;
+}
+
+.fld {
+  transition: none;
+}
+
+.fld:hover {
+  background: rgba(210, 170, 56, 0.28);
+  outline-style: dashed;
+}
+
+.fld-proven {
+  animation: provenPulse 0.7s steps(2, jump-none) infinite;
+}
+
+.drag-doc {
+  filter: none !important;
+  box-shadow: 8px 8px 0 rgba(4, 3, 2, 0.72);
+}
+
+.doc-grip {
+  background-color: #17120f;
+  background-image: url("/images/metal-tile.svg") !important;
+  background-size: 32px 32px !important;
+  border-bottom: 2px solid #090705;
+}
+
+.inv-chip {
+  background: #1a1511;
+  box-shadow: 3px 3px 0 #070605;
+  transition: none;
+}
+
+.inv-chip:hover,
+.inv-chip[data-on="true"] {
+  background: #3b2d16;
+  transform: translate(-1px, -1px);
+}
+
+.bubble {
+  background-color: var(--color-paper);
+  background-image: url("/images/paper-tile.svg");
+  border: 3px solid #493729;
+  box-shadow: 6px 6px 0 #090705;
+}
+
+.pixel-icon {
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  background: #15110e;
+  color: var(--color-gold);
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  line-height: 1;
+  box-shadow: 2px 2px 0 #070605;
+}
+
+.pixel-item {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid #5a4637;
+  color: var(--color-gold);
+  background: #110e0b;
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  line-height: 1;
+}
+
+.poster-halftone {
+  background-image:
+    linear-gradient(90deg, rgba(13, 11, 9, 0.18) 50%, transparent 50%),
+    linear-gradient(rgba(13, 11, 9, 0.12) 50%, transparent 50%);
+  background-size: 4px 4px;
+  mix-blend-mode: multiply;
+}
+
+.harsh-wall {
+  background-color: #30261e !important;
+  background-image: url("/images/wall-tile.svg") !important;
+  background-size: 96px 48px !important;
+}
+
+.desk-surface {
+  background-color: #35291e !important;
+  background-image: url("/images/desk-tile.svg") !important;
+  background-size: 96px 64px !important;
+  box-shadow: inset 0 0 0 4px #17120f !important;
+}
+
+@keyframes noiseShift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-8px, 4px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes sway {
+  0%, 49% { transform: translateY(0); }
+  50%, 100% { transform: translateY(2px); }
+}
+
+@keyframes slam {
+  0% { transform: rotate(-8deg) scale(2); opacity: 0; }
+  60% { transform: rotate(-8deg) scale(1); opacity: 1; }
+  100% { transform: rotate(-8deg) scale(1); opacity: 0.92; }
+}
+
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border: 3px solid var(--color-coal);
+  border-radius: 0;
+}

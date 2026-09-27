@@ -43,7 +43,7 @@ export function PassportDoc({ data, person, s, stampMarks }: {
         borderBottom: "2px solid rgba(0,0,0,0.4)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button type="button" className={`${cls("p.emblem", s)} rounded-full shrink-0`}
+          <button type="button" className={`${cls("p.emblem", s)} shrink-0`}
             onClick={e => { e.stopPropagation(); s.onSel("p.emblem"); }}>
             <CountryEmblem country={c} size={38} fake={data.fake} />
           </button>
@@ -58,7 +58,7 @@ export function PassportDoc({ data, person, s, stampMarks }: {
       </div>
 
       {/* ВНУТРЕННЯЯ СТРАНИЦА */}
-      <div style={{ background: "#d9c9a3", color: "#2b241c", padding: "8px 10px 6px", position: "relative" }}>
+      <div className="paper-tex" style={{ color: "#2b241c", padding: "8px 10px 6px", position: "relative" }}>
         {/* фото + основные данные */}
         <div style={{ display: "flex", gap: 6 }}>
           <button type="button" className={`${cls("p.photo", s)} shrink-0 block border border-[#5c4f3d] bg-[#c2b288]`}
@@ -110,7 +110,6 @@ export function PassportDoc({ data, person, s, stampMarks }: {
             color: m.type === "ADMIT" ? "rgba(15,70,20,0.9)" : m.type === "DENY" ? "rgba(130,20,15,0.9)" : "rgba(10,8,5,0.92)",
             border: `3px solid ${m.type === "ADMIT" ? "rgba(15,70,20,0.7)" : m.type === "DENY" ? "rgba(130,20,15,0.7)" : "rgba(10,8,5,0.7)"}`,
             background: "rgba(255,255,255,0.01)",
-            borderRadius: 2,
           }}>
             {m.type === "ADMIT" ? "ВХОД" : m.type === "DENY" ? "ОТКАЗ" : "АРЕСТ"}
           </span>
@@ -138,7 +137,7 @@ export function PermitDoc({ data, s }: { data: PermitData; s: SelProps }) {
         <Row k="w.purpose" label="Цель" value={data.purpose} s={s} />
         <Row k="w.duration" label="Срок" value={data.duration} s={s} />
         <Row k="w.expiry" label="До" value={data.expiry} s={s} />
-        <div className="absolute right-2 top-7 w-12 h-12 rounded-full opacity-20 grid place-items-center text-center pointer-events-none"
+        <div className="absolute right-2 top-7 w-12 h-12 opacity-30 grid place-items-center text-center pointer-events-none"
           style={{ border: "2px solid #7c1d18", color: "#7c1d18", transform: "rotate(12deg)" }}>
           <span className="text-[5px] font-bold uppercase leading-tight">Мин.<br/>пропусков</span>
         </div>
@@ -154,7 +153,7 @@ export function PartyCardDoc({ data, s }: { data: PartyCardData; s: SelProps }) 
   return (
     <div className="doc select-none overflow-hidden w-[260px]" style={{ background: "#6e1613" }}>
       <div className="m-1 border-2 border-[#e8c34a55] px-2 py-1.5 flex items-center gap-2">
-        <button type="button" className={`${cls("c.emblem", s)} shrink-0 rounded-full`}
+        <button type="button" className={`${cls("c.emblem", s)} shrink-0`}
           onClick={e => { e.stopPropagation(); s.onSel("c.emblem"); }}>
           <PartyEmblem size={44} mirrored={data.mirrored} />
         </button>

@@ -19,9 +19,9 @@ function cls(k: FieldKey, sel: FieldKey[], proven: FieldKey[]) {
 }
 
 const TABS: { key: BookTab; label: string; icon: string }[] = [
-  { key: "rules", label: "Директива", icon: "📜" },
-  { key: "emblems", label: "Гербы", icon: "🛡" },
-  { key: "calendar", label: "Календарь", icon: "📅" },
+  { key: "rules", label: "Директива", icon: "ДР" },
+  { key: "emblems", label: "Гербы", icon: "ГР" },
+  { key: "calendar", label: "Календарь", icon: "КЛ" },
 ];
 
 export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
@@ -33,13 +33,13 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
         className="w-full py-2 text-center text-[10px] uppercase tracking-[0.3em] text-[var(--color-gold)] border-2 border-[var(--color-line)] hover:border-[var(--color-gold)] hover:bg-[rgba(232,195,74,0.06)] transition-colors cursor-pointer"
         onClick={() => { sfx.paper(); onToggle(); }}
       >
-        📖 Открыть книжку инспектора
+        [КН] Открыть книжку инспектора
       </button>
     );
   }
 
   return (
-    <div className="border-2 border-[var(--color-line)] bg-[var(--color-panel)]" style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
+    <div className="border-2 border-[var(--color-line)] bg-[var(--color-panel)] shadow-[6px_6px_0_#070605]">
       {/* Закладки */}
       <div className="flex border-b-2 border-[var(--color-line)]">
         {TABS.map((t) => (
@@ -53,7 +53,7 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
             }}
             onClick={() => { sfx.ui(); setTab(t.key); }}
           >
-            <span className="mr-1">{t.icon}</span> {t.label}
+            <span className="pixel-icon mr-1">{t.icon}</span> {t.label}
           </button>
         ))}
         <button

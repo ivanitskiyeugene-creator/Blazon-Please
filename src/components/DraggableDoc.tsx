@@ -72,6 +72,7 @@ export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, ch
   return (
     <div
       ref={ref}
+      className="drag-doc"
       style={{
         position: "absolute",
         left: x,
@@ -79,16 +80,15 @@ export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, ch
         zIndex: z,
         touchAction: "none",
         userSelect: "none",
-        filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.55))",
         cursor: "grab",
       }}
     >
       {/* Рукоять */}
       <div
+        className="doc-grip"
         style={{
           height: 16,
-          background: "repeating-linear-gradient(-45deg, rgba(0,0,0,0.35) 0 5px, rgba(255,255,255,0.05) 5px 10px)",
-          borderBottom: "1px solid rgba(0,0,0,0.5)",
+          borderBottom: "2px solid rgba(0,0,0,0.8)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",

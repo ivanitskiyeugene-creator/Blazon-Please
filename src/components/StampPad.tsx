@@ -20,21 +20,19 @@ export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v
       {/* Крепление */}
       <div style={{
         width: 38, height: 18,
-        background: "linear-gradient(180deg,#3a3028,#2a221a)",
+        background: "#302720",
         border: "2px solid #1a1410",
-        borderRadius: 3,
         display: "flex", alignItems: "center", justifyContent: "center",
         gap: 12,
       }}>
-        <div style={{ width: 5, height: 5, background: "#1a1410", borderRadius: 1 }} />
-        <div style={{ width: 5, height: 5, background: "#1a1410", borderRadius: 1 }} />
+        <div style={{ width: 5, height: 5, background: "#1a1410", borderRadius: 0 }} />
+        <div style={{ width: 5, height: 5, background: "#1a1410", borderRadius: 0 }} />
       </div>
 
       {/* Паз */}
       <div style={{
         width: 12, height: 56,
         background: "#120e0a",
-        borderRadius: 2,
         position: "relative",
         marginTop: -2,
       }}>
@@ -67,18 +65,18 @@ export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v
           {/* Стержень */}
           <div style={{
             width: 8, height: 28,
-            background: "linear-gradient(90deg,#6a6058,#9a8e82,#6a6058)",
+            background: "#756658",
             border: "1px solid #3a322a",
             margin: "0 auto",
           }} />
           {/* Шар */}
           <div style={{
             width: 28, height: 28,
-            borderRadius: "50%",
-            background: "radial-gradient(circle at 38% 35%, #e83030, #901818 70%, #601010)",
-            border: "2px solid #500c0c",
+            borderRadius: 0,
+            background: "#9a1d18",
+            border: "3px solid #4f0c0a",
             margin: "-4px auto 0",
-            boxShadow: "0 3px 8px rgba(0,0,0,0.6)",
+            boxShadow: "4px 4px 0 #120b08",
           }} />
         </motion.div>
       </div>
@@ -103,24 +101,24 @@ function StampObj({ color, dark, textColor, label, pressed }:
   return (
     <svg width="100" height="100" viewBox="0 0 100 100" style={{ display: "block" }}>
       {/* Тень */}
-      <ellipse cx="50" cy="96" rx="36" ry="4" fill="rgba(0,0,0,0.5)" />
+      <rect x="14" y="94" width="72" height="5" fill="rgba(0,0,0,0.62)" />
       {/* Подошва */}
-      <rect x="10" y="80" width="80" height="10" rx="2" fill={dark} stroke="#0a0806" strokeWidth="1" />
+      <rect x="10" y="80" width="80" height="10" fill={dark} stroke="#0a0806" strokeWidth="2" />
       {/* Корпус */}
-      <rect x="14" y="52" width="72" height="32" rx="3" fill={color} stroke="#0a0806" strokeWidth="1.5" />
+      <rect x="14" y="52" width="72" height="32" fill={color} stroke="#0a0806" strokeWidth="2" />
       {/* Надпись */}
       <text x="50" y="72" textAnchor="middle" dominantBaseline="middle"
         fill={textColor} fontSize="10" fontFamily="var(--font-pixel)" fontWeight="bold">{label}</text>
       {/* Ручка */}
-      <rect x="42" y={pressed ? 22 : 10} width="16" height={pressed ? 32 : 44} rx="2"
-        fill="linear-gradient(90deg,#6a6058,#9a8e82,#6a6058)" stroke="#3a322a" strokeWidth="1" />
-      <rect x="42" y={pressed ? 22 : 10} width="16" height={pressed ? 32 : 44} rx="2"
-        fill="#8a7e74" />
-      <rect x="44" y={pressed ? 24 : 12} width="4" height={pressed ? 28 : 40} rx="1"
-        fill="rgba(255,255,255,0.12)" />
+      <rect x="42" y={pressed ? 22 : 10} width="16" height={pressed ? 32 : 44}
+        fill="#756658" stroke="#30271f" strokeWidth="2" />
+      <rect x="45" y={pressed ? 24 : 12} width="4" height={pressed ? 28 : 40}
+        fill="#9d8d78" />
+      <rect x="51" y={pressed ? 24 : 12} width="4" height={pressed ? 28 : 40}
+        fill="#55473b" />
       {/* Шляпка */}
-      <ellipse cx="50" cy={pressed ? 22 : 10} rx="20" ry="7" fill="#a09484" stroke="#3a322a" strokeWidth="1" />
-      <ellipse cx="50" cy={pressed ? 20 : 8} rx="16" ry="5" fill="#bab0a4" />
+      <rect x="30" y={pressed ? 15 : 3} width="40" height="14" fill="#7b6a59" stroke="#30271f" strokeWidth="2" />
+      <rect x="34" y={pressed ? 17 : 5} width="32" height="4" fill="#a3937d" />
     </svg>
   );
 }

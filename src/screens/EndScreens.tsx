@@ -58,7 +58,7 @@ export function LedgerScreen({
       <motion.div
         initial={{ opacity: 0, y: 24, rotate: 0.6 }}
         animate={{ opacity: 1, y: 0, rotate: 0.6 }}
-        className="paper-tex text-[#2b241c] w-[min(620px,94vw)] p-6 sm:p-8 shadow-2xl relative"
+        className="paper-tex text-[#2b241c] w-[min(620px,94vw)] p-6 sm:p-8 shadow-[8px_8px_0_#070605] relative"
       >
         <div className="flex items-center justify-between border-b-4 border-double border-[#2b241c] pb-2 mb-4">
           <div className="font-head text-lg sm:text-xl uppercase tracking-wider" style={{ fontFamily: "var(--font-head)" }}>

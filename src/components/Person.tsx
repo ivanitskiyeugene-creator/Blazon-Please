@@ -1,9 +1,9 @@
 import type { PersonSpec } from "../game/types";
 
-const SKINS = ["#c9a487", "#b08a68", "#96684a"];
-const SKIN_DARK = ["#a98768", "#93704f", "#7a5339"];
-const HAIRS = ["#241c16", "#8a8178", "#b89a5a"];
-const COATS = ["#4a4038", "#3e4a42", "#4c3a3a", "#35404e", "#6b5a3a", "#40362e"];
+const SKINS = ["#b88f70", "#9e7454", "#815238"];
+const SKIN_DARK = ["#8d674d", "#785139", "#643d2a"];
+const HAIRS = ["#17120f", "#625b54", "#8a6a3d"];
+const COATS = ["#332c27", "#29362f", "#3a2828", "#27313b", "#4a3c28", "#2c251f"];
 
 export function Person({
   spec,
@@ -98,7 +98,7 @@ export function Person({
           <rect x="37" y="12" width="46" height="5" fill="#6e6252" />
           <rect x="37" y="24" width="9" height="26" fill="#5d5245" />
           <rect x="74" y="24" width="9" height="26" fill="#5d5245" />
-          <circle cx="60" cy="19" r="3.4" fill="#a12622" />
+          <rect x="57" y="16" width="6" height="6" fill="#8f211d" />
         </g>
       )}
 
@@ -116,11 +116,9 @@ export function Person({
       )}
       {(spec.facial === "glasses" || spec.facial === "glassesMustache") && (
         <g stroke={ink} strokeWidth="2" fill="none">
-          <circle cx="51.5" cy="48" r="6" />
-          <circle cx="68.5" cy="48" r="6" />
-          <line x1="57.5" y1="48" x2="62.5" y2="48" />
-          <line x1="45.5" y1="47" x2="41" y2="45" />
-          <line x1="74.5" y1="47" x2="79" y2="45" />
+          <rect x="45" y="43" width="13" height="10" />
+          <rect x="62" y="43" width="13" height="10" />
+          <path d="M58 47h4M45 46h-5M75 46h5" />
         </g>
       )}
 

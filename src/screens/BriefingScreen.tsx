@@ -41,7 +41,7 @@ export function BriefingScreen({
             initial={{ opacity: 0, y: 20, rotate: -1 }}
             animate={{ opacity: 1, y: 0, rotate: -1 }}
             transition={{ duration: 0.5 }}
-            className="paper-tex text-[#2b241c] p-5 sm:p-7 shadow-2xl relative"
+            className="paper-tex text-[#2b241c] p-5 sm:p-7 shadow-[8px_8px_0_#070605] relative"
           >
             <div className="flex items-center justify-between border-b-4 border-double border-[#2b241c] pb-2 mb-3">
               <div className="font-head text-2xl sm:text-3xl tracking-wider" style={{ fontFamily: "var(--font-head)" }}>

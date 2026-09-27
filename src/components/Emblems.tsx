@@ -1,9 +1,12 @@
 import type { Country } from "../game/types";
 
-// ---------- ГЕРБ АССР: АТОМ ----------
+const GOLD = "#d2aa38";
+const DARK = "#4a100d";
+
+/** Герб АССР — намеренно отрисован на сетке 32×32, без сглаженных деталей. */
 export function AtomEmblem({
   size = 48,
-  color = "#e8c34a",
+  color = GOLD,
   orbits = 3,
   badge = false,
 }: {
@@ -12,28 +15,39 @@ export function AtomEmblem({
   orbits?: 2 | 3;
   badge?: boolean;
 }) {
-  const els = [0, 60, 120].slice(0, orbits);
+  const turns = [0, 60, 120].slice(0, orbits);
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
-      {badge && <circle cx="50" cy="50" r="48" fill="#8f2320" stroke="#5e1715" strokeWidth="3" />}
-      <g stroke={color} strokeWidth="5.5" fill="none">
-        {els.map((r) => (
-          <ellipse key={r} cx="50" cy="50" rx="37" ry="13.5" transform={`rotate(${r} 50 50)`} />
+    <svg
+      className="pixel-art"
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      {badge && (
+        <>
+          <rect x="1" y="1" width="30" height="30" fill="#7b1c18" stroke={DARK} strokeWidth="2" />
+          <rect x="3" y="3" width="26" height="26" fill="none" stroke="#a3442c" strokeWidth="1" />
+        </>
+      )}
+      <g stroke={color} strokeWidth="2" fill="none">
+        {turns.map((turn) => (
+          <ellipse key={turn} cx="16" cy="16" rx="12" ry="4" transform={`rotate(${turn} 16 16)`} />
         ))}
       </g>
-      <circle cx="50" cy="50" r="7.5" fill={color} />
-      {/* электроны */}
-      <circle cx="87" cy="50" r="4" fill={color} />
-      {orbits === 3 && <circle cx="31.5" cy="79.7" r="4" fill={color} />}
+      <rect x="14" y="14" width="5" height="5" fill="#0d0b09" />
+      <rect x="15" y="15" width="3" height="3" fill={color} />
+      <rect x="27" y="15" width="3" height="3" fill={color} />
+      {orbits === 3 && <rect x="8" y="24" width="3" height="3" fill={color} />}
     </svg>
   );
 }
 
-// ---------- ГЕРБ КПТА: PNG вписанный в круг ----------
-// PNG содержит КЛАССИЧЕСКИЙ серп и молот (как в СССР).
-// mirrored=true  → настоящий КПТА: зеркалим по горизонтали (scaleX -1)
-// mirrored=false → подделка: показываем как есть (классический СССР)
-
+/**
+ * Герб КПТА. Базовый знак — грубая пиксельная конструкция из молота и серпа.
+ * mirrored=true — каноничный партийный вариант с молотом справа.
+ */
 export function PartyEmblem({
   size = 48,
   mirrored = true,
@@ -44,33 +58,32 @@ export function PartyEmblem({
   mirrored?: boolean;
   badge?: boolean;
 }) {
-  // Используем clipPath для круглой обрезки вместо квадратной image
-  const uid = `kpta-clip-${Math.random().toString(36).slice(2, 6)}`;
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
-      <defs>
-        <clipPath id={uid}>
-          <circle cx="50" cy="50" r="46" />
-        </clipPath>
-      </defs>
+    <svg
+      className="pixel-art"
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
       {badge && (
-        <circle cx="50" cy="50" r="48" fill="#7c1d18" stroke="#e8c34a" strokeWidth="3" />
+        <>
+          <rect x="1" y="1" width="30" height="30" fill="#711713" stroke={GOLD} strokeWidth="2" />
+          <rect x="4" y="4" width="24" height="24" fill="none" stroke="#3f0c0a" strokeWidth="1" />
+        </>
       )}
-      {/* PNG вписан в круг через clipPath, зеркалим для КПТА */}
-      <g clipPath={`url(#${uid})`}>
-        <image
-          href="images/kpta_emblem.png"
-          x="5" y="5"
-          width="90" height="90"
-          preserveAspectRatio="xMidYMid meet"
-          transform={mirrored ? "translate(100, 0) scale(-1, 1)" : undefined}
-        />
+      <g transform={mirrored ? "translate(32 0) scale(-1 1)" : undefined} fill={GOLD}>
+        {/* серп — ступенчатая дуга */}
+        <path d="M20 5h4v2h2v3h2v7h-2v4h-3v3h-4v2h-7v-2H8v-3H6v-4h3v3h3v2h6v-2h3v-3h2v-6h-2V8h-1z" />
+        {/* молот */}
+        <path d="M6 6h9v3h-2l13 13-4 4L9 12v2H6z" />
+        <rect x="4" y="5" width="5" height="6" />
       </g>
     </svg>
   );
 }
 
-// ---------- Эмблемы стран ----------
 export function CountryEmblem({
   country,
   size = 48,
@@ -80,51 +93,50 @@ export function CountryEmblem({
   size?: number;
   fake?: "orb2";
 }) {
-  const gold = "#e8c34a";
   if (country.emblem === "atom") {
-    return <AtomEmblem size={size} color={gold} orbits={fake === "orb2" ? 2 : 3} badge />;
+    return <AtomEmblem size={size} color={GOLD} orbits={fake === "orb2" ? 2 : 3} badge />;
   }
+
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
-      <circle cx="50" cy="50" r="48" fill={country.color} stroke="rgba(0,0,0,0.5)" strokeWidth="3" />
+    <svg
+      className="pixel-art"
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      <rect x="1" y="1" width="30" height="30" fill={country.color} stroke="#120e0b" strokeWidth="2" />
+      <rect x="4" y="4" width="24" height="24" fill="none" stroke="#ffffff22" strokeWidth="1" />
+
       {country.emblem === "star" && (
-        <polygon
-          points="50,24 55.9,41.9 74.7,42 59.5,53.1 65.3,71 50,60 34.7,71 40.5,53.1 25.3,42 44.1,41.9"
-          fill={gold}
-        />
+        <polygon points="16,5 19,12 27,12 21,17 23,26 16,21 9,26 11,17 5,12 13,12" fill={GOLD} />
       )}
+
       {country.emblem === "wings" && (
-        <g stroke={gold} fill={gold}>
-          <polygon points="50,22 68,50 50,78 32,50" fill="none" strokeWidth="5" />
-          <g strokeWidth="5" strokeLinecap="round">
-            <line x1="30" y1="42" x2="11" y2="32" />
-            <line x1="29" y1="52" x2="9" y2="52" />
-            <line x1="30" y1="62" x2="11" y2="72" />
-            <line x1="70" y1="42" x2="89" y2="32" />
-            <line x1="71" y1="52" x2="91" y2="52" />
-            <line x1="70" y1="62" x2="89" y2="72" />
-          </g>
+        <g stroke={GOLD} fill="none" strokeWidth="2">
+          <polygon points="16,5 22,16 16,27 10,16" />
+          <path d="M10 11H4v3h6M10 17H3v3h7M22 11h6v3h-6M22 17h7v3h-7" />
         </g>
       )}
+
       {country.emblem === "gear" && (
-        <g fill={gold}>
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((r) => (
-            <rect key={r} x="45" y="13" width="10" height="15" transform={`rotate(${r} 50 50)`} />
-          ))}
-          <circle cx="50" cy="50" r="17" />
-          <circle cx="50" cy="50" r="8" fill={country.color} />
+        <g fill={GOLD}>
+          <rect x="13" y="5" width="6" height="22" />
+          <rect x="5" y="13" width="22" height="6" />
+          <rect x="8" y="8" width="16" height="16" />
+          <rect x="12" y="12" width="8" height="8" fill={country.color} />
         </g>
       )}
+
       {country.emblem === "wheat" && (
-        <g stroke={gold} strokeWidth="5" strokeLinecap="round" fill="none">
-          <line x1="50" y1="30" x2="50" y2="82" />
-          <line x1="50" y1="40" x2="33" y2="28" />
-          <line x1="50" y1="40" x2="67" y2="28" />
-          <line x1="50" y1="54" x2="31" y2="43" />
-          <line x1="50" y1="54" x2="69" y2="43" />
-          <line x1="50" y1="68" x2="31" y2="58" />
-          <line x1="50" y1="68" x2="69" y2="58" />
-          <ellipse cx="50" cy="24" rx="5" ry="8" fill={gold} stroke="none" />
+        <g fill={GOLD}>
+          <rect x="15" y="6" width="3" height="22" />
+          <rect x="9" y="8" width="6" height="3" />
+          <rect x="18" y="11" width="6" height="3" />
+          <rect x="8" y="15" width="7" height="3" />
+          <rect x="18" y="18" width="7" height="3" />
+          <rect x="10" y="22" width="5" height="3" />
         </g>
       )}
     </svg>
