@@ -755,7 +755,7 @@ export function GameScreen({
                 </div>
               )}
 
-              {/* ШТАМПЫ — единая кассета опускается по центру экрана */}
+              {/* ШТАМПЫ — машины въезжают по балке с боков и смыкаются в центре экрана */}
               <StampPad
                 open={stampOpen}
                 locked={!canStamp}
@@ -768,13 +768,10 @@ export function GameScreen({
                     doShake(0.5);
                     return;
                   }
+                  // Машины стоят по центру поста, поэтому печать ложится
+                  // в паспорт всегда — точка удара лишь сдвигает отметку.
                   const pr = passNode.getBoundingClientRect();
                   const gripH = 16;
-                  if (px < pr.left || px > pr.right || py < pr.top + gripH || py > pr.bottom) {
-                    sfx.bad();
-                    doShake(0.5);
-                    return;
-                  }
                   const localX = px - pr.left;
                   const localY = py - pr.top - gripH;
                   const x = Math.max(24, Math.min(localX, 196));

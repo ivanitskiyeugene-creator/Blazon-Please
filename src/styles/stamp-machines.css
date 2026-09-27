@@ -28,7 +28,7 @@
 }
 
 .stamp-lever__mount i,
-.stamp-rig__bolt,
+.stamp-beam__bolts i,
 .stamp-machine__beam i {
   width: 6px;
   height: 6px;
@@ -137,9 +137,47 @@
   pointer-events: none;
 }
 
+/* Несущая промышленная балка через весь пост — машины ездят по ней */
+.stamp-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22px;
+  background: #44382e url("/images/metal-tile.png");
+  border-top: 3px solid #15100d;
+  border-bottom: 4px solid #15100d;
+  box-shadow: inset 0 3px 0 #6b5948, inset 0 -3px 0 #241b14, 0 5px 0 #090705;
+}
+
+.stamp-beam__bolts {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
+}
+
+.stamp-beam__plate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 3px 8px;
+  background: #2c231d url("/images/metal-tile.png");
+  border: 2px solid #15100d;
+  box-shadow: inset 0 0 0 1px #6b5948;
+  color: #a39074;
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .stamp-rig {
   position: absolute;
-  top: 7px;
+  top: 22px;
   pointer-events: none;
 }
 
@@ -152,66 +190,31 @@
   transform-origin: top center;
 }
 
-.stamp-rig__rail {
-  position: absolute;
-  top: 18px;
-  width: 88px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  background: #44382e url("/images/metal-tile.png");
-  border: 3px solid #15100d;
-  box-shadow: inset 0 0 0 2px #6b5948, 4px 4px 0 #090705;
-}
-
-.stamp-rig__rail--left { right: 100%; }
-.stamp-rig__rail--right { left: 100%; }
-
-.stamp-rig__rail i {
-  width: 7px;
-  height: 7px;
-  background: #17110d;
-  border: 1px solid #8d7860;
-}
-
-.stamp-rig__shell {
-  position: relative;
-  padding: 22px 8px 7px;
-  background: #332920 url("/images/metal-tile.png");
-  background-size: 32px 32px;
-  border: 4px solid #15100d;
-  box-shadow: inset 0 0 0 2px #665443, 7px 7px 0 #090705;
-}
-
-.stamp-rig__caption {
-  position: absolute;
-  left: 25px;
-  right: 25px;
-  top: 5px;
-  height: 12px;
-  overflow: hidden;
-  color: #a39074;
-  font-family: var(--font-pixel);
-  font-size: 6px;
-  line-height: 12px;
-  text-align: center;
-  white-space: nowrap;
-}
-
 .stamp-rig__machines {
   display: flex;
   align-items: flex-end;
   gap: 6px;
 }
 
-.stamp-rig__bolt {
-  position: absolute;
-  top: 7px;
+/* Группа машин на общей каретке, скользящей по балке */
+.stamp-rig__group {
+  position: relative;
+  display: flex;
+  gap: 6px;
 }
 
-.stamp-rig__bolt--a { left: 8px; }
-.stamp-rig__bolt--b { right: 8px; }
+.stamp-rig__group::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  right: 12px;
+  height: 9px;
+  background: #4d4034 url("/images/metal-tile.png");
+  border: 2px solid #15100d;
+  box-shadow: inset 0 2px 0 #7d6a52, 0 3px 0 #090705;
+  z-index: 4;
+}
 
 .stamp-machine {
   position: relative;

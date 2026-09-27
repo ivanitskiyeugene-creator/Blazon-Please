@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Гербы, пожалуйста!",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "identifier": "by.blazonplease.kpp7",
   "build": {
     "frontendDist": "../dist",

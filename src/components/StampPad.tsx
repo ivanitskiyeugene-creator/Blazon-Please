@@ -168,8 +168,8 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
       const rig = rigRef.current;
       if (!layer || !rig) return;
       const layerRect = layer.getBoundingClientRect();
-      const shell = rig.querySelector<HTMLElement>(".stamp-rig__shell");
-      const half = (shell ?? rig).getBoundingClientRect().width / 2;
+      const row = rig.querySelector<HTMLElement>(".stamp-rig__machines");
+      const half = (row ?? rig).getBoundingClientRect().width / 2;
       const screenCenter = window.innerWidth / 2 - layerRect.left;
       setRigLeft(Math.max(half + 4, Math.min(screenCenter, layerRect.width - half - 4)));
     };
@@ -193,26 +193,39 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
     }, 100);
   };
 
+  // Вылет по промышленной балке: группы машин съезжают с боков поста к центру.
+  const slide = typeof window === "undefined" ? 1200 : window.innerWidth;
+
   return (
     <div className="stamp-drawer-layer" ref={layerRef} aria-hidden={!open}>
+      {/* Несущая балка через весь пост — видна всегда, машины ездят по ней */}
+      <div className="stamp-beam">
+        <span className="stamp-beam__bolts">
+          <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
+        </span>
+        <span className="stamp-beam__plate">ШТЕМПЕЛЬНАЯ КАССЕТА // КПП-7</span>
+      </div>
+
       <AnimatePresence>
         {open && (
           <motion.div
-            key="center-stamp-cassette"
+            key="beam-stamp-train"
             ref={rigRef}
             className="stamp-rig stamp-rig--center"
             style={{ left: rigLeft ?? undefined }}
-            initial={{ x: "-50%", y: -170 }}
-            animate={{ x: "-50%", y: 0 }}
-            exit={{ x: "-50%", y: -170 }}
-            transition={{ type: "spring", stiffness: 250, damping: 28 }}
+            initial={false}
+            animate={{ x: "-50%" }}
+            exit={{ x: "-50%", transition: { duration: 0.85 } }}
           >
             <div className="stamp-rig__scaler">
-              <div className="stamp-rig__rail stamp-rig__rail--left"><i /><i /><i /></div>
-              <div className="stamp-rig__rail stamp-rig__rail--right"><i /><i /><i /></div>
-              <div className="stamp-rig__shell">
-                <div className="stamp-rig__caption">ШТЕМПЕЛЬНАЯ КАССЕТА // КПП-7</div>
-                <div className="stamp-rig__machines">
+              <div className="stamp-rig__machines">
+                <motion.div
+                  className="stamp-rig__group"
+                  initial={{ x: -slide }}
+                  animate={{ x: 0 }}
+                  exit={{ x: -slide }}
+                  transition={{ type: "spring", stiffness: 210, damping: 27 }}
+                >
                   <StampButton
                     type="DENY"
                     label="ОТКАЗ"
@@ -235,6 +248,14 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
                       onHit={hit}
                     />
                   )}
+                </motion.div>
+                <motion.div
+                  className="stamp-rig__group"
+                  initial={{ x: slide }}
+                  animate={{ x: 0 }}
+                  exit={{ x: slide }}
+                  transition={{ type: "spring", stiffness: 210, damping: 27 }}
+                >
                   <StampButton
                     type="ADMIT"
                     label="ВХОД"
@@ -245,9 +266,7 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
                     disabled={locked}
                     onHit={hit}
                   />
-                </div>
-                <span className="stamp-rig__bolt stamp-rig__bolt--a" />
-                <span className="stamp-rig__bolt stamp-rig__bolt--b" />
+                </motion.div>
               </div>
             </div>
           </motion.div>
