@@ -451,6 +451,36 @@ export function GameScreen({
 
   return (
     <div className={`relative min-h-screen flex flex-col ${shaking ? "shake" : ""}`} style={shaking ? { transform: `translate(${Math.random()*shakeIntensity*10-5}px, ${Math.random()*shakeIntensity*10-5}px)` } : {}}>
+      {/* ШТАМПЫ — промышленная балка ровно по центру экрана,
+          машины въезжают по ней с боков и смыкаются в центре */}
+      <StampPad
+        open={stampOpen}
+        locked={!canStamp}
+        hasEvidence={hasEvidence}
+        detainUnlocked={detainUnlocked}
+        onStamp={(type, px, py) => {
+          const passNode = nodes.current["passport"];
+          if (!passNode) {
+            sfx.bad();
+            doShake(0.5);
+            return;
+          }
+          // Машины стоят по центру экрана, поэтому печать ложится
+          // в паспорт всегда — точка удара лишь сдвигает отметку.
+          const pr = passNode.getBoundingClientRect();
+          const gripH = 16;
+          const localX = px - pr.left;
+          const localY = py - pr.top - gripH;
+          const x = Math.max(24, Math.min(localX, 196));
+          const y = Math.max(18, Math.min(localY, 140));
+          setStampMarks((prev) => [...prev, { type, x, y }]);
+          setStamped(type);
+          setStage("stamped");
+          doShake(1);
+          // Итог записывается только после возврата всех документов.
+        }}
+      />
+
       {/* ---------- хедер ---------- */}
       <div className="relative z-20 border-b-2 border-[var(--color-line)] bg-[var(--color-coal)]">
         <div className="max-w-[1500px] mx-auto px-3 py-2 flex items-center gap-3 flex-wrap">
@@ -754,35 +784,6 @@ export function GameScreen({
                   {rareMsg}
                 </div>
               )}
-
-              {/* ШТАМПЫ — машины въезжают по балке с боков и смыкаются в центре экрана */}
-              <StampPad
-                open={stampOpen}
-                locked={!canStamp}
-                hasEvidence={hasEvidence}
-                detainUnlocked={detainUnlocked}
-                onStamp={(type, px, py) => {
-                  const passNode = nodes.current["passport"];
-                  if (!passNode) {
-                    sfx.bad();
-                    doShake(0.5);
-                    return;
-                  }
-                  // Машины стоят по центру поста, поэтому печать ложится
-                  // в паспорт всегда — точка удара лишь сдвигает отметку.
-                  const pr = passNode.getBoundingClientRect();
-                  const gripH = 16;
-                  const localX = px - pr.left;
-                  const localY = py - pr.top - gripH;
-                  const x = Math.max(24, Math.min(localX, 196));
-                  const y = Math.max(18, Math.min(localY, 140));
-                  setStampMarks((prev) => [...prev, { type, x, y }]);
-                  setStamped(type);
-                  setStage("stamped");
-                  doShake(1);
-                  // Итог записывается только после возврата всех документов.
-                }}
-              />
 
               {/* ДОКУМЕНТЫ — нативный drag без framer */}
               {desk.map((d) => {

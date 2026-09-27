@@ -137,12 +137,12 @@
   pointer-events: none;
 }
 
-/* Несущая промышленная балка через весь пост — машины ездят по ней */
+/* Несущая промышленная балка через весь экран — машины ездят по ней */
 .stamp-beam {
   position: absolute;
   left: 0;
   right: 0;
-  top: 0;
+  top: calc(50% - 78px);
   height: 22px;
   background: #44382e url("/images/metal-tile.png");
   border-top: 3px solid #15100d;

@@ -157,26 +157,31 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
   const [pressing, setPressing] = useState<Decision | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const rigRef = useRef<HTMLDivElement>(null);
+  const [beamTop, setBeamTop] = useState<number | null>(null);
   const [rigLeft, setRigLeft] = useState<number | null>(null);
+  const [rigTop, setRigTop] = useState<number | null>(null);
 
-  // Кассета висит над столом, но опускается точно по центру ЭКРАНА:
-  // стол смещён вправо в общей сетке, поэтому центр считаем вручную.
+  // Балка и машины стоят ровно на середине ЭКРАНА — по центру буквально.
+  // Слой абсолютный внутри корня игры, поэтому центр вьюпорта считаем сами.
   useLayoutEffect(() => {
-    if (!open) return;
     const place = () => {
       const layer = layerRef.current;
-      const rig = rigRef.current;
-      if (!layer || !rig) return;
-      const layerRect = layer.getBoundingClientRect();
-      const row = rig.querySelector<HTMLElement>(".stamp-rig__machines");
-      const half = (row ?? rig).getBoundingClientRect().width / 2;
-      const screenCenter = window.innerWidth / 2 - layerRect.left;
-      setRigLeft(Math.max(half + 4, Math.min(screenCenter, layerRect.width - half - 4)));
+      if (!layer) return;
+      const rect = layer.getBoundingClientRect();
+      const cx = window.innerWidth / 2 - rect.left;
+      const cy = window.innerHeight / 2 - rect.top;
+      setBeamTop(cy - 78); // балка (26) + машины (130) — вся сборка серединой на центр
+      setRigLeft(cx);
+      setRigTop(cy - 52);
     };
     place();
     window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
-  }, [open, detainUnlocked]);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, []);
 
   const hit = (type: Decision, event: React.PointerEvent<HTMLButtonElement>) => {
     if (locked || (type === "DETAIN" && !hasEvidence)) return;
@@ -198,8 +203,8 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
 
   return (
     <div className="stamp-drawer-layer" ref={layerRef} aria-hidden={!open}>
-      {/* Несущая балка через весь пост — видна всегда, машины ездят по ней */}
-      <div className="stamp-beam">
+      {/* Несущая балка через весь экран — видна всегда, машины ездят по ней */}
+      <div className="stamp-beam" style={{ top: beamTop ?? undefined }}>
         <span className="stamp-beam__bolts">
           <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
         </span>
@@ -212,7 +217,7 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
             key="beam-stamp-train"
             ref={rigRef}
             className="stamp-rig stamp-rig--center"
-            style={{ left: rigLeft ?? undefined }}
+            style={{ left: rigLeft ?? undefined, top: rigTop ?? undefined }}
             initial={false}
             animate={{ x: "-50%" }}
             exit={{ x: "-50%", transition: { duration: 0.85 } }}
