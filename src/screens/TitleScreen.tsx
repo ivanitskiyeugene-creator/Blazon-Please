@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight, ListRestart, Play, ScrollText, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { AtomEmblem, PartyEmblem } from "../components/Emblems";
+import { PixelGlyph } from "../components/PixelGlyph";
 import { sfx } from "../audio";
 import { APP_VERSION, CHANGELOG } from "../game/changelog";
 import { DAYS } from "../game/data";
@@ -104,7 +104,7 @@ export function TitleScreen({
                   }}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Play size={18} /> Продолжить смену {DAYS[Math.min(save.dayIdx, DAYS.length - 1)].n}
+                    <PixelGlyph name="play" size={18} /> Продолжить смену {DAYS[Math.min(save.dayIdx, DAYS.length - 1)].n}
                   </span>
                   <span className="text-[10px] opacity-80 normal-case tracking-normal">
                     {save.credits} ₳ · {saveAge(save.savedAt)}
@@ -119,11 +119,11 @@ export function TitleScreen({
                 >
                   {confirmNew ? (
                     <>
-                      <ListRestart size={18} /> Затереть и начать?
+                      <PixelGlyph name="list-restart" size={18} /> Затереть и начать?
                     </>
                   ) : (
                     <>
-                      Новая служба <ChevronRight size={18} />
+                      Новая служба <PixelGlyph name="next" size={18} />
                     </>
                   )}
                 </button>
@@ -134,7 +134,7 @@ export function TitleScreen({
                     setLog(true);
                   }}
                 >
-                  <ScrollText size={17} /> Изменения
+                  <PixelGlyph name="document" size={17} /> Изменения
                 </button>
               </div>
 
@@ -147,7 +147,7 @@ export function TitleScreen({
                     setConfirmNew(false);
                   }}
                 >
-                  <Trash2 size={11} /> стереть сохранение
+                  <PixelGlyph name="trash" size={11} /> стереть сохранение
                 </button>
               )}
             </motion.div>
@@ -233,14 +233,14 @@ export function TitleScreen({
             >
               <div className="flex items-center justify-between px-5 py-3 border-b-2 border-[var(--color-line)]">
                 <div className="flex items-center gap-2">
-                  <ScrollText size={17} className="text-[var(--color-gold)]" />
+                  <PixelGlyph name="document" size={17} className="text-[var(--color-gold)]" />
                   <span className="font-head uppercase tracking-widest text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
                     Журнал изменений
                   </span>
                   <span className="pixel-text text-[8px] text-[var(--color-ash)] ml-2">v{APP_VERSION}</span>
                 </div>
                 <button className="btn-ghost p-1.5" onClick={() => setLog(false)}>
-                  <X size={16} />
+                  <PixelGlyph name="close" size={16} />
                 </button>
               </div>
               <div className="overflow-y-auto p-5 space-y-5">

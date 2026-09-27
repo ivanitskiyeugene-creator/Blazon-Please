@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { AlertTriangle, ChevronRight, Coins, ScrollText } from "lucide-react";
 import type { DayConfig, Notice } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
+import { PixelGlyph } from "../components/PixelGlyph";
 import { DAYS } from "../game/data";
 import { sfx } from "../audio";
 
@@ -29,7 +29,7 @@ export function BriefingScreen({
             </div>
           </div>
           <div className="flex items-center gap-2 panel px-3 py-2">
-            <Coins size={15} className="text-[var(--color-gold)]" />
+            <PixelGlyph name="coin" size={15} className="text-[var(--color-gold)]" />
             <span className="font-bold text-[var(--color-gold)]">{credits} ₳</span>
             <span className="text-[10px] text-[var(--color-ash)] uppercase">атоморуб.</span>
           </div>
@@ -83,7 +83,7 @@ export function BriefingScreen({
                 style={{ borderLeftColor: "var(--color-state2)" }}
               >
                 <div className="flex items-center gap-2 text-[var(--color-state2)] mb-2">
-                  <AlertTriangle size={16} />
+                  <PixelGlyph name="alert" size={16} />
                   <span className="font-head text-sm uppercase tracking-widest" style={{ fontFamily: "var(--font-head)" }}>
                     Извещение министерства
                   </span>
@@ -109,7 +109,7 @@ export function BriefingScreen({
               <span className="bolt" style={{ top: 5, left: 5 }} />
               <span className="bolt" style={{ top: 5, right: 5 }} />
               <div className="flex items-center gap-2 mb-4">
-                <ScrollText size={17} className="text-[var(--color-gold)]" />
+                <PixelGlyph name="document" size={17} className="text-[var(--color-gold)]" />
                 <span className="font-head text-base uppercase tracking-widest text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
                   Директива на смену {day.n}
                 </span>
@@ -169,7 +169,7 @@ export function BriefingScreen({
                 onOpen();
               }}
             >
-              Открыть КПП-7 <ChevronRight size={20} />
+              Открыть КПП-7 <PixelGlyph name="next" size={20} />
             </motion.button>
           </div>
         </div>

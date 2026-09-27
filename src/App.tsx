@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { initAudio } from "./audio";
 import { DAYS, GAMEOVER, START_CREDITS } from "./game/data";
 import { buildDay } from "./game/generator";
@@ -29,6 +30,21 @@ export default function App() {
   const [lastResult, setLastResult] = useState<DayResult | null>(null);
   const [lastBalance, setLastBalance] = useState(START_CREDITS);
   const heatStreak = useRef(0);
+
+  // Полноэкранный режим: F11 переключает окно (в браузере F11 обрабатывает сам браузер).
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "F11" || !("__TAURI_INTERNALS__" in window)) return;
+      event.preventDefault();
+      const win = getCurrentWindow();
+      void win
+        .isFullscreen()
+        .then((full) => win.setFullscreen(!full))
+        .catch(() => {});
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const day = DAYS[Math.min(dayIdx, DAYS.length - 1)];
 

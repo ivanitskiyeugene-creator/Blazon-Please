@@ -1,15 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Clock,
-  Eraser,
-  Fingerprint,
-  MessageSquare,
-  Handshake,
-  Home,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { PixelGlyph } from "../components/PixelGlyph";
 import { initAudio, isMuted, setMuted, sfx } from "../audio";
 import { startMusic, stopMusic, isMusicPlaying } from "../music";
 import { DETAIN_BONUS, EVIDENCE_BONUS, GENERIC_ADMIT, GENERIC_CAUGHT, GENERIC_DENY, WRONG_EVIDENCE } from "../game/data";
@@ -470,7 +461,7 @@ export function GameScreen({
           </div>
 
           <div className="panel px-2.5 py-1.5 flex items-center gap-1.5">
-            <Clock size={13} className="text-[var(--color-gold)]" />
+            <PixelGlyph name="clock" size={13} className="text-[var(--color-gold)]" />
             <span className="pixel-text text-[9px] text-[var(--color-gold)]">
               {hh}:{mm}
             </span>
@@ -496,7 +487,7 @@ export function GameScreen({
             баланс утра: <span className="text-[var(--color-bone)] font-bold">{credits} ₳</span>
           </div>
           <button className="btn-ghost p-1.5" title="В главное меню" onClick={() => setAskExit(true)}>
-            <Home size={15} />
+            <PixelGlyph name="home" size={15} />
           </button>
           <button
             className="btn-ghost p-1.5"
@@ -517,7 +508,7 @@ export function GameScreen({
               if (!m) sfx.ui();
             }}
           >
-            {mute ? <VolumeX size={15} /> : <Volume2 size={15} />}
+            {mute ? <PixelGlyph name="mute" size={15} /> : <PixelGlyph name="volume" size={15} />}
           </button>
         </div>
       </div>
@@ -535,7 +526,7 @@ export function GameScreen({
 
             {/* вид сверху / наружу + громкоговоритель */}
             <div className="harsh-wall relative border-b-2 border-[var(--color-line)]" style={{ height: 90 }}>
-              <div className="absolute inset-x-0 top-0 h-5 border-b-2 border-[#17120f]" style={{ background: "url('images/desk-tile.svg') repeat" }} />
+              <div className="absolute inset-x-0 top-0 h-5 border-b-2 border-[#17120f]" style={{ background: "url('images/desk-tile.png') repeat" }} />
               <div className="absolute inset-x-6 top-8 h-8 border-y-2 border-[#6f6658] bg-[#7b766f] opacity-35" />
               <button
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 panel px-3 py-1.5 hover:border-[var(--color-gold)] transition-colors"
@@ -667,7 +658,7 @@ export function GameScreen({
             {/* имя + допрос */}
             <div className="border-t-2 border-[var(--color-line)] px-3 py-2 flex items-center justify-between gap-2 text-[10px] uppercase tracking-widest text-[var(--color-ash)]">
               <span className="inline-flex items-center gap-1.5 min-w-0">
-                <Fingerprint size={12} className="shrink-0" />
+                <PixelGlyph name="fingerprint" size={12} className="shrink-0" />
                 <span className="truncate">{entrant?.passport.name ?? "смена завершена"}</span>
               </span>
               <button
@@ -679,7 +670,7 @@ export function GameScreen({
                   setReaction(null);
                 }}
               >
-                <MessageSquare size={12} /> {probed ? "Допрошен" : "Допрос"}
+                <PixelGlyph name="message" size={12} /> {probed ? "Допрошен" : "Допрос"}
               </button>
               {entrant?.agentOffer && !offerDone && !offerOpen && stage === "review" && (
                 <button
@@ -687,7 +678,7 @@ export function GameScreen({
                   style={{ borderColor: "var(--color-gold)", color: "var(--color-gold)" }}
                   onClick={() => setOfferOpen(true)}
                 >
-                  <Handshake size={12} /> Разговор
+                  <PixelGlyph name="handshake" size={12} /> Разговор
                 </button>
               )}
             </div>
@@ -764,7 +755,7 @@ export function GameScreen({
                 </div>
               )}
 
-              {/* ШТАМПЫ — две закреплённые кассеты выезжают с боков */}
+              {/* ШТАМПЫ — единая кассета опускается по центру экрана */}
               <StampPad
                 open={stampOpen}
                 locked={!canStamp}
@@ -856,7 +847,7 @@ export function GameScreen({
                   </button>
                   {sel.length > 0 && (
                     <button className="btn-ghost px-2 py-1 text-[10px] inline-flex items-center gap-1" onClick={() => setSel([])}>
-                      <Eraser size={11} /> Сброс
+                      <PixelGlyph name="eraser" size={11} /> Сброс
                     </button>
                   )}
                   {hasEvidence && (
@@ -969,7 +960,7 @@ export function GameScreen({
               <span className="bolt" style={{ top: 6, left: 6 }} />
               <span className="bolt" style={{ top: 6, right: 6 }} />
               <div className="flex items-center gap-2 mb-3">
-                <Handshake size={17} style={{ color: entrant.agent === "west" ? "#8fa0d8" : "#a8c185" }} />
+                <PixelGlyph name="handshake" size={17} color={entrant.agent === "west" ? "#8fa0d8" : "#a8c185"} />
                 <span
                   className="font-head uppercase tracking-widest text-sm"
                   style={{ fontFamily: "var(--font-head)", color: entrant.agent === "west" ? "#8fa0d8" : "#a8c185" }}

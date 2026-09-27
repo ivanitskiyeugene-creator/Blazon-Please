@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Гербы, пожалуйста!",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "identifier": "by.blazonplease.kpp7",
   "build": {
     "frontendDist": "../dist",
@@ -21,7 +21,7 @@
         "center": true,
         "maximized": true,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": true
       }
     ],
     "security": {

@@ -1,7 +1,7 @@
 {
   "name": "blazon-please",
   "private": true,
-  "version": "0.6.2",
+  "version": "0.6.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,9 +12,9 @@
     "desktop:info": "tauri info"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.12.0",
     "clsx": "2.1.1",
     "framer-motion": "^13.4.4",
-    "lucide-react": "^1.48.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "tailwind-merge": "3.4.0"

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./styles/stamp-machines.css";
+@import "./styles/booth-pixels.css";
 
 /* PixelPlay использовался в меню, титрах и служебных табличках Papers, Please. */
 @font-face {
@@ -421,7 +422,7 @@ html {
 
 body {
   background-color: var(--color-ink);
-  background-image: url("/images/metal-tile.svg");
+  background-image: url("/images/metal-tile.png");
   image-rendering: pixelated;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: none;
@@ -471,7 +472,7 @@ svg:not(.lucide) {
 
 .noise-layer {
   opacity: 0.22;
-  background-image: url("/images/metal-tile.svg");
+  background-image: url("/images/metal-tile.png");
   background-size: 32px 32px;
   animation: noiseShift 0.55s steps(2, jump-none) infinite;
 }
@@ -484,7 +485,7 @@ svg:not(.lucide) {
 
 .paper-tex {
   background-color: var(--color-paper);
-  background-image: url("/images/paper-tile.svg");
+  background-image: url("/images/paper-tile.png");
   background-size: 48px 48px;
 }
 
@@ -492,7 +493,7 @@ svg:not(.lucide) {
   background-color: #17120f;
   background-image:
     linear-gradient(90deg, transparent 0 49%, #3b1714 49% 51%, transparent 51%),
-    url("/images/metal-tile.svg");
+    url("/images/metal-tile.png");
   background-size: 96px 100%, 32px 32px;
 }
 
@@ -504,7 +505,7 @@ svg:not(.lucide) {
 
 .panel {
   background-color: var(--color-panel);
-  background-image: url("/images/metal-tile.svg");
+  background-image: url("/images/metal-tile.png");
   background-size: 32px 32px;
   border: 2px solid var(--color-line);
   box-shadow: inset 0 0 0 1px #0b0907, 4px 4px 0 #090705;
@@ -588,7 +589,7 @@ svg:not(.lucide) {
 .imprint > span {
   border-radius: 0;
   mask-image: none;
-  background-image: url("/images/paper-tile.svg");
+  background-image: url("/images/paper-tile.png");
   box-shadow: 3px 3px 0 currentColor;
 }
 
@@ -622,7 +623,7 @@ svg:not(.lucide) {
 
 .doc-grip {
   background-color: #17120f;
-  background-image: url("/images/metal-tile.svg") !important;
+  background-image: url("/images/metal-tile.png") !important;
   background-size: 32px 32px !important;
   border-bottom: 2px solid #090705;
 }
@@ -658,7 +659,7 @@ svg:not(.lucide) {
 
 .bubble {
   background-color: var(--color-paper);
-  background-image: url("/images/paper-tile.svg");
+  background-image: url("/images/paper-tile.png");
   border: 3px solid #493729;
   box-shadow: 6px 6px 0 #090705;
 }
@@ -701,13 +702,13 @@ svg:not(.lucide) {
 
 .harsh-wall {
   background-color: #30261e !important;
-  background-image: url("/images/wall-tile.svg") !important;
+  background-image: url("/images/wall-tile.png") !important;
   background-size: 96px 48px !important;
 }
 
 .desk-surface {
   background-color: #35291e !important;
-  background-image: url("/images/desk-tile.svg") !important;
+  background-image: url("/images/desk-tile.png") !important;
   background-size: 96px 64px !important;
   box-shadow: inset 0 0 0 4px #17120f !important;
 }

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { sfx } from "../audio";
 import type { Decision } from "../game/types";
 
@@ -75,41 +75,43 @@ function StampObj({ color, dark, textColor, label, pressed }: {
   label: string;
   pressed: boolean;
 }) {
+  const ref = useRef<HTMLCanvasElement>(null);
   const dy = pressed ? 9 : 0;
-  return (
-    <svg className="pixel-art" width="96" height="108" viewBox="0 0 96 108" shapeRendering="crispEdges" aria-hidden="true">
-      {/* направляющая соединяет штамп с верхней балкой кассеты */}
-      <rect x="39" y="0" width="18" height="57" fill="#221b16" />
-      <rect x="42" y="0" width="12" height="57" fill="#756658" />
-      <rect x="45" y="0" width="4" height="57" fill="#aa977c" />
-      <rect x="51" y="0" width="3" height="57" fill="#4b3e33" />
 
-      <g transform={`translate(0 ${dy})`}>
-        {/* тяжёлая шляпка */}
-        <rect x="25" y="16" width="46" height="15" fill="#2a211b" />
-        <rect x="22" y="13" width="46" height="14" fill="#766653" stroke="#17110d" strokeWidth="3" />
-        <rect x="27" y="16" width="36" height="4" fill="#ac987a" />
-        {/* корпус */}
-        <rect x="13" y="46" width="70" height="38" fill={dark} stroke="#0a0806" strokeWidth="3" />
-        <rect x="17" y="49" width="62" height="31" fill={color} />
-        <rect x="17" y="49" width="62" height="5" fill={textColor} opacity="0.25" />
-        <text
-          x="48"
-          y="68"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill={textColor}
-          fontSize="11"
-          fontFamily="var(--font-pixel)"
-        >
-          {label}
-        </text>
-        {/* печатная подошва */}
-        <rect x="8" y="82" width="80" height="12" fill="#17110d" />
-        <rect x="12" y="82" width="72" height="7" fill={dark} />
-        <rect x="17" y="94" width="62" height="5" fill="#080604" opacity="0.72" />
-      </g>
-    </svg>
+  useLayoutEffect(() => {
+    const ctx = ref.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, 96, 108);
+    ctx.imageSmoothingEnabled = false;
+    const block = (x: number, y: number, w: number, h: number, fill: string) => {
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, y, w, h);
+    };
+
+    // Направляющая и ручка — только прямоугольные bitmap-блоки.
+    block(39, 0, 18, 57, "#221b16");
+    block(42, 0, 12, 57, "#756658");
+    block(45, 0, 4, 57, "#aa977c");
+    block(51, 0, 3, 57, "#4b3e33");
+    block(20, 10 + dy, 52, 20, "#17110d");
+    block(23, 13 + dy, 46, 14, "#766653");
+    block(27, 16 + dy, 36, 4, "#ac987a");
+    block(10, 43 + dy, 76, 44, "#0a0806");
+    block(13, 46 + dy, 70, 38, dark);
+    block(17, 49 + dy, 62, 31, color);
+    ctx.globalAlpha = 0.25;
+    block(17, 49 + dy, 62, 5, textColor);
+    ctx.globalAlpha = 1;
+    block(8, 82 + dy, 80, 12, "#17110d");
+    block(12, 82 + dy, 72, 7, dark);
+    block(17, 94 + dy, 62, 5, "#080604");
+  }, [color, dark, dy, textColor]);
+
+  return (
+    <span className="stamp-object" aria-hidden="true">
+      <canvas ref={ref} width="96" height="108" />
+      <b style={{ top: 59 + dy, color: textColor }}>{label}</b>
+    </span>
   );
 }
 
@@ -153,6 +155,28 @@ interface Props {
 
 export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }: Props) {
   const [pressing, setPressing] = useState<Decision | null>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
+  const rigRef = useRef<HTMLDivElement>(null);
+  const [rigLeft, setRigLeft] = useState<number | null>(null);
+
+  // Кассета висит над столом, но опускается точно по центру ЭКРАНА:
+  // стол смещён вправо в общей сетке, поэтому центр считаем вручную.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const layer = layerRef.current;
+      const rig = rigRef.current;
+      if (!layer || !rig) return;
+      const layerRect = layer.getBoundingClientRect();
+      const shell = rig.querySelector<HTMLElement>(".stamp-rig__shell");
+      const half = (shell ?? rig).getBoundingClientRect().width / 2;
+      const screenCenter = window.innerWidth / 2 - layerRect.left;
+      setRigLeft(Math.max(half + 4, Math.min(screenCenter, layerRect.width - half - 4)));
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [open, detainUnlocked]);
 
   const hit = (type: Decision, event: React.PointerEvent<HTMLButtonElement>) => {
     if (locked || (type === "DETAIN" && !hasEvidence)) return;
@@ -170,12 +194,14 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
   };
 
   return (
-    <div className="stamp-drawer-layer" aria-hidden={!open}>
+    <div className="stamp-drawer-layer" ref={layerRef} aria-hidden={!open}>
       <AnimatePresence>
         {open && (
           <motion.div
             key="center-stamp-cassette"
+            ref={rigRef}
             className="stamp-rig stamp-rig--center"
+            style={{ left: rigLeft ?? undefined }}
             initial={{ x: "-50%", y: -170 }}
             animate={{ x: "-50%", y: 0 }}
             exit={{ x: "-50%", y: -170 }}

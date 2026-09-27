@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { AlertTriangle, ChevronRight, Coins, Flame, RotateCcw, Siren } from "lucide-react";
 import { useState } from "react";
+import { PixelGlyph } from "../components/PixelGlyph";
 import { DETAIN_BONUS, ERROR_FINE, EVIDENCE_BONUS, PER_PAY } from "../game/data";
 import type { DayConfig, DayResult } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
@@ -109,7 +109,7 @@ export function LedgerScreen({
             className="mt-4 p-3 border-2 border-[#7c1d18] bg-[#7c1d1812]"
           >
             <div className="flex items-center gap-2 text-[#7c1d18] text-xs font-bold uppercase mb-1.5">
-              <AlertTriangle size={14} /> протоколы дня
+              <PixelGlyph name="alert" size={14} /> протоколы дня
             </div>
             {result.errors.map((e, k) => (
               <div key={k} className="text-[11px] leading-snug py-0.5">— {e}</div>
@@ -133,7 +133,7 @@ export function LedgerScreen({
           }}
         >
           <span className="flex items-center gap-2 font-bold uppercase tracking-wide">
-            <Flame size={15} style={{ color: heatSkipped ? "#5a6490" : "#b93a25" }} />
+            <PixelGlyph name="flame" size={15} color={heatSkipped ? "#5a6490" : "#b93a25"} />
             {heatSkipped ? "Отопление отключено — семья мёрзнет (экономия 4 ₳)" : "Отопление включено: −4 ₳. Нажми, чтобы сэкономить и помёрзнуть"}
           </span>
         </motion.button>
@@ -145,7 +145,7 @@ export function LedgerScreen({
           className="mt-5 flex items-center justify-between flex-wrap gap-2"
         >
           <div className="flex items-center gap-2">
-            <Coins size={18} />
+            <PixelGlyph name="coin" size={18} />
             <span className="font-head uppercase text-sm" style={{ fontFamily: "var(--font-head)" }}>
               Итог дома: {total} ₳
             </span>
@@ -173,7 +173,7 @@ export function LedgerScreen({
           }}
         >
           {broke ? "Сверить долг..." : isLast ? "Итоги службы" : "Лечь спать // смена " + (day.n + 1)}
-          <ChevronRight size={18} />
+          <PixelGlyph name="next" size={18} />
         </motion.button>
       </motion.div>
     </div>
@@ -251,13 +251,13 @@ export function EndingScreen({
               {stats.evidence !== undefined && <span>доказано: {stats.evidence}</span>}
               {stats.detains !== undefined && (
                 <span className="inline-flex items-center gap-1">
-                  <Siren size={11} /> задержано: {stats.detains}
+                  <PixelGlyph name="siren" size={11} /> задержано: {stats.detains}
                 </span>
               )}
               <span>на руках: {stats.credits} ₳</span>
             </div>
             <button className="btn-soviet px-8 py-4 text-base inline-flex items-center justify-center gap-2 self-center" onClick={onRestart}>
-              <RotateCcw size={18} /> В главное меню
+              <PixelGlyph name="restart" size={18} /> В главное меню
             </button>
             <div className="text-[10px] uppercase tracking-widest text-[var(--color-ash)] mt-4">
               очередь и нарушители генерируются заново — следующая служба будет другой
@@ -313,7 +313,7 @@ export function GameOverScreen({
           className="btn-soviet px-8 py-4 text-base inline-flex items-center gap-2"
           onClick={onRestart}
         >
-          <RotateCcw size={18} /> В главное меню
+          <PixelGlyph name="restart" size={18} /> В главное меню
         </motion.button>
       </motion.div>
     </div>
