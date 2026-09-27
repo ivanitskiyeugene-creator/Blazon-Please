@@ -2,6 +2,9 @@ name: Build Windows EXE
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "exe-*"
 
 permissions:
   contents: read
