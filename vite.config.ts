@@ -10,10 +10,17 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "./",
   plugins: [react(), tailwindcss(), viteSingleFile()],
+  clearScreen: false,
   server: {
-    host: "0.0.0.0",
+    host: process.env.TAURI_DEV_HOST || "0.0.0.0",
+    port: 5173,
+    strictPort: true,
     allowedHosts: true,
+    watch: {
+      ignored: ["**/src-tauri/**", "**/UnityProject/**"],
+    },
   },
   resolve: {
     alias: {

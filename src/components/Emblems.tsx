@@ -59,7 +59,7 @@ export function PartyEmblem({
       {/* PNG вписан в круг через clipPath, зеркалим для КПТА */}
       <g clipPath={`url(#${uid})`}>
         <image
-          href="/images/kpta_emblem.png"
+          href="images/kpta_emblem.png"
           x="5" y="5"
           width="90" height="90"
           preserveAspectRatio="xMidYMid meet"
