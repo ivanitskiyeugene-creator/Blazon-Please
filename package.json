@@ -1,7 +1,7 @@
 {
   "name": "blazon-please",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,9 +12,6 @@
     "desktop:info": "tauri info"
   },
   "dependencies": {
-    "@fontsource/press-start-2p": "^5.3.0",
-    "@fontsource/pt-mono": "^5.3.0",
-    "@fontsource/russo-one": "^5.3.0",
     "clsx": "2.1.1",
     "framer-motion": "^13.4.4",
     "lucide-react": "^1.48.0",

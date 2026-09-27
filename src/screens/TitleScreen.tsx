@@ -174,23 +174,14 @@ export function TitleScreen({
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.7 }}
-            className="relative frame hidden lg:block"
+            className="relative frame block w-full max-w-[520px] mx-auto lg:max-w-none"
           >
-            <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden bg-[#171716]">
               <img
-                src="images/poster-pixel.png"
-                alt="Пиксельный плакат АССР: инспектор смотрит на реактор за границей"
-                className="pixel-art w-full h-[500px] object-cover"
+                src="images/title-poster-pixel.png"
+                alt="Плакат АССР: пограничник на вышке, атом и шлагбаум"
+                className="pixel-art block w-full h-auto max-h-[600px] object-contain"
               />
-              <div className="poster-halftone absolute inset-0" />
-              <div className="absolute bottom-0 inset-x-0 bg-[var(--color-coal)] border-t-2 border-[var(--color-line)] px-4 py-3">
-                <div className="pixel-text text-[8px] text-[var(--color-gold)] leading-relaxed">
-                  «АТОМ СМОТРИТ НА ГРАНИЦУ. ГРАНИЦА — ЭТО ТЫ.»
-                </div>
-                <div className="text-[10px] text-[var(--color-ash)] mt-1 uppercase tracking-widest">
-                  плакат // типография министерства
-                </div>
-              </div>
             </div>
             <span className="bolt" style={{ top: 6, left: 6 }} />
             <span className="bolt" style={{ top: 6, right: 6 }} />

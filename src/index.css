@@ -1,12 +1,19 @@
-@import "@fontsource/press-start-2p";
-@import "@fontsource/pt-mono";
-@import "@fontsource/russo-one";
 @import "tailwindcss";
+@import "./styles/stamp-machines.css";
+
+/* PixelPlay использовался в меню, титрах и служебных табличках Papers, Please. */
+@font-face {
+  font-family: "PixelPlay";
+  src: url("/fonts/pixelplay.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 
 @theme {
-  --font-head: "Russo One", sans-serif;
-  --font-pixel: "Press Start 2P", monospace;
-  --font-mono: "PT Mono", monospace;
+  --font-head: "PixelPlay", monospace;
+  --font-pixel: "PixelPlay", monospace;
+  --font-mono: "PixelPlay", monospace;
 
   --color-ink: #14100d;
   --color-coal: #1d1815;
@@ -401,7 +408,7 @@ body {
   --color-blood: #551410;
   --color-gold: #d2aa38;
   --color-gold2: #96711f;
-  --font-head: "Press Start 2P", monospace;
+  --font-head: "PixelPlay", monospace;
 }
 
 * {

@@ -1,0 +1,12 @@
+PixelPlay Regular
+
+Copyright © 2010 Shevchuk (Aleksander Shevchuk).
+Designed with FontStruct.
+
+PixelPlay is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported license:
+https://creativecommons.org/licenses/by-sa/3.0/
+
+Original FontStruct page:
+https://fontstruct.com/fontstructions/show/338286/pixelplay
+
+The font file is redistributed unmodified. PixelPlay is one of the typefaces credited by Papers, Please; Papers, Please and its visual identity are not part of this repository and are not covered by this font license.

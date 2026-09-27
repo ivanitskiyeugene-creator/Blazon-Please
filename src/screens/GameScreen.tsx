@@ -215,32 +215,40 @@ export function GameScreen({
   const toggleDeskDoc = (id: DocId) => {
     const onDesk = desk.some((d) => d.id === id);
     if (stage === "stamped") {
-      // возврат документа посетителю
+      // Книжка и газета принадлежат инспектору: их просто убираем со стола.
+      if (id === "book" || id === "news") {
+        setDesk((v) => v.filter((d) => d.id !== id));
+        sfx.paper();
+        return;
+      }
+
+      // После штампа паспорт, разрешение и карточка уходят обратно посетителю.
+      const remainingDocs = trayDocs.filter((x) => x !== id);
       setDesk((v) => v.filter((d) => d.id !== id));
-      setTrayDocs((v) => {
-        const nv = v.filter((x) => x !== id);
-        if (nv.length === 0) {
-          // Все документы возвращены — принимаем решение по ПОСЛЕДНЕМУ штампу
-          if (stampMarks.length > 0) {
-            const lastStamp = stampMarks[stampMarks.length - 1].type;
-            decide(lastStamp);
-          }
-          later(800, () => {
-            setStage("exit");
-            sfx.walk();
-            later(750, () => {
-              setEntrantVisible(false);
-              setNeedCall(true);
-              setI((q) => q + 1);
-            });
+      setTrayDocs(remainingDocs);
+      sfx.paper();
+
+      if (remainingDocs.length === 0) {
+        // Все документы возвращены — принимаем решение по ПОСЛЕДНЕМУ штампу.
+        const lastStamp = stampMarks.at(-1)?.type;
+        if (lastStamp) decide(lastStamp);
+        later(800, () => {
+          setStage("exit");
+          sfx.walk();
+          later(750, () => {
+            setEntrantVisible(false);
+            setNeedCall(true);
+            setI((q) => q + 1);
           });
-        }
-        return nv;
-      });
+        });
+      }
       return;
     }
     if (onDesk) {
-      bringToFront(id);
+      // Кнопка в лотке и крестик на документе возвращают его со стола.
+      // Поднять документ наверх можно обычным нажатием/перетаскиванием за него.
+      setDesk((v) => v.filter((d) => d.id !== id));
+      sfx.paper();
       return;
     }
     const pos: Record<string, { x: number; y: number }> = {
@@ -329,9 +337,11 @@ export function GameScreen({
   };
 
   const decide = (d: Decision, opts?: { bribe?: boolean }) => {
-    if (stage !== "review" || !entrant) return;
+    if ((stage !== "review" && stage !== "stamped") || !entrant) return;
     const e0 = entrant;
-    sfx.stamp();
+    // При обычной проверке звук уже сыграл в момент физического удара штампа.
+    // Отдельно озвучиваем только решение через взятку без кассеты.
+    if (stage === "review") sfx.stamp();
     setStamped(d);
     setStage("stamped");
     setJournal((j) => [{ name: e0.passport.name, d }, ...j].slice(0, 12));
@@ -735,13 +745,13 @@ export function GameScreen({
                 </div>
               )}
 
-              {/* ШТАМПЫ — выезжают снизу */}
+              {/* ШТАМПЫ — две закреплённые кассеты выезжают с боков */}
               <StampPad
                 open={stampOpen}
                 locked={!canStamp}
                 hasEvidence={hasEvidence}
                 detainUnlocked={detainUnlocked}
-                                onStamp={(type, px, py) => {
+                onStamp={(type, px, py) => {
                   const passNode = nodes.current["passport"];
                   if (!passNode) {
                     sfx.bad();
@@ -760,8 +770,10 @@ export function GameScreen({
                   const x = Math.max(24, Math.min(localX, 196));
                   const y = Math.max(18, Math.min(localY, 140));
                   setStampMarks((prev) => [...prev, { type, x, y }]);
+                  setStamped(type);
+                  setStage("stamped");
                   doShake(1);
-                  // НЕ вызываем decide — решение принимается при возврате документов
+                  // Итог записывается только после возврата всех документов.
                 }}
               />
 
@@ -773,7 +785,7 @@ export function GameScreen({
                   <DraggableDoc
                     key={`${d.id}-${i}`}
                     x={d.x} y={d.y} z={d.z}
-                    label={DOC_LABEL[d.id]} showClose={d.id === "book" || d.id === "news"} onClose={() => toggleDeskDoc(d.id)}
+                    label={DOC_LABEL[d.id]} showClose onClose={() => toggleDeskDoc(d.id)}
                     containerRef={deskRef}
                     onFront={() => bringToFront(d.id)}
                     onMove={(nx, ny) =>
@@ -867,7 +879,7 @@ export function GameScreen({
                         <span className="pixel-icon">{docIcon(id)}</span>
                         <div className="text-left">
                           <div className="text-[9px] font-bold text-[#cbb89a] leading-tight">{DOC_LABEL[id].toUpperCase()}</div>
-                          <div className="text-[7px] text-[#8a7e74] uppercase">{desk.some(d => d.id === id) ? "на столе" : "в лотке"}</div>
+                          <div className="text-[7px] text-[#8a7e74] uppercase">{desk.some(d => d.id === id) ? "убрать со стола" : "выложить на стол"}</div>
                         </div>
                       </button>
                     ))}

@@ -201,47 +201,68 @@ export function EndingScreen({
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative max-w-2xl w-full panel p-7 sm:p-10 text-center"
+        className="relative max-w-5xl w-full panel p-5 sm:p-7 text-center"
       >
         <span className="bolt" style={{ top: 6, left: 6 }} />
         <span className="bolt" style={{ top: 6, right: 6 }} />
         <span className="bolt" style={{ bottom: 6, left: 6 }} />
         <span className="bolt" style={{ bottom: 6, right: 6 }} />
 
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3, type: "spring" }} className="inline-block mb-5">
-          <AtomEmblem size={72} />
-        </motion.div>
+        <div className="grid md:grid-cols-[minmax(230px,0.78fr)_1.22fr] gap-6 items-stretch">
+          <motion.figure
+            initial={{ opacity: 0, x: -18 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="relative overflow-hidden border-4 border-[#0b0907] outline outline-2 outline-[var(--color-line)] bg-[#0b0907] min-h-[260px] md:min-h-[500px]"
+          >
+            <img
+              src="images/ending-poster-pixel.png"
+              alt="Инспектор КПП-7 смотрит на послевоенный атомный комплекс"
+              className="pixel-art absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="poster-halftone absolute inset-0" />
+            <figcaption className="absolute inset-x-0 bottom-0 border-t-2 border-[#0b0907] bg-[#17130fee] px-3 py-2 text-[8px] uppercase tracking-wider text-[var(--color-gold)]">
+              пост не отпускает даже после последней смены
+            </figcaption>
+          </motion.figure>
 
-        <div className="pixel-text text-[9px] text-[var(--color-ash)] mb-3 uppercase">итог службы на кпп-7</div>
-        <h1
-          className="font-head text-3xl sm:text-5xl uppercase fringe mb-6"
-          style={{ fontFamily: "var(--font-head)", color: ending.tone }}
-        >
-          {ending.title}
-        </h1>
-        <div className="space-y-3 text-left text-sm sm:text-base leading-relaxed text-[var(--color-bone)] mb-8">
-          {ending.lines.map((l, k) => (
-            <motion.p key={k} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + k * 0.35 }}>
-              {l}
-            </motion.p>
-          ))}
-        </div>
-        <div className="flex justify-center gap-5 text-[11px] uppercase tracking-widest text-[var(--color-ash)] mb-7 flex-wrap">
-          <span>верных: {stats.correct}</span>
-          <span>протоколов: {stats.errors}</span>
-          {stats.evidence !== undefined && <span>доказано: {stats.evidence}</span>}
-          {stats.detains !== undefined && (
-            <span className="inline-flex items-center gap-1">
-              <Siren size={11} /> задержано: {stats.detains}
-            </span>
-          )}
-          <span>на руках: {stats.credits} ₳</span>
-        </div>
-        <button className="btn-soviet px-8 py-4 text-base inline-flex items-center gap-2" onClick={onRestart}>
-          <RotateCcw size={18} /> В главное меню
-        </button>
-        <div className="text-[10px] uppercase tracking-widest text-[var(--color-ash)] mt-4">
-          очередь и нарушители генерируются заново — следующая служба будет другой
+          <div className="flex flex-col justify-center py-2 sm:px-2">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3, type: "spring" }} className="inline-block self-center mb-4">
+              <AtomEmblem size={72} />
+            </motion.div>
+
+            <div className="pixel-text text-[9px] text-[var(--color-ash)] mb-3 uppercase">итог службы на кпп-7</div>
+            <h1
+              className="font-head text-3xl sm:text-5xl uppercase fringe mb-6"
+              style={{ fontFamily: "var(--font-head)", color: ending.tone }}
+            >
+              {ending.title}
+            </h1>
+            <div className="space-y-3 text-left text-sm sm:text-base leading-relaxed text-[var(--color-bone)] mb-8">
+              {ending.lines.map((l, k) => (
+                <motion.p key={k} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + k * 0.35 }}>
+                  {l}
+                </motion.p>
+              ))}
+            </div>
+            <div className="flex justify-center gap-5 text-[11px] uppercase tracking-widest text-[var(--color-ash)] mb-7 flex-wrap">
+              <span>верных: {stats.correct}</span>
+              <span>протоколов: {stats.errors}</span>
+              {stats.evidence !== undefined && <span>доказано: {stats.evidence}</span>}
+              {stats.detains !== undefined && (
+                <span className="inline-flex items-center gap-1">
+                  <Siren size={11} /> задержано: {stats.detains}
+                </span>
+              )}
+              <span>на руках: {stats.credits} ₳</span>
+            </div>
+            <button className="btn-soviet px-8 py-4 text-base inline-flex items-center justify-center gap-2 self-center" onClick={onRestart}>
+              <RotateCcw size={18} /> В главное меню
+            </button>
+            <div className="text-[10px] uppercase tracking-widest text-[var(--color-ash)] mt-4">
+              очередь и нарушители генерируются заново — следующая служба будет другой
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>

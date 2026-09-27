@@ -3,127 +3,146 @@ import { useEffect, useState } from "react";
 import { sfx } from "../audio";
 import type { Decision } from "../game/types";
 
-// ── РЫЧАГ: справа, тянуть вниз ─────────────────────
+// ── РЫЧАГ: длинная железная рукоять, которую надо протянуть вниз ────────────
 export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v: boolean) => void }) {
-  const y = useMotionValue(active ? 44 : 0);
+  const travel = 62;
+  const y = useMotionValue(active ? travel : 0);
 
   useEffect(() => {
-    y.set(active ? 44 : 0);
+    y.set(active ? travel : 0);
   }, [active, y]);
 
+  const settle = () => {
+    const next = y.get() > travel / 2;
+    y.set(next ? travel : 0);
+    if (next !== active) {
+      sfx.ui();
+      onToggle(next);
+    }
+  };
+
   return (
-    <div style={{
-      position: "absolute", right: 12, top: 10, zIndex: 100,
-      width: 44, height: 110,
-      display: "flex", flexDirection: "column", alignItems: "center",
-    }}>
-      {/* Крепление */}
-      <div style={{
-        width: 38, height: 18,
-        background: "#302720",
-        border: "2px solid #1a1410",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        gap: 12,
-      }}>
-        <div style={{ width: 5, height: 5, background: "#1a1410", borderRadius: 0 }} />
-        <div style={{ width: 5, height: 5, background: "#1a1410", borderRadius: 0 }} />
+    <div className="stamp-lever" aria-label="Рычаг кассет со штампами">
+      <div className="stamp-lever__mount">
+        <i />
+        <span>КАССЕТЫ</span>
+        <i />
       </div>
 
-      {/* Паз */}
-      <div style={{
-        width: 12, height: 56,
-        background: "#120e0a",
-        position: "relative",
-        marginTop: -2,
-      }}>
-        {/* Рукоятка */}
+      <div className="stamp-lever__slot">
+        <div className="stamp-lever__groove" />
         <motion.div
           drag="y"
-          dragConstraints={{ top: 0, bottom: 44 }}
-          dragElastic={0.08}
+          dragConstraints={{ top: 0, bottom: travel }}
+          dragElastic={0.04}
           dragMomentum={false}
-          style={{
-            y,
-            position: "absolute",
-            left: "50%",
-            transform: "translateX(-50%)",
-            cursor: "grab",
-            zIndex: 2,
-            touchAction: "none",
-          }}
-          onDragEnd={() => {
-            const val = y.get();
-            if (val > 22) {
-              y.set(44);
-              if (!active) onToggle(true);
-            } else {
-              y.set(0);
-              if (active) onToggle(false);
+          style={{ y }}
+          className="stamp-lever__handle"
+          role="switch"
+          aria-checked={active}
+          tabIndex={0}
+          onDragEnd={settle}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              y.set(active ? 0 : travel);
+              sfx.ui();
+              onToggle(!active);
             }
           }}
         >
-          {/* Стержень */}
-          <div style={{
-            width: 8, height: 28,
-            background: "#756658",
-            border: "1px solid #3a322a",
-            margin: "0 auto",
-          }} />
-          {/* Шар */}
-          <div style={{
-            width: 28, height: 28,
-            borderRadius: 0,
-            background: "#9a1d18",
-            border: "3px solid #4f0c0a",
-            margin: "-4px auto 0",
-            boxShadow: "4px 4px 0 #120b08",
-          }} />
+          <div className="stamp-lever__stem">
+            <i />
+          </div>
+          <div className="stamp-lever__grip">
+            <i />
+          </div>
         </motion.div>
       </div>
 
-      {/* Метка */}
-      <div style={{
-        marginTop: 4, fontSize: 7,
-        fontFamily: "var(--font-pixel)",
-        color: active ? "#e8c34a" : "#4a4038",
-        textTransform: "uppercase", letterSpacing: "0.1em",
-        textAlign: "center", pointerEvents: "none",
-      }}>
-        {active ? "ON" : "OFF"}
+      <div className={`stamp-lever__state ${active ? "is-open" : ""}`}>
+        {active ? "ВЫДВИНУТО" : "ЗАКРЫТО"}
       </div>
     </div>
   );
 }
 
-// ── ШТАМП (грубый индустриальный) ───────────────────
-function StampObj({ color, dark, textColor, label, pressed }:
-  { color: string; dark: string; textColor: string; label: string; pressed: boolean }) {
+// ── ШТАМП: сам блок закреплён внутри металлической кассеты ─────────────────
+function StampObj({ color, dark, textColor, label, pressed }: {
+  color: string;
+  dark: string;
+  textColor: string;
+  label: string;
+  pressed: boolean;
+}) {
+  const dy = pressed ? 9 : 0;
   return (
-    <svg width="100" height="100" viewBox="0 0 100 100" style={{ display: "block" }}>
-      {/* Тень */}
-      <rect x="14" y="94" width="72" height="5" fill="rgba(0,0,0,0.62)" />
-      {/* Подошва */}
-      <rect x="10" y="80" width="80" height="10" fill={dark} stroke="#0a0806" strokeWidth="2" />
-      {/* Корпус */}
-      <rect x="14" y="52" width="72" height="32" fill={color} stroke="#0a0806" strokeWidth="2" />
-      {/* Надпись */}
-      <text x="50" y="72" textAnchor="middle" dominantBaseline="middle"
-        fill={textColor} fontSize="10" fontFamily="var(--font-pixel)" fontWeight="bold">{label}</text>
-      {/* Ручка */}
-      <rect x="42" y={pressed ? 22 : 10} width="16" height={pressed ? 32 : 44}
-        fill="#756658" stroke="#30271f" strokeWidth="2" />
-      <rect x="45" y={pressed ? 24 : 12} width="4" height={pressed ? 28 : 40}
-        fill="#9d8d78" />
-      <rect x="51" y={pressed ? 24 : 12} width="4" height={pressed ? 28 : 40}
-        fill="#55473b" />
-      {/* Шляпка */}
-      <rect x="30" y={pressed ? 15 : 3} width="40" height="14" fill="#7b6a59" stroke="#30271f" strokeWidth="2" />
-      <rect x="34" y={pressed ? 17 : 5} width="32" height="4" fill="#a3937d" />
+    <svg className="pixel-art" width="96" height="108" viewBox="0 0 96 108" shapeRendering="crispEdges" aria-hidden="true">
+      {/* направляющая соединяет штамп с верхней балкой кассеты */}
+      <rect x="39" y="0" width="18" height="57" fill="#221b16" />
+      <rect x="42" y="0" width="12" height="57" fill="#756658" />
+      <rect x="45" y="0" width="4" height="57" fill="#aa977c" />
+      <rect x="51" y="0" width="3" height="57" fill="#4b3e33" />
+
+      <g transform={`translate(0 ${dy})`}>
+        {/* тяжёлая шляпка */}
+        <rect x="25" y="16" width="46" height="15" fill="#2a211b" />
+        <rect x="22" y="13" width="46" height="14" fill="#766653" stroke="#17110d" strokeWidth="3" />
+        <rect x="27" y="16" width="36" height="4" fill="#ac987a" />
+        {/* корпус */}
+        <rect x="13" y="46" width="70" height="38" fill={dark} stroke="#0a0806" strokeWidth="3" />
+        <rect x="17" y="49" width="62" height="31" fill={color} />
+        <rect x="17" y="49" width="62" height="5" fill={textColor} opacity="0.25" />
+        <text
+          x="48"
+          y="68"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={textColor}
+          fontSize="11"
+          fontFamily="var(--font-pixel)"
+        >
+          {label}
+        </text>
+        {/* печатная подошва */}
+        <rect x="8" y="82" width="80" height="12" fill="#17110d" />
+        <rect x="12" y="82" width="72" height="7" fill={dark} />
+        <rect x="17" y="94" width="62" height="5" fill="#080604" opacity="0.72" />
+      </g>
     </svg>
   );
 }
 
-// ── ПАНЕЛЬ ───────────────────────────────────────────
+interface StampButtonProps {
+  type: Decision;
+  label: string;
+  color: string;
+  dark: string;
+  textColor: string;
+  pressed: boolean;
+  disabled: boolean;
+  onHit: (type: Decision, event: React.PointerEvent<HTMLButtonElement>) => void;
+}
+
+function StampButton({ type, label, color, dark, textColor, pressed, disabled, onHit }: StampButtonProps) {
+  return (
+    <button
+      type="button"
+      className={`stamp-machine ${pressed ? "is-pressing" : ""}`}
+      disabled={disabled}
+      aria-label={`Поставить штамп «${label}»`}
+      onPointerDown={(event) => onHit(type, event)}
+    >
+      <span className="stamp-machine__beam"><i /><i /></span>
+      <span className="stamp-machine__support stamp-machine__support--left" />
+      <span className="stamp-machine__support stamp-machine__support--right" />
+      <span className="stamp-machine__body">
+        <StampObj color={color} dark={dark} textColor={textColor} label={label} pressed={pressed} />
+      </span>
+    </button>
+  );
+}
+
 interface Props {
   open: boolean;
   locked: boolean;
@@ -135,58 +154,100 @@ interface Props {
 export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }: Props) {
   const [pressing, setPressing] = useState<Decision | null>(null);
 
-  const hit = (type: Decision, e: React.MouseEvent) => {
-    if (locked) return;
-    if (type === "DETAIN" && !hasEvidence) return;
+  const hit = (type: Decision, event: React.PointerEvent<HTMLButtonElement>) => {
+    if (locked || (type === "DETAIN" && !hasEvidence)) return;
+    event.preventDefault();
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const strikeX = rect.left + rect.width / 2;
+    const strikeY = rect.bottom - 11;
     setPressing(type);
-    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const sx = r.left + r.width / 2;
-    const sy = r.bottom - 8;
-    setTimeout(() => {
+    window.setTimeout(() => {
       sfx.stamp();
-      onStamp(type, sx, sy);
+      onStamp(type, strikeX, strikeY);
       setPressing(null);
-    }, 90);
+    }, 100);
   };
 
-  if (!open) return null;
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ y: -120, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -120, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 26 }}
-          style={{
-            position: "absolute",
-            top: 16, left: 0, right: 60,
-            margin: "0 auto",
-            width: "fit-content",
-            zIndex: 65,
-            display: "flex", alignItems: "flex-end", gap: 20,
-            pointerEvents: "none",
-          }}
-        >
-          <div style={{ pointerEvents: "auto", cursor: locked ? "not-allowed" : "pointer" }}
-            onMouseDown={(e) => hit("DENY", e)}>
-            <StampObj color="#6a1010" dark="#3a0808" textColor="#ff9090" label="ОТКАЗ" pressed={pressing === "DENY"} />
-          </div>
+    <div className="stamp-drawer-layer" aria-hidden={!open}>
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              key="left-stamp-cassette"
+              className="stamp-rig stamp-rig--left"
+              initial={{ x: "-110%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-110%" }}
+              transition={{ type: "spring", stiffness: 250, damping: 28 }}
+            >
+              <div className="stamp-rig__scaler">
+                <div className="stamp-rig__rail"><i /><i /><i /></div>
+                <div className="stamp-rig__shell">
+                  <div className="stamp-rig__caption">ЛЕВАЯ КАССЕТА // ОТКАЗ</div>
+                  <div className="stamp-rig__machines">
+                    <StampButton
+                      type="DENY"
+                      label="ОТКАЗ"
+                      color="#741713"
+                      dark="#3b0907"
+                      textColor="#f0a18e"
+                      pressed={pressing === "DENY"}
+                      disabled={locked}
+                      onHit={hit}
+                    />
+                    {detainUnlocked && (
+                      <StampButton
+                        type="DETAIN"
+                        label="АРЕСТ"
+                        color="#605514"
+                        dark="#302806"
+                        textColor="#e3c94c"
+                        pressed={pressing === "DETAIN"}
+                        disabled={locked || !hasEvidence}
+                        onHit={hit}
+                      />
+                    )}
+                  </div>
+                  <span className="stamp-rig__bolt stamp-rig__bolt--a" />
+                  <span className="stamp-rig__bolt stamp-rig__bolt--b" />
+                </div>
+              </div>
+            </motion.div>
 
-          {detainUnlocked && (
-            <div style={{ pointerEvents: hasEvidence && !locked ? "auto" : "none", opacity: hasEvidence ? 1 : 0.35, cursor: "pointer" }}
-              onMouseDown={(e) => hit("DETAIN", e)}>
-              <StampObj color="#504808" dark="#282204" textColor="#d8b840" label="АРЕСТ" pressed={pressing === "DETAIN"} />
-            </div>
-          )}
-
-          <div style={{ pointerEvents: "auto", cursor: locked ? "not-allowed" : "pointer" }}
-            onMouseDown={(e) => hit("ADMIT", e)}>
-            <StampObj color="#105010" dark="#083008" textColor="#90ff90" label="ВХОД" pressed={pressing === "ADMIT"} />
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <motion.div
+              key="right-stamp-cassette"
+              className="stamp-rig stamp-rig--right"
+              initial={{ x: "110%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "110%" }}
+              transition={{ type: "spring", stiffness: 250, damping: 28 }}
+            >
+              <div className="stamp-rig__scaler">
+                <div className="stamp-rig__rail"><i /><i /><i /></div>
+                <div className="stamp-rig__shell">
+                  <div className="stamp-rig__caption">ПРАВАЯ КАССЕТА // ВХОД</div>
+                  <div className="stamp-rig__machines">
+                    <StampButton
+                      type="ADMIT"
+                      label="ВХОД"
+                      color="#24551f"
+                      dark="#0d2d0b"
+                      textColor="#a6d887"
+                      pressed={pressing === "ADMIT"}
+                      disabled={locked}
+                      onHit={hit}
+                    />
+                  </div>
+                  <span className="stamp-rig__bolt stamp-rig__bolt--a" />
+                  <span className="stamp-rig__bolt stamp-rig__bolt--b" />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

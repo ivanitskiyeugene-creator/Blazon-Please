@@ -61,3 +61,7 @@ npm run desktop:build
 | `npm run desktop:info` | Проверка окружения Tauri |
 
 Сохранение игры остаётся локальным и работает через `localStorage` внутри системного WebView. В дальнейшем этот же фронтенд можно использовать для Android-сборки Tauri 2.
+
+## Шрифт
+
+Интерфейс использует **PixelPlay** — один из шрифтов, указанных в титрах *Papers, Please*. Автор: Aleksander Shevchuk, 2010. Лицензия: CC BY-SA 3.0. Полное уведомление находится в `public/fonts/PIXELPLAY-LICENSE.txt`.
