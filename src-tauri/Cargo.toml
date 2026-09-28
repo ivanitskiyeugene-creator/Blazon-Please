@@ -7,7 +7,7 @@ edition = "2024"
 rust-version = "1.90"
 
 [lib]
-name = "blazon_please_lib"
+name = "blazon_please"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
