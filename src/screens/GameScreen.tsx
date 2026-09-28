@@ -13,7 +13,7 @@ import { BookDoc, NewsDoc } from "../components/ReferenceDocs";
 import { Person } from "../components/Person";
 import { Rulebook } from "../components/Rulebook";
 import { DraggableDoc } from "../components/DraggableDoc";
-import { StampPad, StampLever } from "../components/StampPad";
+import { StampPad } from "../components/StampPad";
 import type { InvItem } from "../game/types";
 
 type Stage = "enter" | "review" | "stamped" | "exit";
@@ -226,14 +226,19 @@ export function GameScreen({
       sfx.paper();
       return;
     }
+    // Верх стола занимает кассета с машинами — документы кладём ниже неё.
     const pos: Record<string, { x: number; y: number }> = {
-      passport: { x: 18, y: 28 },
-      permit: { x: 210, y: 36 },
-      party: { x: 226, y: 190 },
-      book: { x: 520, y: 26 },
-      news: { x: 520, y: 220 },
+      passport: { x: 18, y: 226 },
+      permit: { x: 252, y: 238 },
+      party: { x: 236, y: 398 },
+      book: { x: 540, y: 226 },
+      news: { x: 540, y: 440 },
     };
-    setDesk((v) => [...v, { id, ...(pos[id] || { x: 18, y: 28 }), z: ++topZ.current }]);
+    const base = pos[id] || { x: 18, y: 226 };
+    const maxY = Math.max(120, (deskRef.current?.clientHeight ?? 500) - 190);
+    const maxX = Math.max(60, (deskRef.current?.clientWidth ?? 700) - 280);
+    const spot = { x: Math.min(base.x, maxX), y: Math.min(base.y, maxY) };
+    setDesk((v) => [...v, { id, ...spot, z: ++topZ.current }]);
   };
 
   const bringToFront = (id: DocId) =>
@@ -439,13 +444,14 @@ export function GameScreen({
 
   return (
     <div className={`relative min-h-screen flex flex-col ${shaking ? "shake" : ""}`} style={shaking ? { transform: `translate(${Math.random()*shakeIntensity*10-5}px, ${Math.random()*shakeIntensity*10-5}px)` } : {}}>
-      {/* ШТАМПЫ — толстая несущая балка ровно по центру экрана;
-          машины прикручены к ней, половины кассеты съезжаются с боков */}
+      {/* ШТАМПЫ — кассета прикручена к столу: балка лежит на столешнице,
+          машины раскладываются из неё, рычаг — на правом конце балки */}
       <StampPad
         open={stampOpen}
         locked={!canStamp}
         hasEvidence={hasEvidence}
         detainUnlocked={detainUnlocked}
+        onToggleOpen={(v) => setStampOpen(v)}
         onStamp={(type, px, py) => {
           const passNode = nodes.current["passport"];
           if (!passNode) {
@@ -745,11 +751,6 @@ export function GameScreen({
                 proven={proven}
                 onSel={onSel}
               />
-            </div>
-
-            {/* РЫЧАГ — над столом, снаружи overflow-hidden */}
-            <div className="relative flex justify-center" style={{ height: 60, zIndex: 90 }}>
-              <StampLever active={stampOpen} onToggle={(v) => setStampOpen(v)} />
             </div>
 
             {/* ПОВЕРХНОСТЬ СТОЛА */}

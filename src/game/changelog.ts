@@ -6,9 +6,27 @@ export interface ChangeEntry {
   items: { ru: string[]; en: string[] };
 }
 
-export const APP_VERSION = "0.7.0";
+export const APP_VERSION = "0.8.0";
 
 export const CHANGELOG: ChangeEntry[] = [
+  {
+    version: "0.8.0",
+    date: { ru: "кассета на столе", en: "the cassette on the desk" },
+    tag: { ru: "ПРИКРУЧЕНО К СТОЛУ", en: "BOLTED TO THE DESK" },
+    tone: "#d2aa38",
+    items: {
+      ru: [
+        "Штемпельная кассета теперь смонтирована на самом столе инспектора: толстая балка лежит на столешнице во всю её ширину и притянута ножками с болтами, видна всегда.",
+        "Машины больше не залетают с краёв экрана — они раскладываются прямо из балки и вывешиваются под ней; рычаг перекочевал на правый конец балки.",
+        "Документы выкладываются на стол ниже кассеты, чтобы машины не заслоняли бумаги.",
+      ],
+      en: [
+        "The stamp cassette is now mounted on the inspector's desk itself: a thick beam lies across the full width of the desktop, tied down with bolted feet, always visible.",
+        "The machines no longer fly in from the edges of the screen — they unfold straight out of the beam and hang beneath it; the lever moved to the beam's right end.",
+        "Documents are now laid out on the desk below the cassette so the machines never cover the papers.",
+      ],
+    },
+  },
   {
     version: "0.7.0",
     date: { ru: "приказ на двух языках", en: "a bilingual order" },

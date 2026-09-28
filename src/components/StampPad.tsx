@@ -6,12 +6,8 @@ import { useI18n } from "../i18n";
 
 /* Толщина несущей балки — как сам штамп (104px). */
 export const BEAM_H = 104;
-/* Машины заходят на балку сверху на 26px — прикручены внахлёст. */
-const MOUNT_OVERLAP = 26;
-/* Полная высота сборки: балка + машины минус нахлёст. */
-const UNIT_H = BEAM_H + 130 - MOUNT_OVERLAP;
 
-// ── РЫЧАГ: длинная железная рукоять, которую надо протянуть вниз ────────────
+// ── РЫЧАГ: длинная железная рукоять, прикреплённая к балке кассеты ─────────
 export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v: boolean) => void }) {
   const { t } = useI18n();
   const travel = 62;
@@ -155,57 +151,47 @@ function StampButton({ type, label, color, dark, textColor, pressed, disabled, o
   );
 }
 
-/** Толстая половина несущей балки: машины прикручены к ней намертво. */
-function BeamSlab({ side, plate }: { side: "left" | "right"; plate?: string }) {
-  return (
-    <div className={`stamp-unit__slab stamp-unit__slab--${side}`} aria-hidden="true">
-      <span className="stamp-unit__bolts">
-        <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
-      </span>
-      {plate && <span className="stamp-unit__plate">{plate}</span>}
-      {side === "right" && (
-        // стыковая накладка: когда половины сходятся, шов закрыт болтами
-        <span className="stamp-unit__splice">
-          <i /><i /><i /><i />
-        </span>
-      )}
-    </div>
-  );
-}
-
 interface Props {
   open: boolean;
   locked: boolean;
   hasEvidence: boolean;
   detainUnlocked: boolean;
+  onToggleOpen: (v: boolean) => void;
   onStamp: (type: Decision, strikeX: number, strikeY: number) => void;
 }
 
-export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }: Props) {
+export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOpen, onStamp }: Props) {
   const { t } = useI18n();
   const [pressing, setPressing] = useState<Decision | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
-  const [rigTop, setRigTop] = useState<number | null>(null);
-  const [rigLeft, setRigLeft] = useState<number | null>(null);
+  const [rig, setRig] = useState<{ left: number; top: number; width: number } | null>(null);
 
-  // Балка с машинами стоит ровно на середине ЭКРАНА — по центру буквально.
-  // Слой абсолютный внутри корня игры, поэтому центр вьюпорта считаем сами.
+  // Кассета прикручена к СТОЛУ: балка лежит на столешнице, её ширина — ширина
+  // столешницы. Позицию считаем от .desk-surface и держим актуальной
+  // (открытие книжки меняет высоту стола — ловим ResizeObserver-ом).
   useLayoutEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+    let desk: Element | null = null;
     const place = () => {
-      const layer = layerRef.current;
-      if (!layer) return;
-      const rect = layer.getBoundingClientRect();
-      const cx = window.innerWidth / 2 - rect.left;
-      const cy = window.innerHeight / 2 - rect.top;
-      setRigLeft(cx);
-      setRigTop(cy - UNIT_H / 2); // вся сборка (балка + машины) серединой на центр
+      desk = document.querySelector(".desk-surface");
+      if (!desk) return;
+      const lr = layer.getBoundingClientRect();
+      const dr = desk.getBoundingClientRect();
+      setRig({ left: dr.left - lr.left, top: dr.top - lr.top, width: dr.width });
     };
     place();
     window.addEventListener("resize", place);
     window.addEventListener("scroll", place, true);
+    let ro: ResizeObserver | undefined;
+    if (desk && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(place);
+      ro.observe(desk);
+    }
     return () => {
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
+      ro?.disconnect();
     };
   }, []);
 
@@ -224,29 +210,36 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
     }, 100);
   };
 
-  // Половины кассеты въезжают с боков вместе со своими кусками толстой балки.
-  const slide = typeof window === "undefined" ? 1200 : window.innerWidth + 420;
-  const spring = { type: "spring", stiffness: 200, damping: 26 } as const;
+  // Машины не прилетают с краёв экрана: они раскладываются из самой балки.
+  const spring = { type: "spring", stiffness: 200, damping: 24 } as const;
 
   return (
     <div className="stamp-drawer-layer" ref={layerRef} aria-hidden={!open}>
-      <AnimatePresence>
-        {open && (
-          <div
-            className="stamp-rig"
-            style={{ left: rigLeft ?? undefined, top: rigTop ?? undefined }}
-          >
-            <div className="stamp-rig__scaler">
-              <div className="stamp-rig__row">
-                <motion.div
-                  className="stamp-unit stamp-unit--left"
-                  initial={{ x: -slide }}
-                  animate={{ x: 0 }}
-                  exit={{ x: -slide }}
-                  transition={spring}
-                >
-                  <BeamSlab side="left" plate={t.ui.beamPlate} />
-                  <div className="stamp-unit__machines">
+      {rig && (
+        <div className="stamp-rig" style={{ left: rig.left, top: rig.top, width: rig.width }}>
+          {/* Несущая балка на столешнице — прикручена к столу, видна всегда */}
+          <div className="stamp-beam" aria-hidden="true">
+            <span className="stamp-beam__bolts">
+              <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
+            </span>
+            <span className="stamp-beam__plate">{t.ui.beamPlate}</span>
+            <span className="stamp-beam__foot stamp-beam__foot--left"><i /><i /></span>
+            <span className="stamp-beam__foot stamp-beam__foot--right"><i /><i /></span>
+          </div>
+
+          {/* Поезд машин: складывается в балку и вывешивается из-под неё */}
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                key="stamp-train"
+                className="stamp-train"
+                initial={{ x: "-50%", y: -14, rotateX: -90, opacity: 0 }}
+                animate={{ x: "-50%", y: 0, rotateX: 0, opacity: 1 }}
+                exit={{ x: "-50%", y: -14, rotateX: -90, opacity: 0, transition: { duration: 0.38 } }}
+                transition={spring}
+              >
+                <div className="stamp-train__scaler">
+                  <div className="stamp-train__machines">
                     <StampButton
                       type="DENY"
                       label={t.ui.stamps.DENY}
@@ -269,17 +262,6 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
                         onHit={hit}
                       />
                     )}
-                  </div>
-                </motion.div>
-                <motion.div
-                  className="stamp-unit stamp-unit--right"
-                  initial={{ x: slide }}
-                  animate={{ x: 0 }}
-                  exit={{ x: slide }}
-                  transition={spring}
-                >
-                  <BeamSlab side="right" />
-                  <div className="stamp-unit__machines">
                     <StampButton
                       type="ADMIT"
                       label={t.ui.stamps.ADMIT}
@@ -291,12 +273,15 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
                       onHit={hit}
                     />
                   </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        )}
-      </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Рычаг — часть кассеты: прикреплён к правому концу балки */}
+          <StampLever active={open} onToggle={onToggleOpen} />
+        </div>
+      )}
     </div>
   );
 }
