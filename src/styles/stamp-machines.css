@@ -1,0 +1,329 @@
+/* Механика штампов: единая тяжёлая кассета опускается по центру экрана. */
+.stamp-lever {
+  position: absolute;
+  right: 8px;
+  top: -7px;
+  z-index: 100;
+  width: 72px;
+  height: 168px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(5px 5px 0 #090705);
+}
+
+.stamp-lever__mount {
+  width: 64px;
+  height: 24px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  color: #9b876e;
+  background: #41362d url("/images/metal-tile.png");
+  border: 3px solid #17110d;
+  box-shadow: inset 0 0 0 2px #695746;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+}
+
+.stamp-lever__mount i,
+.stamp-beam__bolts i,
+.stamp-machine__beam i {
+  width: 6px;
+  height: 6px;
+  display: block;
+  background: #17110d;
+  border: 1px solid #8d7860;
+}
+
+.stamp-lever__slot {
+  position: relative;
+  width: 20px;
+  height: 98px;
+  flex: 0 0 auto;
+  margin-top: -2px;
+  background: #0b0806;
+  border: 3px solid #33271f;
+  box-shadow: inset 0 0 0 2px #030201;
+}
+
+.stamp-lever__groove {
+  position: absolute;
+  inset: 5px 5px;
+  background: repeating-linear-gradient(to bottom, #16100c 0 8px, #080604 8px 12px);
+}
+
+.stamp-lever__handle {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  width: 40px;
+  margin-left: -20px;
+  cursor: ns-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.stamp-lever__handle:focus-visible .stamp-lever__grip {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.stamp-lever__stem {
+  position: relative;
+  width: 12px;
+  height: 62px;
+  margin: 0 auto;
+  background: #716150;
+  border: 2px solid #211912;
+  box-shadow: inset 3px 0 #a38e72, inset -3px 0 #46392e;
+}
+
+.stamp-lever__stem i {
+  position: absolute;
+  left: 2px;
+  top: 5px;
+  width: 2px;
+  height: 46px;
+  background: #bcaa8d;
+  opacity: 0.45;
+}
+
+.stamp-lever__grip {
+  position: relative;
+  width: 40px;
+  height: 28px;
+  margin-top: -3px;
+  background: #8f211d;
+  border: 4px solid #47100d;
+  box-shadow: inset 0 4px #b74032, 4px 4px 0 #090705;
+}
+
+.stamp-lever__grip i {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 4px;
+  height: 4px;
+  background: #5e1511;
+}
+
+.stamp-lever__state {
+  position: absolute;
+  top: 126px;
+  right: -1px;
+  min-width: 72px;
+  padding: 4px 3px;
+  color: #695b4d;
+  background: #17120f;
+  border: 2px solid #3e3228;
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  line-height: 1;
+  text-align: center;
+}
+
+.stamp-lever__state.is-open {
+  color: var(--color-gold);
+  border-color: #715c25;
+}
+
+.stamp-drawer-layer {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 178px;
+  z-index: 65;
+  pointer-events: none;
+}
+
+/* Несущая промышленная балка через весь экран — машины ездят по ней */
+.stamp-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 78px);
+  height: 22px;
+  background: #44382e url("/images/metal-tile.png");
+  border-top: 3px solid #15100d;
+  border-bottom: 4px solid #15100d;
+  box-shadow: inset 0 3px 0 #6b5948, inset 0 -3px 0 #241b14, 0 5px 0 #090705;
+}
+
+.stamp-beam__bolts {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
+}
+
+.stamp-beam__plate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 3px 8px;
+  background: #2c231d url("/images/metal-tile.png");
+  border: 2px solid #15100d;
+  box-shadow: inset 0 0 0 1px #6b5948;
+  color: #a39074;
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stamp-rig {
+  position: absolute;
+  top: 22px;
+  pointer-events: none;
+}
+
+.stamp-rig--center {
+  left: 50%;
+}
+
+.stamp-rig__scaler {
+  position: relative;
+  transform-origin: top center;
+}
+
+.stamp-rig__machines {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* Группа машин на общей каретке, скользящей по балке */
+.stamp-rig__group {
+  position: relative;
+  display: flex;
+  gap: 6px;
+}
+
+.stamp-rig__group::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  right: 12px;
+  height: 9px;
+  background: #4d4034 url("/images/metal-tile.png");
+  border: 2px solid #15100d;
+  box-shadow: inset 0 2px 0 #7d6a52, 0 3px 0 #090705;
+  z-index: 4;
+}
+
+.stamp-machine {
+  position: relative;
+  width: 104px;
+  height: 130px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-left: 4px solid #18120e;
+  border-right: 4px solid #18120e;
+  background: #211a15;
+  box-shadow: inset 4px 0 #554538, inset -4px 0 #0e0b08;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: none;
+}
+
+.stamp-machine:hover:not(:disabled) {
+  background: #2b2119;
+  box-shadow: inset 4px 0 #8a735c, inset -4px 0 #0e0b08;
+}
+
+.stamp-machine:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: -3px;
+}
+
+.stamp-machine:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stamp-machine__beam {
+  position: absolute;
+  z-index: 3;
+  left: 3px;
+  right: 3px;
+  top: 4px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+  background: #625241;
+  border: 3px solid #15100d;
+  box-shadow: inset 0 3px #8f7a61;
+}
+
+.stamp-machine__support {
+  position: absolute;
+  z-index: 1;
+  top: 18px;
+  bottom: 3px;
+  width: 8px;
+  background: #4d4034;
+  border: 2px solid #15100d;
+}
+
+.stamp-machine__support--left { left: 4px; }
+.stamp-machine__support--right { right: 4px; }
+
+.stamp-machine__body {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 22px;
+  width: 96px;
+  height: 108px;
+}
+
+.stamp-machine.is-pressing .stamp-machine__beam {
+  background: #806c54;
+}
+
+.stamp-object {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 108px;
+}
+
+.stamp-object canvas {
+  position: absolute;
+  inset: 0;
+  width: 96px;
+  height: 108px;
+  image-rendering: pixelated;
+}
+
+.stamp-object b {
+  position: absolute;
+  left: 17px;
+  width: 62px;
+  height: 13px;
+  overflow: hidden;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 13px;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .stamp-rig__scaler { transform: scale(0.78); }
+  .stamp-drawer-layer { height: 145px; }
+}
+
+@media (max-width: 430px) {
+  .stamp-rig__scaler { transform: scale(0.66); }
+  .stamp-drawer-layer { height: 126px; }
+  .stamp-lever { right: 2px; }
+}
