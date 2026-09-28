@@ -57,11 +57,13 @@ jobs:
           echo "ANDROID_NDK_HOME=$NDK_PATH" >> $GITHUB_ENV
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm run build
 
       - name: Initialize Android project
         run: |
-          npx @tauri-apps/cli android init
+          npx @tauri-apps/cli android init --ci
           chmod +x src-tauri/gen/android/gradlew
 
       - name: Setup Keystore for Android Signing
@@ -97,10 +99,9 @@ jobs:
       - name: Build Android APK
         run: |
           # Build APK with Tauri CLI for aarch64
-          npx @tauri-apps/cli android build --apk --target aarch64 || \
-          npx @tauri-apps/cli android build --apk --debug --target aarch64 || \
-          (cd src-tauri/gen/android && ./gradlew assembleRelease) || \
-          (cd src-tauri/gen/android && ./gradlew assembleDebug)
+          npx @tauri-apps/cli android build --apk --target aarch64 --ci || \
+          npx @tauri-apps/cli android build --apk --debug --target aarch64 --ci || \
+          (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace --info)
 
       - name: Prepare APK deliverables
         id: apks
