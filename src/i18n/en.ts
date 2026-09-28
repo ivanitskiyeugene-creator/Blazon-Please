@@ -561,6 +561,18 @@ export const en: Dict = {
       exitBody: (n: number) => `The current shift will not be counted. Progress is saved for the morning of shift ${n} — you can continue from the main menu.`,
       stay: "Stay",
       toMenuBtn: "To menu",
+      mobile: {
+        tabBooth: "Booth",
+        tabDesk: "Desk",
+        tabRules: "Rules",
+        takeAllDocs: "Take all documents",
+        returnAll: "Return all & release",
+        stampsToggle: "Stamps",
+        stampsOpen: "Stamps deployed",
+        stampsClosed: "Stamps hidden",
+        compareEvidence: "Compare evidence",
+        rulebookBtn: "Rulebook",
+      },
       inv: {
         envelope: "Envelope",
         envelopeIcon: "₳",

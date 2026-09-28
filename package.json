@@ -2,6 +2,7 @@
   "name": "blazon-please",
   "private": true,
   "version": "0.8.0",
+  "mobileVersion": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +10,10 @@
     "preview": "vite preview",
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
-    "desktop:info": "tauri info"
+    "desktop:info": "tauri info",
+    "android:init": "tauri android init",
+    "android:dev": "tauri android dev",
+    "android:build": "tauri android build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.0",

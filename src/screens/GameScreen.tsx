@@ -80,6 +80,7 @@ export function GameScreen({
   const [trayDocs, setTrayDocs] = useState<DocId[]>([]);         // взял у посетителя
   const [stampMarks, setStampMarks] = useState<{ type: Decision; x: number; y: number }[]>([]);
   const [shutterClosed, setShutterClosed] = useState(false); // железный занавес будки
+  const [mobileTab, setMobileTab] = useState<"booth" | "desk" | "rules">("booth");
 
   // документы на столе
   const [desk, setDesk] = useState<DeskDoc[]>([]);
@@ -200,6 +201,35 @@ export function GameScreen({
     setOfferedDocs((v) => v.filter((x) => x !== id));
     setTrayDocs((v) => [...v, id]);
     sfx.paper();
+    // На мобильных автоматически открываем стол при заборе документа
+    setMobileTab("desk");
+  };
+
+  const takeAllOfferedDocs = () => {
+    if (offeredDocs.length === 0) return;
+    const docs = [...offeredDocs];
+    setOfferedDocs([]);
+    setTrayDocs((prev) => [...prev, ...docs]);
+    sfx.paper();
+
+    // Автоматически выкладываем на стол
+    const currentOnDesk = new Set(desk.map((d) => d.id));
+    const newDesk = [...desk];
+    const pos: Record<string, { x: number; y: number }> = {
+      passport: { x: 18, y: 226 },
+      permit: { x: 252, y: 238 },
+      party: { x: 236, y: 398 },
+      book: { x: 540, y: 226 },
+      news: { x: 540, y: 440 },
+    };
+    docs.forEach((id) => {
+      if (!currentOnDesk.has(id)) {
+        const base = pos[id] || { x: 18, y: 226 };
+        newDesk.push({ id, ...base, z: ++topZ.current });
+      }
+    });
+    setDesk(newDesk);
+    setMobileTab("desk");
   };
 
   const toggleDeskDoc = (id: DocId) => {
@@ -385,6 +415,7 @@ export function GameScreen({
       later(750, () => {
         setEntrantVisible(false);
         setNeedCall(true);
+        setMobileTab("booth");
         setI((q) => q + 1);
       });
     });
@@ -436,6 +467,7 @@ export function GameScreen({
     sfx.alarm();
     doShake(1.6);
     setStampOpen(false);
+    setMobileTab("booth");
     setShutterClosed(true);
     setStamped("DETAIN");
     setStage("stamped");
@@ -454,6 +486,7 @@ export function GameScreen({
     // легендарный грубый вызов через "громкоговоритель"
     sfx.ui();
     setReaction(t.ui.game.nextCall);
+    setMobileTab("booth");
     later(450, () => setReaction(null));
     callNext();
   };
@@ -571,11 +604,58 @@ export function GameScreen({
         </div>
       </div>
 
+      {/* ---------- МОБИЛЬНЫЙ ПЕРЕКЛЮЧАТЕЛЬ ЭКРАНОВ ---------- */}
+      <div className="lg:hidden flex border-b-2 border-[var(--color-line)] bg-[var(--color-coal)] px-2 py-1.5 gap-2 z-20">
+        <button
+          type="button"
+          className={`flex-1 py-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-center border transition-colors flex items-center justify-center gap-1.5 ${
+            mobileTab === "booth"
+              ? "border-[var(--color-gold)] bg-[var(--color-panel2)] text-[var(--color-gold)] shadow-[inset_0_0_0_1px_var(--color-gold)]"
+              : "border-[var(--color-line)] text-[var(--color-ash)] bg-[var(--color-panel)]"
+          }`}
+          onClick={() => setMobileTab("booth")}
+        >
+          <span>🏛 {t.ui.game.mobile.tabBooth}</span>
+          {entrantVisible && offeredDocs.length > 0 && (
+            <span className="px-1 py-0.2 bg-[var(--color-gold)] text-[#14100d] text-[8px] font-bold animate-blink">
+              +{offeredDocs.length}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          className={`flex-1 py-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-center border transition-colors flex items-center justify-center gap-1.5 ${
+            mobileTab === "desk"
+              ? "border-[var(--color-gold)] bg-[var(--color-panel2)] text-[var(--color-gold)] shadow-[inset_0_0_0_1px_var(--color-gold)]"
+              : "border-[var(--color-line)] text-[var(--color-ash)] bg-[var(--color-panel)]"
+          }`}
+          onClick={() => setMobileTab("desk")}
+        >
+          <span>📋 {t.ui.game.mobile.tabDesk}</span>
+          {(trayDocs.length > 0 || desk.length > 0) && (
+            <span className="text-[9px] text-[var(--color-bone)] font-mono">
+              ({desk.length}/{trayDocs.length})
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          className={`flex-1 py-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-center border transition-colors flex items-center justify-center gap-1.5 ${
+            mobileTab === "rules"
+              ? "border-[var(--color-gold)] bg-[var(--color-panel2)] text-[var(--color-gold)] shadow-[inset_0_0_0_1px_var(--color-gold)]"
+              : "border-[var(--color-line)] text-[var(--color-ash)] bg-[var(--color-panel)]"
+          }`}
+          onClick={() => setMobileTab("rules")}
+        >
+          <span>📖 {t.ui.game.mobile.tabRules}</span>
+        </button>
+      </div>
+
       {/* ---------- сцена ---------- */}
-      <div className="relative z-10 flex-1 w-full max-w-[1500px] mx-auto px-3 py-3 flex">
+      <div className="relative z-10 flex-1 w-full max-w-[1500px] mx-auto px-2 sm:px-3 py-2 sm:py-3 flex">
         <div className="grid lg:grid-cols-[minmax(340px,400px)_1fr] gap-3 items-stretch flex-1 w-full">
           {/* ---------------- БУДКА ---------------- */}
-          <div className="panel relative flex flex-col">
+          <div className={`panel relative flex flex-col ${mobileTab === "booth" ? "flex" : "hidden lg:flex"}`}>
             <span className="bolt" style={{ top: 5, left: 5 }} />
             <span className="bolt" style={{ top: 5, right: 5 }} />
             <div className="text-center py-1.5 border-b-2 border-[var(--color-line)] text-[10px] uppercase tracking-[0.3em] text-[var(--color-ash)]">
@@ -683,16 +763,28 @@ export function GameScreen({
 
               {/* ДОКУМЕНТЫ В РУКАХ У ПОСЕТИТЕЛЯ — нужно забрать */}
               {entrantVisible && stage !== "exit" && offeredDocs.length > 0 && (
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-14 z-[20] flex gap-2">
-                  {offeredDocs.map((id) => (
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-12 z-[20] flex flex-col items-center gap-1.5 w-[90%] max-w-[320px]">
+                  {offeredDocs.length > 1 && (
                     <button
-                      key={id}
-                      className="panel px-2.5 py-2 text-[10px] uppercase tracking-widest text-[var(--color-bone)] hover:border-[var(--color-gold)] transition-colors"
-                      onClick={() => handoverDoc(id)}
+                      type="button"
+                      className="w-full btn-soviet px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider shadow-[3px_3px_0_#070605] cursor-pointer"
+                      onClick={takeAllOfferedDocs}
                     >
-                      <span className="pixel-icon mr-1">{docIcon(id)}</span>{id === "passport" ? t.ui.offerDoc.passport : id === "permit" ? t.ui.offerDoc.permit : t.ui.offerDoc.party}
+                      📥 {t.ui.game.mobile.takeAllDocs}
                     </button>
-                  ))}
+                  )}
+                  <div className="flex gap-2 flex-wrap justify-center">
+                    {offeredDocs.map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        className="panel px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-[var(--color-bone)] hover:border-[var(--color-gold)] transition-colors shadow-[2px_2px_0_#070605] cursor-pointer"
+                        onClick={() => handoverDoc(id)}
+                      >
+                        <span className="pixel-icon mr-1">{docIcon(id)}</span>{id === "passport" ? t.ui.offerDoc.passport : id === "permit" ? t.ui.offerDoc.permit : t.ui.offerDoc.party}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -777,9 +869,51 @@ export function GameScreen({
           </div>
 
           {/* ---------------- СТОЛ ---------------- */}
-          <div className="relative panel p-2.5 sm:p-3 flex flex-col">
+          <div className={`relative panel p-2.5 sm:p-3 flex flex-col ${mobileTab === "desk" ? "flex" : "hidden lg:flex"}`}>
             <span className="bolt" style={{ top: 5, left: 5 }} />
             <span className="bolt" style={{ top: 5, right: 5 }} />
+
+            {/* МОБИЛЬНАЯ ПАНЕЛЬ БЫСТРЫХ ДЕЙСТВИЙ */}
+            <div className="flex items-center gap-2 mb-2 pb-2 border-b-2 border-[var(--color-line)] flex-wrap">
+              <button
+                type="button"
+                className="panel px-2.5 py-1 text-[10px] uppercase tracking-wider text-[var(--color-gold)] border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-1.5 cursor-pointer"
+                onClick={() => setStampOpen((v) => !v)}
+              >
+                <span>⚙</span>
+                <span className="font-bold">{stampOpen ? t.ui.game.mobile.stampsOpen : t.ui.game.mobile.stampsClosed}</span>
+              </button>
+
+              {sel.length === 2 && (
+                <button
+                  type="button"
+                  className="btn-soviet px-3 py-1 text-[10px] uppercase tracking-wider animate-blink font-bold cursor-pointer"
+                  onClick={present}
+                >
+                  🔍 {t.ui.game.mobile.compareEvidence}
+                </button>
+              )}
+
+              {offeredDocs.length > 0 && (
+                <button
+                  type="button"
+                  className="panel px-2.5 py-1 text-[10px] uppercase tracking-wider text-[var(--color-bone)] border-[var(--color-gold)] bg-[var(--color-panel2)] hover:bg-[var(--color-gold)] hover:text-[#14100d] transition-colors cursor-pointer"
+                  onClick={takeAllOfferedDocs}
+                >
+                  📥 {t.ui.game.mobile.takeAllDocs}
+                </button>
+              )}
+
+              {stage === "stamped" && trayDocs.length > 0 && (
+                <button
+                  type="button"
+                  className="btn-soviet px-3 py-1 text-[10px] uppercase tracking-wider font-bold cursor-pointer"
+                  onClick={returnAllDocs}
+                >
+                  📤 {t.ui.game.mobile.returnAll}
+                </button>
+              )}
+            </div>
 
             {/* КНИЖКА ИНСПЕКТОРА */}
             <div className="pb-2 mb-2 border-b-2 border-[var(--color-line)]">
@@ -963,6 +1097,30 @@ export function GameScreen({
 
               {/* Рычаг управляет штампами — в StampPad */}
             </div>
+          </div>
+
+          {/* ---------------- МОБИЛЬНЫЙ СВОД ПРАВИЛ ---------------- */}
+          <div className={`panel p-3 flex-col ${mobileTab === "rules" ? "flex lg:hidden" : "hidden"}`}>
+            <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-[var(--color-line)]">
+              <span className="font-head text-[13px] uppercase tracking-wider text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
+                📖 {t.ui.game.mobile.rulebookBtn}
+              </span>
+              <button
+                type="button"
+                className="btn-ghost px-2.5 py-1 text-xs"
+                onClick={() => setMobileTab("desk")}
+              >
+                ✕ {t.ui.game.mobile.tabDesk}
+              </button>
+            </div>
+            <Rulebook
+              day={day}
+              open={true}
+              onToggle={() => setMobileTab("desk")}
+              sel={sel}
+              proven={proven}
+              onSel={onSel}
+            />
           </div>
         </div>
       </div>

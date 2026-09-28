@@ -561,6 +561,18 @@ export const ru = {
       exitBody: (n: number) => `Текущая смена не засчитается. Прогресс сохранён на утро смены ${n} — продолжить можно из главного меню.`,
       stay: "Остаться",
       toMenuBtn: "В меню",
+      mobile: {
+        tabBooth: "Будка",
+        tabDesk: "Стол",
+        tabRules: "Свод",
+        takeAllDocs: "Забрать все документы",
+        returnAll: "Вернуть всё и отпустить",
+        stampsToggle: "Штампы",
+        stampsOpen: "Штампы выдвинуты",
+        stampsClosed: "Штампы убраны",
+        compareEvidence: "Сверить несоответствия",
+        rulebookBtn: "Свод правил",
+      },
       inv: {
         envelope: "Конверт",
         envelopeIcon: "₳",
