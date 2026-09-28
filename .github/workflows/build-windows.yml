@@ -34,7 +34,7 @@ jobs:
           workspaces: "src-tauri -> target"
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci || npm install
 
       - name: Build installer and portable EXE
         run: npm run desktop:build

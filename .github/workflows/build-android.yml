@@ -71,7 +71,7 @@ jobs:
 
       - name: Install frontend dependencies
         run: |
-          npm ci
+          npm ci || npm install
           npm run build
 
       - name: Initialize Android project
