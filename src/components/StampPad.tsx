@@ -151,13 +151,20 @@ function StampButton({ type, label, color, dark, textColor, pressed, disabled, o
   );
 }
 
-/** Половина кассеты: свой кусок толстой балки + прикрученные машины. */
+/** Половина кассеты: длинный кусок балки от края стола + прикрученные машины. */
 function StampUnit({ side, children }: { side: "left" | "right"; children: React.ReactNode }) {
   return (
     <div className={`stamp-unit stamp-unit--${side}`}>
       <div className="stamp-unit__slab" aria-hidden="true">
         <span className="stamp-unit__bolts">
-          <i /><i /><i /><i /><i /><i /><i /><i />
+          {Array.from({ length: 14 }).map((_, k) => <i key={k} />)}
+        </span>
+        {/* нога у наружного конца: балка стоит на столешнице у самого края */}
+        <span className="stamp-unit__foot stamp-unit__foot--outer" aria-hidden="true">
+          <i /><i /><i />
+        </span>
+        <span className="stamp-unit__foot stamp-unit__foot--inner" aria-hidden="true">
+          <i /><i /><i />
         </span>
         {side === "right" && (
           // стыковая накладка: когда половины сходятся, шов закрыт болтами
@@ -228,8 +235,9 @@ export function StampPad({ open, locked, onToggleOpen, onStamp }: Props) {
     }, 100);
   };
 
-  // Половины выезжают из-за краёв СТОЛА и смыкаются посередине.
-  const slide = rig ? rig.width : 1200;
+  // Половины выезжают из-за краёв СТОЛА и смыкаются посередине:
+  // каждая везёт длинную балку от края стола до центра.
+  const slide = rig ? rig.width / 2 : 600;
   const spring = { type: "spring", stiffness: 200, damping: 26 } as const;
 
   return (
@@ -237,11 +245,16 @@ export function StampPad({ open, locked, onToggleOpen, onStamp }: Props) {
       {rig && (
         <div
           className="stamp-rig"
-          style={{ left: rig.left, top: rig.top, width: rig.width, height: rig.height }}
+          style={
+            {
+              left: rig.left,
+              top: rig.top,
+              width: rig.width,
+              height: rig.height,
+              "--desk-w": `${rig.width}px`,
+            } as React.CSSProperties
+          }
         >
-          {/* Рычаг прикручен к правому краю столешницы — всегда под рукой */}
-          <StampLever active={open} onToggle={onToggleOpen} />
-
           <AnimatePresence>
             {open && (
               <motion.div
@@ -296,6 +309,9 @@ export function StampPad({ open, locked, onToggleOpen, onStamp }: Props) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Рычаг прикручен к правому краю столешницы — прямо на балке */}
+          <StampLever active={open} onToggle={onToggleOpen} />
         </div>
       )}
     </div>

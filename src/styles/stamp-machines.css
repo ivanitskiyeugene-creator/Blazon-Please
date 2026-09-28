@@ -168,7 +168,9 @@
   position: relative;
 }
 
-/* Толстая несущая балка — 104px, как сам штамп */
+/* Толстая несущая балка — 104px, как сам штамп.
+   Кусок каждой половины ДЛИННЫЙ: тянется от края стола до его середины,
+   в сомкнутом виде балка встаёт сплошной линией через весь стол. */
 .stamp-unit__slab {
   position: absolute;
   top: 0;
@@ -179,23 +181,50 @@
   box-shadow: inset 0 4px 0 #6b5948, inset 0 -4px 0 #241b14, 0 6px 0 #090705;
 }
 
+/* --desk-w задаётся из JS шириной столешницы */
 .stamp-unit--left .stamp-unit__slab {
-  left: -14px;
+  left: calc(100% - var(--desk-w, 1200px) / 2);
   right: -3px;
 }
 
 .stamp-unit--right .stamp-unit__slab {
   left: -3px;
-  right: -14px;
+  right: calc(100% - var(--desk-w, 1200px) / 2);
 }
+
+/* Ноги балки: балка стоит на столешнице, а не висит в воздухе */
+.stamp-unit__foot {
+  position: absolute;
+  bottom: -13px;
+  width: 42px;
+  height: 13px;
+  background: #3a2f27 url("/images/metal-tile.png");
+  border: 2px solid #15100d;
+  border-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.stamp-unit__foot i {
+  width: 5px;
+  height: 5px;
+  background: #17110d;
+  border: 1px solid #8d7860;
+}
+
+.stamp-unit--left .stamp-unit__foot--outer { left: 8px; }
+.stamp-unit--left .stamp-unit__foot--inner { right: 26px; }
+.stamp-unit--right .stamp-unit__foot--outer { right: 8px; }
+.stamp-unit--right .stamp-unit__foot--inner { left: 26px; }
 
 .stamp-unit__bolts {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 0 8px;
+  justify-content: space-evenly;
+  padding: 0 26px;
 }
 
 .stamp-unit__bolts i {
@@ -257,10 +286,11 @@
   padding-top: 78px;
 }
 
-/* Рычаг прикручен к правому краю столешницы */
+/* Рычаг прикручен к правому краю столешницы — на прибывшем конце балки */
 .stamp-rig .stamp-lever {
-  top: 0;
-  right: 6px;
+  top: 8px;
+  right: 8px;
+  z-index: 6;
   pointer-events: auto;
 }
 

@@ -17,14 +17,14 @@ export const CHANGELOG: ChangeEntry[] = [
     items: {
       ru: [
         "Штампы «ОТКАЗ»/«АРЕСТ» и «ВХОД» съезжаются к середине стола, когда кассета вызвана рычагом; убрал — стол пуст.",
-        "Половины кассеты выезжают из-за краёв самого стола, а не из-за края экрана, и смыкаются в толстую балку шириной со штамп; шов закрыт болтовой накладкой.",
+        "Половины кассеты выезжают из-за краёв самого стола, а не из-за края экрана, неся длинные балки от края стола до середины; сомкнутая балка встаёт сплошной линией через весь стол и стоит на ножках, шов закрыт болтовой накладкой.",
         "Рычаг прикручен к правому краю столешницы и всегда под рукой.",
         "«АРЕСТ» вынесен из кассеты в красную кнопку тревоги в шапке смены: доказал нарушение — кнопка взводится сама; удар — и створка будки захлопывается железным занавесом, документы уходят в протокол.",
         "Документы выкладываются на стол ниже кассеты, чтобы машины не заслоняли бумаги.",
       ],
       en: [
         "The DENY and ADMIT stamps converge at the middle of the desk when the cassette is summoned by the lever; put away — the desk is empty.",
-        "The cassette halves ride out from behind the desk's own edges, not the screen's, and meet in a beam as thick as the stamp itself; the seam is covered by a bolted splice plate.",
+        "The cassette halves ride out from behind the desk's own edges, not the screen's, carrying long beams from the desk edge to the middle; joined, the beam stands as one solid line across the whole desk on bolted feet, the seam covered by a splice plate.",
         "The lever is bolted to the right edge of the desktop, always within reach.",
         "«DETAIN» moved out of the cassette into a red alarm button in the shift header: prove a mismatch and the button arms itself; hit it — the booth flap slams shut with an iron curtain and the documents go into the protocol.",
         "Documents are laid out on the desk below the cassette so the machines never cover the papers.",
