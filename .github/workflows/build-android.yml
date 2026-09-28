@@ -97,7 +97,7 @@ jobs:
           printf "storePassword=blazonplease\nkeyPassword=blazonplease\nkeyAlias=upload\nstoreFile=/tmp/upload.jks\n" > src-tauri/gen/android/keystore.properties
           printf "storePassword=blazonplease\nkeyPassword=blazonplease\nkeyAlias=upload\nstoreFile=/tmp/upload.jks\n" > src-tauri/gen/android/app/keystore.properties
 
-      - name: Configure Android Manifest
+      - name: Configure Android Manifest and Gradle
         run: |
           node -e '
           const fs = require("fs");
@@ -110,25 +110,21 @@ jobs:
             fs.writeFileSync(p, xml);
             console.log("Updated AndroidManifest.xml for sensorLandscape");
           }
+          const ktsPath = "src-tauri/gen/android/app/build.gradle.kts";
+          if (fs.existsSync(ktsPath)) {
+            let kts = fs.readFileSync(ktsPath, "utf8");
+            kts = kts.replace(/isMinifyEnabled\s*=\s*true/g, "isMinifyEnabled = false");
+            fs.writeFileSync(ktsPath, kts);
+            console.log("Disabled minify in build.gradle.kts for clean build");
+          }
           '
 
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
-          set -o pipefail
-          npx @tauri-apps/cli android build --apk --target aarch64 --ci 2>&1 | tee /tmp/tauri-build.log || {
-            echo "=== TAURI ANDROID BUILD LOG TAIL ==="
-            tail -n 100 /tmp/tauri-build.log
-            echo "=== TRYING GRADLE ASSEMBLE RELEASE ==="
-            (cd src-tauri/gen/android && ./gradlew assembleRelease --stacktrace --info 2>&1 | tee /tmp/gradle-release.log) || {
-              tail -n 100 /tmp/gradle-release.log
-              echo "=== TRYING GRADLE ASSEMBLE DEBUG ==="
-              (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace --info 2>&1 | tee /tmp/gradle-debug.log) || {
-                tail -n 100 /tmp/gradle-debug.log
-                exit 1
-              }
-            }
-          }
+          npx @tauri-apps/cli android build --apk --target aarch64 --ci || \
+          npx @tauri-apps/cli android build --apk --debug --target aarch64 --ci || \
+          (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace)
 
       - name: Prepare APK deliverables
         id: apks
