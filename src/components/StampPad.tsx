@@ -174,13 +174,11 @@ function StampUnit({ side, children }: { side: "left" | "right"; children: React
 interface Props {
   open: boolean;
   locked: boolean;
-  hasEvidence: boolean;
-  detainUnlocked: boolean;
   onToggleOpen: (v: boolean) => void;
   onStamp: (type: Decision, strikeX: number, strikeY: number) => void;
 }
 
-export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOpen, onStamp }: Props) {
+export function StampPad({ open, locked, onToggleOpen, onStamp }: Props) {
   const { t } = useI18n();
   const [pressing, setPressing] = useState<Decision | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
@@ -216,7 +214,7 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
   }, []);
 
   const hit = (type: Decision, event: React.PointerEvent<HTMLButtonElement>) => {
-    if (locked || (type === "DETAIN" && !hasEvidence)) return;
+    if (locked) return;
     event.preventDefault();
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
@@ -269,18 +267,6 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
                       disabled={locked}
                       onHit={hit}
                     />
-                    {detainUnlocked && (
-                      <StampButton
-                        type="DETAIN"
-                        label={t.ui.stamps.DETAIN}
-                        color="#605514"
-                        dark="#302806"
-                        textColor="#e3c94c"
-                        pressed={pressing === "DETAIN"}
-                        disabled={locked || !hasEvidence}
-                        onHit={hit}
-                      />
-                    )}
                   </StampUnit>
                 </motion.div>
                 <motion.div

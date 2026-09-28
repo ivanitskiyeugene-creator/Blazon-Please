@@ -79,6 +79,7 @@ export function GameScreen({
   const [offeredDocs, setOfferedDocs] = useState<DocId[]>([]);   // под человеком
   const [trayDocs, setTrayDocs] = useState<DocId[]>([]);         // взял у посетителя
   const [stampMarks, setStampMarks] = useState<{ type: Decision; x: number; y: number }[]>([]);
+  const [shutterClosed, setShutterClosed] = useState(false); // железный занавес будки
 
   // документы на столе
   const [desk, setDesk] = useState<DeskDoc[]>([]);
@@ -152,6 +153,7 @@ export function GameScreen({
     setTrayDocs([]);
     setOfferedDocs([]);
     setStampMarks([]);
+    setShutterClosed(false);
     setEntrantVisible(false);
     setNeedCall(true);
     finalizingEntrant.current = false;
@@ -367,9 +369,11 @@ export function GameScreen({
     // Уход начнётся автоматически, когда trayDocs опустеет.
   };
 
-  function finishEntrantReturn() {
+  function finishEntrantReturn(force?: Decision) {
     if (finalizingEntrant.current) return;
-    const finalDecision = stampMarks.at(-1)?.type ?? stamped;
+    // force нужен, когда решение принято не через штамп (красная кнопка ареста):
+    // таймер мог захватить устаревшее состояние этого рендера
+    const finalDecision = force ?? stampMarks.at(-1)?.type ?? stamped;
     if (!decisionCommitted.current && !finalDecision) return;
 
     finalizingEntrant.current = true;
@@ -424,6 +428,26 @@ export function GameScreen({
     }
   };
 
+  // Красная кнопка задержания: взводится сама, когда нарушение доказано.
+  // Удар — створка будки захлопывается железным занавесом, документы изымаются.
+  const arrestArmed = entrantVisible && stage === "review" && detainUnlocked && hasEvidence && !stamped;
+  const arrest = () => {
+    if (!arrestArmed || !entrant) return;
+    sfx.alarm();
+    doShake(1.6);
+    setStampOpen(false);
+    setShutterClosed(true);
+    setStamped("DETAIN");
+    setStage("stamped");
+    setDesk((prev) => prev.filter((d) => d.id === "book" || d.id === "news"));
+    setTrayDocs([]);
+    setOfferedDocs([]);
+    setRareMsg(t.ui.arrest.confiscated);
+    later(2600, () => setRareMsg(null));
+    // решение и протокол оформляются, когда занавес полностью закрыт
+    later(950, () => finishEntrantReturn("DETAIN"));
+  };
+
   const speakerNext = () => {
     if (!needCall) return;
     initAudio();
@@ -449,8 +473,6 @@ export function GameScreen({
       <StampPad
         open={stampOpen}
         locked={!canStamp}
-        hasEvidence={hasEvidence}
-        detainUnlocked={detainUnlocked}
         onToggleOpen={(v) => setStampOpen(v)}
         onStamp={(type, px, py) => {
           const passNode = nodes.current["passport"];
@@ -511,6 +533,17 @@ export function GameScreen({
             {t.ui.game.morningBalance} <span className="text-[var(--color-bone)] font-bold">{credits} ₳</span>
           </div>
           <LangSwitch />
+          <button
+            type="button"
+            className={`arrest-btn ${arrestArmed ? "is-armed" : ""}`}
+            disabled={!arrestArmed}
+            title={t.ui.arrest.title}
+            aria-label={t.ui.stamps.DETAIN}
+            onClick={arrest}
+          >
+            <span className="arrest-btn__cap" />
+            <span className="arrest-btn__label">{t.ui.stamps.DETAIN}</span>
+          </button>
           <button className="btn-ghost p-1.5" title={t.ui.game.toMenu} onClick={() => setAskExit(true)}>
             <PixelGlyph name="home" size={15} />
           </button>
@@ -678,6 +711,13 @@ export function GameScreen({
                   </motion.button>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* ЖЕЛЕЗНЫЙ ЗАНАВЕС — бьёт по кнопке задержания */}
+            <div className={`booth-shutter ${shutterClosed ? "is-closed" : ""}`} aria-hidden="true">
+              <span className="booth-shutter__slats" />
+              <span className="booth-shutter__hazard" />
+              <span className="booth-shutter__lamp" />
             </div>
 
             {/* имя + допрос */}

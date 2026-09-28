@@ -660,6 +660,11 @@ export const en: Dict = {
 
     booth: { chairman: "the chairman", slogan: "order is an atom in the heart", postNo: "post no.7" },
 
+    arrest: {
+      title: "Detention — only with a proven mismatch",
+      confiscated: "The detainee's documents are confiscated into the protocol.",
+    },
+
     lever: { label: "CASSETTES", open: "DEPLOYED", closed: "CLOSED", aria: "Stamp cassette lever" },
     beamPlate: "STAMP CASSETTE // CP-7",
     stampAria: (label: string) => `Stamp «${label}»`,
