@@ -57,19 +57,29 @@ jobs:
       - name: Initialize Android project
         run: |
           npx @tauri-apps/cli android init
+          chmod +x src-tauri/gen/android/gradlew
 
       - name: Configure Android Manifest
         run: |
-          MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
-          if [ -f "$MANIFEST" ]; then
-            sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"/g' "$MANIFEST"
-          fi
+          node -e '
+          const fs = require("fs");
+          const p = "src-tauri/gen/android/app/src/main/AndroidManifest.xml";
+          if (fs.existsSync(p)) {
+            let xml = fs.readFileSync(p, "utf8");
+            if (!xml.includes("android:screenOrientation")) {
+              xml = xml.replace("<activity", "<activity android:screenOrientation=\"sensorLandscape\"");
+            }
+            fs.writeFileSync(p, xml);
+            console.log("Updated AndroidManifest.xml for sensorLandscape");
+          }
+          '
 
       - name: Build Android APK
         run: |
-          # Build APK with Tauri CLI for aarch64 (standard for modern Android)
-          npx @tauri-apps/cli android build --apk --target aarch64 || \
-          (cd src-tauri/gen/android && ./gradlew assembleDebug)
+          # Build APK with Tauri CLI for aarch64
+          npx @tauri-apps/cli android build --apk --target aarch64 --verbose || \
+          npx @tauri-apps/cli android build --apk --debug --target aarch64 --verbose || \
+          (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace)
 
       - name: Prepare and Sign APK deliverables
         id: apks
