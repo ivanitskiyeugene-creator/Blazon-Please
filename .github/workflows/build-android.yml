@@ -106,9 +106,20 @@ jobs:
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
-          npx @tauri-apps/cli android build --apk --target aarch64 --ci || \
-          (cd src-tauri/gen/android && ./gradlew assembleRelease --stacktrace) || \
-          (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace)
+          set -o pipefail
+          npx @tauri-apps/cli android build --apk --target aarch64 --ci 2>&1 | tee /tmp/tauri-build.log || {
+            echo "=== TAURI ANDROID BUILD LOG TAIL ==="
+            tail -n 100 /tmp/tauri-build.log
+            echo "=== TRYING GRADLE ASSEMBLE RELEASE ==="
+            (cd src-tauri/gen/android && ./gradlew assembleRelease --stacktrace --info 2>&1 | tee /tmp/gradle-release.log) || {
+              tail -n 100 /tmp/gradle-release.log
+              echo "=== TRYING GRADLE ASSEMBLE DEBUG ==="
+              (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace --info 2>&1 | tee /tmp/gradle-debug.log) || {
+                tail -n 100 /tmp/gradle-debug.log
+                exit 1
+              }
+            }
+          }
 
       - name: Prepare APK deliverables
         id: apks
