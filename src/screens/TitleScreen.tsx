@@ -4,9 +4,10 @@ import { AtomEmblem, PartyEmblem } from "../components/Emblems";
 import { PixelGlyph } from "../components/PixelGlyph";
 import { sfx } from "../audio";
 import { APP_VERSION, CHANGELOG } from "../game/changelog";
-import { DAYS } from "../game/data";
+import { getDays } from "../game/data";
 import { saveAge } from "../game/save";
 import type { SaveData } from "../game/types";
+import { LangSwitch, useI18n } from "../i18n";
 
 export function TitleScreen({
   save,
@@ -19,6 +20,7 @@ export function TitleScreen({
   onContinue: () => void;
   onWipe: () => void;
 }) {
+  const { t, lang } = useI18n();
   const [log, setLog] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
 
@@ -31,14 +33,20 @@ export function TitleScreen({
     onStart();
   };
 
+  const days = getDays(lang);
+  const saveDayN = save ? days[Math.min(save.dayIdx, days.length - 1)].n : 1;
+
   return (
     <div className="relative min-h-screen rays overflow-hidden flex flex-col">
       {/* верхняя лента */}
       <div className="relative z-10 border-b-2 border-[var(--color-line)] bg-[var(--color-coal)]">
-        <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between text-[10px] sm:text-xs uppercase tracking-widest text-[var(--color-ash)]">
-          <span>Министерство Пропусков Народа</span>
-          <span className="hidden sm:inline">кабинет 7 // архив смен</span>
-          <span>версия {APP_VERSION}</span>
+        <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between gap-3 text-[10px] sm:text-xs uppercase tracking-widest text-[var(--color-ash)]">
+          <span>{t.ui.title.ministry}</span>
+          <span className="hidden lg:inline">{t.ui.title.archive}</span>
+          <span className="flex items-center gap-3">
+            {t.ui.title.version(APP_VERSION)}
+            <LangSwitch />
+          </span>
         </div>
       </div>
 
@@ -53,9 +61,9 @@ export function TitleScreen({
             >
               <AtomEmblem size={44} />
               <div className="pixel-text text-[9px] sm:text-[10px] text-[var(--color-gold)] leading-relaxed">
-                Аргелийский Союз
+                {t.ui.title.unionTop}
                 <br />
-                Социалистических Республик
+                {t.ui.title.unionBottom}
               </div>
             </motion.div>
 
@@ -66,7 +74,7 @@ export function TitleScreen({
                 transition={{ duration: 0.55, delay: 0.1 }}
                 className="block fringe text-[14vw] lg:text-[6.6rem] text-[var(--color-paper)]"
               >
-                Гербы,
+                {t.ui.title.logoTop}
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, x: -30 }}
@@ -74,7 +82,7 @@ export function TitleScreen({
                 transition={{ duration: 0.55, delay: 0.25 }}
                 className="block fringe text-[9vw] lg:text-[4.1rem] text-[var(--color-state2)]"
               >
-                пожалуйста
+                {t.ui.title.logoBottom}
               </motion.span>
             </h1>
 
@@ -84,8 +92,7 @@ export function TitleScreen({
               transition={{ delay: 0.45, duration: 0.6 }}
               className="mt-4 max-w-md text-sm text-[var(--color-ash)] leading-relaxed"
             >
-              Шесть смен на КПП-7. Очередь генерируется заново каждую игру, но двое приходят всегда:
-              западный атташе и сосед из-за реки. Оба зовут к себе. Решать — тебе.
+              {t.ui.title.about}
             </motion.p>
 
             {/* МЕНЮ */}
@@ -104,10 +111,10 @@ export function TitleScreen({
                   }}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <PixelGlyph name="play" size={18} /> Продолжить смену {DAYS[Math.min(save.dayIdx, DAYS.length - 1)].n}
+                    <PixelGlyph name="play" size={18} /> {t.ui.title.continueShift(saveDayN)}
                   </span>
                   <span className="text-[10px] opacity-80 normal-case tracking-normal">
-                    {save.credits} ₳ · {saveAge(save.savedAt)}
+                    {save.credits} ₳ · {saveAge(save.savedAt, t.ui.title)}
                   </span>
                 </button>
               )}
@@ -119,11 +126,11 @@ export function TitleScreen({
                 >
                   {confirmNew ? (
                     <>
-                      <PixelGlyph name="list-restart" size={18} /> Затереть и начать?
+                      <PixelGlyph name="list-restart" size={18} /> {t.ui.title.wipeStart}
                     </>
                   ) : (
                     <>
-                      Новая служба <PixelGlyph name="next" size={18} />
+                      {t.ui.title.newService} <PixelGlyph name="next" size={18} />
                     </>
                   )}
                 </button>
@@ -134,7 +141,7 @@ export function TitleScreen({
                     setLog(true);
                   }}
                 >
-                  <PixelGlyph name="document" size={17} /> Изменения
+                  <PixelGlyph name="document" size={17} /> {t.ui.title.changes}
                 </button>
               </div>
 
@@ -147,7 +154,7 @@ export function TitleScreen({
                     setConfirmNew(false);
                   }}
                 >
-                  <PixelGlyph name="trash" size={11} /> стереть сохранение
+                  <PixelGlyph name="trash" size={11} /> {t.ui.title.wipeSave}
                 </button>
               )}
             </motion.div>
@@ -160,11 +167,11 @@ export function TitleScreen({
             >
               <div className="flex items-center gap-2">
                 <AtomEmblem size={32} />
-                <span className="text-[10px] uppercase tracking-widest text-[var(--color-ash)]">Герб АССР</span>
+                <span className="text-[10px] uppercase tracking-widest text-[var(--color-ash)]">{t.ui.title.emblemAssr}</span>
               </div>
               <div className="flex items-center gap-2">
                 <PartyEmblem size={32} mirrored />
-                <span className="text-[10px] uppercase tracking-widest text-[var(--color-ash)]">Герб КПТА</span>
+                <span className="text-[10px] uppercase tracking-widest text-[var(--color-ash)]">{t.ui.title.emblemKpta}</span>
               </div>
             </motion.div>
           </div>
@@ -179,7 +186,7 @@ export function TitleScreen({
             <div className="relative overflow-hidden bg-[#171716]">
               <img
                 src="images/title-poster-pixel.png"
-                alt="Плакат АССР: пограничник на вышке, атом и шлагбаум"
+                alt={t.ui.title.posterAlt}
                 className="pixel-art block w-full h-auto max-h-[600px] object-contain"
               />
             </div>
@@ -201,12 +208,10 @@ export function TitleScreen({
           >
             {[0, 1].map((k) => (
               <span key={k} className="inline-flex gap-10">
-                <span className="text-[var(--color-state2)]">/// Голос Атома:</span>
-                <span>реактор «Заря-1» готовится к Великому Запуску</span>
-                <span>партия КПТА напоминает: молот — справа</span>
-                <span>у атома три орбиты — считай внимательно</span>
-                <span>гражданам Западного Союза следить за новостями</span>
-                <span>очередь у КПП-7 обслуживается с 06:00</span>
+                <span className="text-[var(--color-state2)]">{t.ui.title.marqueeLead}</span>
+                {t.ui.title.marquee.map((line, i) => (
+                  <span key={i}>{line}</span>
+                ))}
               </span>
             ))}
           </motion.div>
@@ -235,12 +240,14 @@ export function TitleScreen({
                 <div className="flex items-center gap-2">
                   <PixelGlyph name="document" size={17} className="text-[var(--color-gold)]" />
                   <span className="font-head uppercase tracking-widest text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
-                    Журнал изменений
+                    {t.ui.title.logTitle}
                   </span>
-                  <span className="pixel-text text-[8px] text-[var(--color-ash)] ml-2">v{APP_VERSION}</span>
                 </div>
-                <button className="btn-ghost p-1.5" onClick={() => setLog(false)}>
-                  <PixelGlyph name="close" size={16} />
+                <button
+                  className="btn-ghost px-3 py-1 text-xs"
+                  onClick={() => setLog(false)}
+                >
+                  ✕
                 </button>
               </div>
               <div className="overflow-y-auto p-5 space-y-5">
@@ -255,15 +262,15 @@ export function TitleScreen({
                         v{c.version}
                       </span>
                       <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider" style={{ background: c.tone, color: "#14100d" }}>
-                        {c.tag}
+                        {c.tag[lang]}
                       </span>
-                      <span className="text-[10px] uppercase tracking-widest text-[var(--color-ash)]">{c.date}</span>
+                      <span className="text-[10px] uppercase tracking-widest text-[var(--color-ash)]">{c.date[lang]}</span>
                       {idx === 0 && (
-                        <span className="text-[9px] uppercase tracking-widest text-[var(--color-state2)] animate-blink">текущая</span>
+                        <span className="text-[9px] uppercase tracking-widest text-[var(--color-state2)] animate-blink">{t.ui.title.current}</span>
                       )}
                     </div>
                     <ul className="space-y-1">
-                      {c.items.map((it, k) => (
+                      {c.items[lang].map((it, k) => (
                         <li key={k} className="text-[12.5px] leading-relaxed text-[var(--color-bone)] flex gap-2">
                           <span className="text-[var(--color-ash)] shrink-0">—</span>
                           <span>{it}</span>
@@ -273,7 +280,7 @@ export function TitleScreen({
                   </div>
                 ))}
                 <div className="text-[10px] uppercase tracking-widest text-[var(--color-ash)] text-center pt-2 border-t border-[var(--color-line)]">
-                  отпечатано в типографии «Третья Орбита» // не выносить за пределы блока
+                  {t.ui.title.logFooter}
                 </div>
               </div>
             </motion.div>

@@ -122,6 +122,8 @@ export interface Notice {
 }
 
 export interface Expense {
+  /** идентификатор строки расходов: food / heat / meds */
+  id: string;
   label: string;
   amount: number;
 }

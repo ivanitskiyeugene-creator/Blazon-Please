@@ -2,9 +2,18 @@ import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { sfx } from "../audio";
 import type { Decision } from "../game/types";
+import { useI18n } from "../i18n";
+
+/* Толщина несущей балки — как сам штамп (104px). */
+export const BEAM_H = 104;
+/* Машины заходят на балку сверху на 26px — прикручены внахлёст. */
+const MOUNT_OVERLAP = 26;
+/* Полная высота сборки: балка + машины минус нахлёст. */
+const UNIT_H = BEAM_H + 130 - MOUNT_OVERLAP;
 
 // ── РЫЧАГ: длинная железная рукоять, которую надо протянуть вниз ────────────
 export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v: boolean) => void }) {
+  const { t } = useI18n();
   const travel = 62;
   const y = useMotionValue(active ? travel : 0);
 
@@ -22,10 +31,10 @@ export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v
   };
 
   return (
-    <div className="stamp-lever" aria-label="Рычаг кассет со штампами">
+    <div className="stamp-lever" aria-label={t.ui.lever.aria}>
       <div className="stamp-lever__mount">
         <i />
-        <span>КАССЕТЫ</span>
+        <span>{t.ui.lever.label}</span>
         <i />
       </div>
 
@@ -61,7 +70,7 @@ export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v
       </div>
 
       <div className={`stamp-lever__state ${active ? "is-open" : ""}`}>
-        {active ? "ВЫДВИНУТО" : "ЗАКРЫТО"}
+        {active ? t.ui.lever.open : t.ui.lever.closed}
       </div>
     </div>
   );
@@ -127,12 +136,13 @@ interface StampButtonProps {
 }
 
 function StampButton({ type, label, color, dark, textColor, pressed, disabled, onHit }: StampButtonProps) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       className={`stamp-machine ${pressed ? "is-pressing" : ""}`}
       disabled={disabled}
-      aria-label={`Поставить штамп «${label}»`}
+      aria-label={t.ui.stampAria(label)}
       onPointerDown={(event) => onHit(type, event)}
     >
       <span className="stamp-machine__beam"><i /><i /></span>
@@ -145,6 +155,24 @@ function StampButton({ type, label, color, dark, textColor, pressed, disabled, o
   );
 }
 
+/** Толстая половина несущей балки: машины прикручены к ней намертво. */
+function BeamSlab({ side, plate }: { side: "left" | "right"; plate?: string }) {
+  return (
+    <div className={`stamp-unit__slab stamp-unit__slab--${side}`} aria-hidden="true">
+      <span className="stamp-unit__bolts">
+        <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
+      </span>
+      {plate && <span className="stamp-unit__plate">{plate}</span>}
+      {side === "right" && (
+        // стыковая накладка: когда половины сходятся, шов закрыт болтами
+        <span className="stamp-unit__splice">
+          <i /><i /><i /><i />
+        </span>
+      )}
+    </div>
+  );
+}
+
 interface Props {
   open: boolean;
   locked: boolean;
@@ -154,14 +182,13 @@ interface Props {
 }
 
 export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }: Props) {
+  const { t } = useI18n();
   const [pressing, setPressing] = useState<Decision | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
-  const rigRef = useRef<HTMLDivElement>(null);
-  const [beamTop, setBeamTop] = useState<number | null>(null);
-  const [rigLeft, setRigLeft] = useState<number | null>(null);
   const [rigTop, setRigTop] = useState<number | null>(null);
+  const [rigLeft, setRigLeft] = useState<number | null>(null);
 
-  // Балка и машины стоят ровно на середине ЭКРАНА — по центру буквально.
+  // Балка с машинами стоит ровно на середине ЭКРАНА — по центру буквально.
   // Слой абсолютный внутри корня игры, поэтому центр вьюпорта считаем сами.
   useLayoutEffect(() => {
     const place = () => {
@@ -170,9 +197,8 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
       const rect = layer.getBoundingClientRect();
       const cx = window.innerWidth / 2 - rect.left;
       const cy = window.innerHeight / 2 - rect.top;
-      setBeamTop(cy - 78); // балка (26) + машины (130) — вся сборка серединой на центр
       setRigLeft(cx);
-      setRigTop(cy - 52);
+      setRigTop(cy - UNIT_H / 2); // вся сборка (балка + машины) серединой на центр
     };
     place();
     window.addEventListener("resize", place);
@@ -198,83 +224,77 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onStamp }:
     }, 100);
   };
 
-  // Вылет по промышленной балке: группы машин съезжают с боков поста к центру.
-  const slide = typeof window === "undefined" ? 1200 : window.innerWidth;
+  // Половины кассеты въезжают с боков вместе со своими кусками толстой балки.
+  const slide = typeof window === "undefined" ? 1200 : window.innerWidth + 420;
+  const spring = { type: "spring", stiffness: 200, damping: 26 } as const;
 
   return (
     <div className="stamp-drawer-layer" ref={layerRef} aria-hidden={!open}>
-      {/* Несущая балка через весь экран — видна всегда, машины ездят по ней */}
-      <div className="stamp-beam" style={{ top: beamTop ?? undefined }}>
-        <span className="stamp-beam__bolts">
-          <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
-        </span>
-        <span className="stamp-beam__plate">ШТЕМПЕЛЬНАЯ КАССЕТА // КПП-7</span>
-      </div>
-
       <AnimatePresence>
         {open && (
-          <motion.div
-            key="beam-stamp-train"
-            ref={rigRef}
-            className="stamp-rig stamp-rig--center"
+          <div
+            className="stamp-rig"
             style={{ left: rigLeft ?? undefined, top: rigTop ?? undefined }}
-            initial={false}
-            animate={{ x: "-50%" }}
-            exit={{ x: "-50%", transition: { duration: 0.85 } }}
           >
             <div className="stamp-rig__scaler">
-              <div className="stamp-rig__machines">
+              <div className="stamp-rig__row">
                 <motion.div
-                  className="stamp-rig__group"
+                  className="stamp-unit stamp-unit--left"
                   initial={{ x: -slide }}
                   animate={{ x: 0 }}
                   exit={{ x: -slide }}
-                  transition={{ type: "spring", stiffness: 210, damping: 27 }}
+                  transition={spring}
                 >
-                  <StampButton
-                    type="DENY"
-                    label="ОТКАЗ"
-                    color="#741713"
-                    dark="#3b0907"
-                    textColor="#f0a18e"
-                    pressed={pressing === "DENY"}
-                    disabled={locked}
-                    onHit={hit}
-                  />
-                  {detainUnlocked && (
+                  <BeamSlab side="left" plate={t.ui.beamPlate} />
+                  <div className="stamp-unit__machines">
                     <StampButton
-                      type="DETAIN"
-                      label="АРЕСТ"
-                      color="#605514"
-                      dark="#302806"
-                      textColor="#e3c94c"
-                      pressed={pressing === "DETAIN"}
-                      disabled={locked || !hasEvidence}
+                      type="DENY"
+                      label={t.ui.stamps.DENY}
+                      color="#741713"
+                      dark="#3b0907"
+                      textColor="#f0a18e"
+                      pressed={pressing === "DENY"}
+                      disabled={locked}
                       onHit={hit}
                     />
-                  )}
+                    {detainUnlocked && (
+                      <StampButton
+                        type="DETAIN"
+                        label={t.ui.stamps.DETAIN}
+                        color="#605514"
+                        dark="#302806"
+                        textColor="#e3c94c"
+                        pressed={pressing === "DETAIN"}
+                        disabled={locked || !hasEvidence}
+                        onHit={hit}
+                      />
+                    )}
+                  </div>
                 </motion.div>
                 <motion.div
-                  className="stamp-rig__group"
+                  className="stamp-unit stamp-unit--right"
                   initial={{ x: slide }}
                   animate={{ x: 0 }}
                   exit={{ x: slide }}
-                  transition={{ type: "spring", stiffness: 210, damping: 27 }}
+                  transition={spring}
                 >
-                  <StampButton
-                    type="ADMIT"
-                    label="ВХОД"
-                    color="#24551f"
-                    dark="#0d2d0b"
-                    textColor="#a6d887"
-                    pressed={pressing === "ADMIT"}
-                    disabled={locked}
-                    onHit={hit}
-                  />
+                  <BeamSlab side="right" />
+                  <div className="stamp-unit__machines">
+                    <StampButton
+                      type="ADMIT"
+                      label={t.ui.stamps.ADMIT}
+                      color="#24551f"
+                      dark="#0d2d0b"
+                      textColor="#a6d887"
+                      pressed={pressing === "ADMIT"}
+                      disabled={locked}
+                      onHit={hit}
+                    />
+                  </div>
                 </motion.div>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

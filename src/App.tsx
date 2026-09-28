@@ -2,11 +2,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { initAudio } from "./audio";
-import { DAYS, GAMEOVER, START_CREDITS } from "./game/data";
+import { getDays, START_CREDITS } from "./game/data";
 import { buildDay } from "./game/generator";
 import { agentEntrants, pickEnding } from "./game/story";
 import { clearSave, EMPTY_FLAGS, loadSave, writeSave } from "./game/save";
 import type { DayResult, Flags, Notice, SaveData } from "./game/types";
+import { I18nProvider, useI18n } from "./i18n";
 import { TitleScreen } from "./screens/TitleScreen";
 import { BriefingScreen } from "./screens/BriefingScreen";
 import { GameScreen } from "./screens/GameScreen";
@@ -17,7 +18,8 @@ type Totals = { correct: number; errors: number; detains: number; evidence: numb
 
 const ZERO_TOTALS: Totals = { correct: 0, errors: 0, detains: 0, evidence: 0 };
 
-export default function App() {
+function Game() {
+  const { lang, t } = useI18n();
   const [phase, setPhase] = useState<Phase>("title");
   const [save, setSave] = useState<SaveData | null>(() => loadSave());
 
@@ -46,13 +48,15 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const DAYS = useMemo(() => getDays(lang), [lang]);
   const day = DAYS[Math.min(dayIdx, DAYS.length - 1)];
 
-  // очередь дня: процедурная генерация + сюжетные визиты
+  // очередь дня: процедурная генерация + сюжетные визиты.
+  // Смена языка пересобирает очередь по тому же зерну — люди те же, текст другой.
   const entrants = useMemo(
-    () => buildDay(seed, day, agentEntrants(day.n, flags, day.dateShort)),
+    () => buildDay(seed, day, agentEntrants(day.n, flags, day.dateShort, lang), lang),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [seed, day.n, flags.westTrust, flags.neighborTrust]
+    [seed, day.n, lang, flags.westTrust, flags.neighborTrust]
   );
 
   const persist = useCallback(
@@ -129,11 +133,11 @@ export default function App() {
       if (d.finalChoice && (d.finalChoice !== "loyal" || !f.finalChoice)) f.finalChoice = d.finalChoice;
       return f;
     });
-    setTotals((t) => ({
-      correct: t.correct + res.correct,
-      errors: t.errors + res.errors.length,
-      detains: t.detains + res.detains,
-      evidence: t.evidence + res.evidence,
+    setTotals((tt) => ({
+      correct: tt.correct + res.correct,
+      errors: tt.errors + res.errors.length,
+      detains: tt.detains + res.detains,
+      evidence: tt.evidence + res.evidence,
     }));
     setPhase("ledger");
   }, []);
@@ -161,19 +165,19 @@ export default function App() {
       const next = dayIdx + 1;
       const list: Notice[] = [];
       if (heatStreak.current === 1) {
-        list.push({ text: "Печь в бараке холодная. Семья куталась всю ночь. Ещё одна такая — простуда.", amount: 0 });
+        list.push({ text: t.notices.heat1, amount: 0 });
       } else if (heatStreak.current >= 2) {
-        list.push({ text: "СЫН ПРОСТУДИЛСЯ. Лекарства добываются по-мародёрски дорого.", amount: -6 });
+        list.push({ text: t.notices.heat2, amount: -6 });
         heatStreak.current = 0;
       }
       if (flags.westTrust >= 3 && DAYS[next].n >= 5) {
-        list.push({ text: "СЛУЖБА БДИТЕЛЬНОСТИ. С поста №7 замечены частые беседы с иностранным атташе. Проверка продолжается.", amount: 0 });
+        list.push({ text: t.notices.vigilance, amount: 0 });
       }
       if (flags.neighborTrust >= 3 && DAYS[next].n >= 5) {
-        list.push({ text: "ПАТРУЛЬ У РЕКИ УСИЛЕН. На третьем причале видели чужую лодку.", amount: 0 });
+        list.push({ text: t.notices.river, amount: 0 });
       }
       if (flags.bribe) {
-        list.push({ text: "АНОНИМНЫЙ ДОНОС. Министерство изъяло подозрительные средства соратника поста.", amount: -10 });
+        list.push({ text: t.notices.denunciation, amount: -10 });
       }
       const sum = list.reduce((s, n) => s + (n.amount ?? 0), 0);
       const balance = newBalance + sum;
@@ -184,17 +188,16 @@ export default function App() {
       persist({ seed, dayIdx: next, credits: balance, flags, totals, heat: heatStreak.current });
       setPhase("briefing");
     },
-    [dayIdx, flags, persist, seed, totals]
+    [dayIdx, flags, persist, seed, totals, t, DAYS]
   );
 
-  const ending = pickEnding(flags, totals);
+  const ending = useMemo(() => pickEnding(flags, totals, lang), [flags, totals, lang]);
 
   return (
-    <div className="crt min-h-screen bg-[var(--color-ink)]">
-      <div className="noise-layer" />
+    <div className="min-h-screen bg-[var(--color-ink)]">
       <AnimatePresence mode="wait">
         <motion.div
-          key={phase + dayIdx}
+          key={phase + dayIdx + lang}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -236,7 +239,7 @@ export default function App() {
           )}
           {phase === "gameover" && (
             <GameOverScreen
-              gameover={GAMEOVER}
+              gameover={t.gameover}
               onRestart={() => {
                 setSave(loadSave());
                 setPhase("title");
@@ -246,5 +249,13 @@ export default function App() {
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <I18nProvider>
+      <Game />
+    </I18nProvider>
   );
 }

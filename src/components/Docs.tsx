@@ -1,5 +1,6 @@
-import { COUNTRIES } from "../game/data";
+import { country } from "../game/data";
 import type { Decision, FieldKey, PartyCardData, PassportData, PermitData, PersonSpec } from "../game/types";
+import { useI18n } from "../i18n";
 import { CountryEmblem, PartyEmblem } from "./Emblems";
 import { Person } from "./Person";
 
@@ -32,7 +33,8 @@ export function PassportDoc({ data, person, s, stampMarks }: {
   data: PassportData; person: PersonSpec; s: SelProps;
   stampMarks: { type: Decision; x: number; y: number }[];
 }) {
-  const c = COUNTRIES[data.country];
+  const { t, lang } = useI18n();
+  const c = country(data.country, lang);
 
   return (
     <div className="select-none doc" style={{ width: 220, position: "relative", overflow: "hidden" }}>
@@ -50,7 +52,7 @@ export function PassportDoc({ data, person, s, stampMarks }: {
           <button type="button" className={`${cls("p.country", s)} min-w-0 text-left`}
             onClick={e => { e.stopPropagation(); s.onSel("p.country"); }}>
             <div className="font-head text-[14px] tracking-[0.1em] text-[#e8c34a]"
-              style={{ fontFamily: "var(--font-head)" }}>ПАСПОРТ</div>
+              style={{ fontFamily: "var(--font-head)" }}>{t.ui.passport.title}</div>
             <div style={{ fontSize: 7, color: "rgba(232,195,74,0.8)", letterSpacing: "0.04em",
               textTransform: "uppercase", lineHeight: 1.2 }}>{c.name}</div>
           </button>
@@ -66,16 +68,16 @@ export function PassportDoc({ data, person, s, stampMarks }: {
             <Person spec={person} width={56} gray />
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <Row k="p.name" label="Имя" value={data.name} s={s} />
-            <Row k="p.sex" label="Пол" value={data.sex === "M" ? "МУЖ" : "ЖЕН"} s={s} />
-            <Row k="p.dob" label="Рожд." value={data.dob} s={s} />
+            <Row k="p.name" label={t.ui.passport.name} value={data.name} s={s} />
+            <Row k="p.sex" label={t.ui.passport.sex} value={data.sex === "M" ? t.ui.passport.male : t.ui.passport.female} s={s} />
+            <Row k="p.dob" label={t.ui.passport.dob} value={data.dob} s={s} />
           </div>
         </div>
 
         <div style={{ borderTop: "1px dotted rgba(43,36,28,0.3)", margin: "4px 0" }} />
 
-        <Row k="p.id" label="Серия №" value={data.id} s={s} />
-        <Row k="p.expiry" label="До" value={data.expiry} s={s} />
+        <Row k="p.id" label={t.ui.passport.id} value={data.id} s={s} />
+        <Row k="p.expiry" label={t.ui.passport.expiry} value={data.expiry} s={s} />
 
         {/* MRZ */}
         <div style={{ borderTop: "1px dashed rgba(43,36,28,0.2)", marginTop: 3, paddingTop: 3 }}>
@@ -111,7 +113,7 @@ export function PassportDoc({ data, person, s, stampMarks }: {
             border: `3px solid ${m.type === "ADMIT" ? "rgba(15,70,20,0.7)" : m.type === "DENY" ? "rgba(130,20,15,0.7)" : "rgba(10,8,5,0.7)"}`,
             background: "rgba(255,255,255,0.01)",
           }}>
-            {m.type === "ADMIT" ? "ВХОД" : m.type === "DENY" ? "ОТКАЗ" : "АРЕСТ"}
+            {m.type === "ADMIT" ? t.ui.stamps.ADMIT : m.type === "DENY" ? t.ui.stamps.DENY : t.ui.stamps.DETAIN}
           </span>
         </div>
       ))}
@@ -123,23 +125,24 @@ export function PassportDoc({ data, person, s, stampMarks }: {
 // РАЗРЕШЕНИЕ НА ВЪЕЗД
 // =============================================
 export function PermitDoc({ data, s }: { data: PermitData; s: SelProps }) {
+  const { t } = useI18n();
   return (
     <div className="doc paper-tex w-[260px] select-none">
       <div className="px-2.5 py-2 relative">
         <div className="flex items-center justify-between mb-1">
           <div className="font-head text-[11px] tracking-widest" style={{ fontFamily: "var(--font-head)", color: "#7c1d18" }}>
-            РАЗРЕШЕНИЕ НА ВЪЕЗД
+            {t.ui.permit.title}
           </div>
-          <div className="text-[7px] uppercase opacity-55">КПП-7</div>
+          <div className="text-[7px] uppercase opacity-55">{t.ui.checkpoint}</div>
         </div>
-        <Row k="w.name" label="Имя" value={data.name} s={s} />
-        <Row k="w.passId" label="№ паспорта" value={data.passId} s={s} />
-        <Row k="w.purpose" label="Цель" value={data.purpose} s={s} />
-        <Row k="w.duration" label="Срок" value={data.duration} s={s} />
-        <Row k="w.expiry" label="До" value={data.expiry} s={s} />
+        <Row k="w.name" label={t.ui.permit.name} value={data.name} s={s} />
+        <Row k="w.passId" label={t.ui.permit.passId} value={data.passId} s={s} />
+        <Row k="w.purpose" label={t.ui.permit.purpose} value={data.purpose} s={s} />
+        <Row k="w.duration" label={t.ui.permit.duration} value={data.duration} s={s} />
+        <Row k="w.expiry" label={t.ui.permit.expiry} value={data.expiry} s={s} />
         <div className="absolute right-2 top-7 w-12 h-12 opacity-30 grid place-items-center text-center pointer-events-none"
           style={{ border: "2px solid #7c1d18", color: "#7c1d18", transform: "rotate(12deg)" }}>
-          <span className="text-[5px] font-bold uppercase leading-tight">Мин.<br/>пропусков</span>
+          <span className="text-[5px] font-bold uppercase leading-tight">{t.ui.permit.ministry}</span>
         </div>
       </div>
     </div>
@@ -150,6 +153,7 @@ export function PermitDoc({ data, s }: { data: PermitData; s: SelProps }) {
 // УДОСТОВЕРЕНИЕ КПТА
 // =============================================
 export function PartyCardDoc({ data, s }: { data: PartyCardData; s: SelProps }) {
+  const { t } = useI18n();
   return (
     <div className="doc select-none overflow-hidden w-[260px]" style={{ background: "#6e1613" }}>
       <div className="m-1 border-2 border-[#e8c34a55] px-2 py-1.5 flex items-center gap-2">
@@ -159,18 +163,18 @@ export function PartyCardDoc({ data, s }: { data: PartyCardData; s: SelProps }) 
         </button>
         <div className="flex-1 min-w-0">
           <div className="font-head text-[10px] tracking-wider text-[#e8c34a]" style={{ fontFamily: "var(--font-head)" }}>
-            УДОСТОВЕРЕНИЕ КПТА
+            {t.ui.partyCard.title}
           </div>
           <button type="button" className={`${cls("c.name", s)} doc-row w-full text-left text-[9px]`}
             style={{ color: "#e8c34a", borderColor: "#e8c34a44" }}
             onClick={e => { e.stopPropagation(); s.onSel("c.name"); }}>
-            <span className="doc-label" style={{ color: "#e8c34a88" }}>Имя</span>
+            <span className="doc-label" style={{ color: "#e8c34a88" }}>{t.ui.partyCard.name}</span>
             <span className="font-bold">{data.name}</span>
           </button>
           <button type="button" className={`${cls("c.rank", s)} doc-row w-full text-left text-[9px]`}
             style={{ color: "#e8c34a", borderColor: "#e8c34a44" }}
             onClick={e => { e.stopPropagation(); s.onSel("c.rank"); }}>
-            <span className="doc-label" style={{ color: "#e8c34a88" }}>Звание</span>
+            <span className="doc-label" style={{ color: "#e8c34a88" }}>{t.ui.partyCard.rank}</span>
             <span className="font-bold">{data.rank}</span>
           </button>
         </div>

@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 import type { DayConfig, Notice } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
 import { PixelGlyph } from "../components/PixelGlyph";
-import { DAYS } from "../game/data";
+import { getDays } from "../game/data";
 import { sfx } from "../audio";
+import { useI18n } from "../i18n";
 
 export function BriefingScreen({
   day,
@@ -16,6 +18,8 @@ export function BriefingScreen({
   credits: number;
   onOpen: () => void;
 }) {
+  const { t, lang } = useI18n();
+  const total = useMemo(() => getDays(lang).length, [lang]);
   return (
     <div className="relative min-h-screen rays overflow-y-auto">
       <div className="max-w-5xl mx-auto px-4 py-8">
@@ -24,14 +28,14 @@ export function BriefingScreen({
           <div className="flex items-center gap-3">
             <AtomEmblem size={40} />
             <div>
-              <div className="pixel-text text-[9px] text-[var(--color-gold)]">СМЕНА {day.n} ИЗ {DAYS.length}</div>
+              <div className="pixel-text text-[9px] text-[var(--color-gold)]">{t.ui.briefing.shiftOf(day.n, total)}</div>
               <div className="text-xs text-[var(--color-ash)] uppercase tracking-widest">{day.date}</div>
             </div>
           </div>
           <div className="flex items-center gap-2 panel px-3 py-2">
             <PixelGlyph name="coin" size={15} className="text-[var(--color-gold)]" />
             <span className="font-bold text-[var(--color-gold)]">{credits} ₳</span>
-            <span className="text-[10px] text-[var(--color-ash)] uppercase">атоморуб.</span>
+            <span className="text-[10px] text-[var(--color-ash)] uppercase">{t.ui.briefing.atomRub}</span>
           </div>
         </div>
 
@@ -45,15 +49,15 @@ export function BriefingScreen({
           >
             <div className="flex items-center justify-between border-b-4 border-double border-[#2b241c] pb-2 mb-3">
               <div className="font-head text-2xl sm:text-3xl tracking-wider" style={{ fontFamily: "var(--font-head)" }}>
-                ГОЛОС АТОМА
+                {t.ui.news.title}
               </div>
               <div className="text-[10px] text-right leading-tight opacity-70 uppercase">
-                орган ЦК КПТА
+                {t.ui.news.issuer}
                 <br />
-                цена: 2 коп.
+                {t.ui.briefing.price}
               </div>
             </div>
-            <div className="text-[10px] uppercase tracking-widest mb-2 opacity-70">{day.date} — издание утреннее</div>
+            <div className="text-[10px] uppercase tracking-widest mb-2 opacity-70">{t.ui.briefing.morningEd(day.date)}</div>
             <h2
               className="font-head text-xl sm:text-[1.7rem] leading-tight uppercase mb-2"
               style={{ fontFamily: "var(--font-head)" }}
@@ -65,8 +69,8 @@ export function BriefingScreen({
               {day.body}
             </p>
             <div className="mt-4 pt-3 border-t border-[#2b241c66] flex justify-between text-[9px] uppercase tracking-widest opacity-60">
-              <span>отпечатано в типографии «Третья Орбита»</span>
-              <span>не выносить за пределы блока</span>
+              <span>{t.ui.briefing.printed}</span>
+              <span>{t.ui.briefing.noCarry}</span>
             </div>
             {/* подпалина */}
             <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-[var(--color-ink)] opacity-20 rotate-45 pointer-events-none" />
@@ -85,7 +89,7 @@ export function BriefingScreen({
                 <div className="flex items-center gap-2 text-[var(--color-state2)] mb-2">
                   <PixelGlyph name="alert" size={16} />
                   <span className="font-head text-sm uppercase tracking-widest" style={{ fontFamily: "var(--font-head)" }}>
-                    Извещение министерства
+                    {t.ui.briefing.noticesTitle}
                   </span>
                 </div>
                 {notices.map((n, i) => (
@@ -111,7 +115,7 @@ export function BriefingScreen({
               <div className="flex items-center gap-2 mb-4">
                 <PixelGlyph name="document" size={17} className="text-[var(--color-gold)]" />
                 <span className="font-head text-base uppercase tracking-widest text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
-                  Директива на смену {day.n}
+                  {t.ui.briefing.directiveN(day.n)}
                 </span>
               </div>
               <ul className="space-y-3">
@@ -129,7 +133,7 @@ export function BriefingScreen({
                     <span>{r.text}</span>
                     {r.isNew && (
                       <span className="shrink-0 px-1.5 py-0.5 text-[9px] font-bold uppercase bg-[var(--color-state2)] text-[var(--color-paper)] animate-blink h-fit">
-                        новое
+                        {t.ui.briefing.newFlag}
                       </span>
                     )}
                   </motion.li>
@@ -145,7 +149,7 @@ export function BriefingScreen({
               className="panel p-4"
             >
               <div className="text-[10px] uppercase tracking-widest text-[var(--color-ash)] mb-2">
-                Вечером вычтется из пайка:
+                {t.ui.briefing.expensesTitle}
               </div>
               {day.expenses.map((e) => (
                 <div key={e.label} className="flex justify-between text-xs py-0.5">
@@ -154,7 +158,7 @@ export function BriefingScreen({
                 </div>
               ))}
               <div className="flex justify-between text-xs py-0.5 mt-1 pt-1 border-t border-[var(--color-line)]">
-                <span className="text-[var(--color-moss)]">За каждое верное решение</span>
+                <span className="text-[var(--color-moss)]">{t.ui.briefing.perCorrect}</span>
                 <span className="text-[var(--color-moss)] font-bold">+5 ₳</span>
               </div>
             </motion.div>
@@ -169,7 +173,7 @@ export function BriefingScreen({
                 onOpen();
               }}
             >
-              Открыть КПП-7 <PixelGlyph name="next" size={20} />
+              {t.ui.briefing.openPost} <PixelGlyph name="next" size={20} />
             </motion.button>
           </div>
         </div>

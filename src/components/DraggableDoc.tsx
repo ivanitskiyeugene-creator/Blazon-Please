@@ -15,7 +15,7 @@ interface Props {
   onRef?: (el: HTMLDivElement | null) => void;
 }
 
-export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, children, showClose, actionLabel = "УБРАТЬ", onClose, onRef }: Props) {
+export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, children, showClose, actionLabel, onClose, onRef }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

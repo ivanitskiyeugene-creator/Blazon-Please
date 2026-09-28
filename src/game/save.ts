@@ -43,12 +43,12 @@ export function clearSave() {
   }
 }
 
-export function saveAge(ts: number) {
+export function saveAge(ts: number, t: { saveNow: string; saveMin: (n: number) => string; saveH: (n: number) => string; saveD: (n: number) => string }) {
   const diff = Date.now() - ts;
   const min = Math.floor(diff / 60000);
-  if (min < 1) return "только что";
-  if (min < 60) return `${min} мин. назад`;
+  if (min < 1) return t.saveNow;
+  if (min < 60) return t.saveMin(min);
   const h = Math.floor(min / 60);
-  if (h < 24) return `${h} ч. назад`;
-  return `${Math.floor(h / 24)} дн. назад`;
+  if (h < 24) return t.saveH(h);
+  return t.saveD(Math.floor(h / 24));
 }

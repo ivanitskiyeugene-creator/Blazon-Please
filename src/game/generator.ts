@@ -1,4 +1,4 @@
-import { NAMES, PROBE_LINES, PURPOSES, DURATIONS, RANKS, SMALLTALK } from "./names";
+import { getDict, type Lang } from "../i18n";
 import type {
   CountryCode,
   DayConfig,
@@ -9,14 +9,6 @@ import type {
   Sex,
   ViolationKind,
 } from "./types";
-
-const RARE_EVENT_DIALOGUES: Record<RareEventKind, string> = {
-  forgot_permit: "Одну секунду, я его где-то... сейчас найду...",
-  nervous: "Д-документы... вот. Простите за руки, товарищ.",
-  bribed_guard: "Предыдущий пост пропустил. Непонятно, за что тут очередь.",
-  dual_passport: "У меня два. Какой нужен — старый или новый?",
-  wrong_queue: "Мне сказали — вот сюда. Это правильная очередь?",
-};
 
 // ---------- seeded RNG (mulberry32) ----------
 export function rng(seed: number) {
@@ -91,50 +83,31 @@ function altPerson(r: R, base: PersonSpec, sex: Sex): PersonSpec {
   return p;
 }
 
-function makeName(r: R, country: CountryCode, sex: Sex) {
-  const pool = NAMES[country];
+function makeName(r: R, country: CountryCode, sex: Sex, lang: Lang) {
+  const pool = getDict(lang).names[country];
   const first = sex === "M" ? pick(r, pool.m) : pick(r, pool.f);
   let last = pick(r, pool.last);
   if (sex === "F" && pool.slavic) {
-    if (last.endsWith("ИЙ") || last.endsWith("ЫЙ") || last.endsWith("ОЙ")) last = last.slice(0, -2) + "АЯ";
-    else if (!last.endsWith("А") && !last.endsWith("Я")) last = last + "А";
+    if (lang === "ru") {
+      if (last.endsWith("ИЙ") || last.endsWith("ЫЙ") || last.endsWith("ОЙ")) last = last.slice(0, -2) + "АЯ";
+      else if (!last.endsWith("А") && !last.endsWith("Я")) last = last + "А";
+    } else {
+      // латиница: SIDOROV → SIDOROVA, STEPOVOY → STEPOVAYA, KOZAK → KOZAKA
+      if (last.endsWith("OV") || last.endsWith("EV") || last.endsWith("IN")) last = last + "A";
+      else if (last.endsWith("OY")) last = last.slice(0, -2) + "AYA";
+      else if (!last.endsWith("A")) last = last + "A";
+    }
   }
   return `${first} ${last}`;
 }
 
-const CAUGHT_LINES: Record<ViolationKind, string[]> = {
-  foreignNoPermit: ["Ну нельзя так нельзя. Обратно поеду.", "А я думал, пустят по-человечески...", "Границы, границы. Везде границы."],
-  passportExpired: ["Да я ж помню эту дату наизусть... и забыл.", "Просрочен? Он же вчера был хорош!", "Дату вижу. Стыдно."],
-  permitExpired: ["Бумажка кончилась, а дела остались.", "Поймал. Печки остынут без меня.", "Продлить не успел. Очередь была."],
-  nameMismatch: ["Опечатка машинистки! Я не виноват!", "Одна буква! Одна буква, товарищ!", "В деревне все так пишут..."],
-  idMismatch: ["Цифры... цифры пляшут. Всегда пляшут.", "Номер переписывали от руки, вот и вышло.", "Ошибка канцелярии, клянусь Атомом."],
-  westBanned: ["Это нарушение дипломатического протокола!", "Отеплия запомнит этот пост!", "Вы пожалеете об этом, инспектор."],
-  fakeAtom: ["Две орбиты, три орбиты... Вы их считаете?!", "Мне сказали — сойдёт. Меня обманули!", "Вы слишком внимательны. Слишком."],
-  fakeParty: ["Молот слева! Я перепутал сторону!", "Герб — партийная тайна! Вы не уполномочены!", "Печатали в спешке, товарищ..."],
-  photoMismatch: ["Хорошо-хорошо. Грипп тут ни при чём.", "Фото старое. Совсем старое. Ладно, не моё.", "Меня просили передать паспорт. Просто передать."],
-  sexMismatch: ["...Это паспорт сестры. Простите.", "Я думал, вы не заметите такую мелочь.", "В очереди сказали — сработает. Не сработало."],
-};
-
-const VIOLATION_CITE: Record<ViolationKind, string> = {
-  foreignNoPermit: "Иностранец без разрешения на въезд",
-  passportExpired: "Паспорт просрочен",
-  permitExpired: "Разрешение на въезд просрочено",
-  nameMismatch: "Имя в разрешении не совпадает с паспортом",
-  idMismatch: "Номер в разрешении не совпадает с № паспорта",
-  westBanned: "Гражданам Западного Союза въезд запрещён",
-  fakeAtom: "Поддельный герб АССР (две орбиты)",
-  fakeParty: "Поддельное удостоверение КПТА (классический герб)",
-  photoMismatch: "Фото в паспорте не соответствует предъявителю",
-  sexMismatch: "Пол и фото не соответствуют предъявителю",
-};
-
 const DETAINABLE: ViolationKind[] = ["fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"];
 
-function mutateName(r: R, name: string) {
+function mutateName(r: R, name: string, lang: Lang) {
   const [first, last] = name.split(" ");
   if (chance(r, 0.5) && last) {
     const i = int(r, 0, Math.max(0, last.length - 2));
-    const letters = "АОЕИУВНРСТЛК";
+    const letters = getDict(lang).mutate.letters;
     return `${first} ${last.slice(0, i)}${pick(r, letters.split(""))}${last.slice(i + 1)}`;
   }
   return `${first.slice(0, Math.max(3, first.length - 1))} ${last ?? ""}`.trim();
@@ -149,8 +122,9 @@ function mutateId(r: R, id: string) {
 }
 
 // ---------- генерация одного посетителя ----------
-export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSpec {
+export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false): EntrantSpec {
   const dayN = day.n;
+  const D = getDict(lang);
 
   // страна
   const foreignPool: CountryCode[] = ["KRS", "UGS", "STV", "ZPS"];
@@ -158,7 +132,7 @@ export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSp
   const country: CountryCode = isLocal ? "ASSR" : pick(r, foreignPool);
   const sex: Sex = chance(r, 0.45) ? "F" : "M";
   const person = makePerson(r, sex);
-  const name = makeName(r, country, sex);
+  const name = makeName(r, country, sex, lang);
   const id = String(int(r, 100000, 999999));
 
   // нарушение
@@ -189,8 +163,8 @@ export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSp
     permit = {
       name,
       passId: id,
-      purpose: pick(r, PURPOSES),
-      duration: pick(r, DURATIONS),
+      purpose: pick(r, D.purposes),
+      duration: pick(r, D.durations),
       expiry: futureDate(r, dayN),
     };
   }
@@ -198,7 +172,7 @@ export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSp
   // карточка КПТА — иногда у граждан АССР
   let partyCard: { name: string; rank: string; mirrored: boolean } | undefined;
   if (country === "ASSR" && (violation === "fakeParty" || chance(r, 0.18))) {
-    partyCard = { name, rank: pick(r, RANKS), mirrored: true };
+    partyCard = { name, rank: pick(r, D.ranks), mirrored: true };
   }
 
   switch (violation) {
@@ -218,7 +192,7 @@ export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSp
       break;
     case "nameMismatch":
       if (permit) {
-        permit.name = mutateName(r, name);
+        permit.name = mutateName(r, name, lang);
         mismatch.push(["p.name", "w.name"]);
       }
       break;
@@ -236,7 +210,7 @@ export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSp
       mismatch.push(["p.emblem", "ref.atom"]);
       break;
     case "fakeParty":
-      partyCard = { name, rank: pick(r, RANKS), mirrored: false };
+      partyCard = { name, rank: pick(r, D.ranks), mirrored: false };
       mismatch.push(["c.emblem", "ref.party"]);
       break;
     case "photoMismatch":
@@ -266,33 +240,33 @@ export function makeEntrant(r: R, day: DayConfig, forceClean = false): EntrantSp
   }
 
   const dialogue = rareEvent
-    ? RARE_EVENT_DIALOGUES[rareEvent]
-    : pick(r, SMALLTALK);
+    ? D.rare[rareEvent]
+    : pick(r, D.smalltalk);
 
   return {
     person,
     dialogue,
-    interrogate: pick(r, PROBE_LINES),
+    interrogate: pick(r, D.probes),
     passport: { country, name, sex: passSex, dob: birthDate(r), expiry, id, fake },
     permit,
     partyCard,
     photo,
     detainable,
     expected,
-    cite: violation ? VIOLATION_CITE[violation] : "Документы были в порядке — решение без основания",
+    cite: violation ? D.violations.cite[violation] : D.violations.cleanCite,
     mismatch,
-    caught: violation ? pick(r, CAUGHT_LINES[violation]) : undefined,
+    caught: violation ? pick(r, D.violations.caught[violation]) : undefined,
     rareEvent,
   };
 }
 
 /** очередь дня: обычные посетители + сюжетные агенты на своих местах */
-export function buildDay(seed: number, day: DayConfig, storyVisits: { at: number; entrant: EntrantSpec }[]): EntrantSpec[] {
+export function buildDay(seed: number, day: DayConfig, storyVisits: { at: number; entrant: EntrantSpec }[], lang: Lang): EntrantSpec[] {
   const r = rng(seed * 7919 + day.n * 104729);
   const list: EntrantSpec[] = [];
   for (let k = 0; k < day.count; k++) {
     // первый посетитель дня всегда чистый — мягкий вход в смену
-    list.push(makeEntrant(r, day, k === 0));
+    list.push(makeEntrant(r, day, lang, k === 0));
   }
   // вставляем агентов
   [...storyVisits].sort((a, b) => a.at - b.at).forEach((v) => {

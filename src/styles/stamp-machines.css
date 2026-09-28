@@ -137,20 +137,61 @@
   pointer-events: none;
 }
 
-/* Несущая промышленная балка через весь экран — машины ездят по ней */
-.stamp-beam {
+/* ── ШТЕМПЕЛЬНАЯ КАССЕТА ──────────────────────────────────────────────────
+   Машины НЕ ездят по балке — они прикручены к ней. Кассета состоит из двух
+   половин, каждая несёт свой кусок толстой балки (в ширину самого штампа);
+   половины съезжаются с боков и смыкаются точно по центру экрана. */
+.stamp-rig {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(50% - 78px);
-  height: 22px;
-  background: #44382e url("/images/metal-tile.png");
-  border-top: 3px solid #15100d;
-  border-bottom: 4px solid #15100d;
-  box-shadow: inset 0 3px 0 #6b5948, inset 0 -3px 0 #241b14, 0 5px 0 #090705;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
-.stamp-beam__bolts {
+.stamp-rig__scaler {
+  position: relative;
+  transform-origin: top center;
+  width: max-content;
+}
+
+.stamp-rig__row {
+  display: flex;
+  align-items: flex-start;
+  width: max-content;
+}
+
+/* Половина кассеты: кусок балки + прикрученные машины */
+.stamp-unit {
+  position: relative;
+  z-index: 1;
+}
+
+.stamp-unit--right {
+  z-index: 2;
+}
+
+/* Толстая несущая балка — 104px, как сам штамп */
+.stamp-unit__slab {
+  position: absolute;
+  top: 0;
+  height: 104px;
+  background: #44382e url("/images/metal-tile.png");
+  border-top: 4px solid #15100d;
+  border-bottom: 5px solid #15100d;
+  box-shadow: inset 0 4px 0 #6b5948, inset 0 -4px 0 #241b14, 0 6px 0 #090705;
+}
+
+/* балка чуть выступает наружу и нависает над стыком */
+.stamp-unit__slab--left {
+  left: -16px;
+  right: -6px;
+}
+
+.stamp-unit__slab--right {
+  left: -6px;
+  right: -16px;
+}
+
+.stamp-unit__bolts {
   position: absolute;
   inset: 0;
   display: flex;
@@ -159,7 +200,15 @@
   padding: 0 10px;
 }
 
-.stamp-beam__plate {
+.stamp-unit__bolts i {
+  width: 7px;
+  height: 7px;
+  background: #17110d;
+  border: 1px solid #8d7860;
+  box-shadow: inset 1px 1px 0 #6b5948;
+}
+
+.stamp-unit__plate {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -175,45 +224,37 @@
   white-space: nowrap;
 }
 
-.stamp-rig {
+/* стыковая накладка с болтами — закрывает шов, когда половины сошлись */
+.stamp-unit__splice {
   position: absolute;
-  top: 22px;
-  pointer-events: none;
-}
-
-.stamp-rig--center {
-  left: 50%;
-}
-
-.stamp-rig__scaler {
-  position: relative;
-  transform-origin: top center;
-}
-
-.stamp-rig__machines {
+  left: -8px;
+  top: -7px;
+  bottom: -7px;
+  width: 18px;
+  background: #57493c url("/images/metal-tile.png");
+  border: 3px solid #15100d;
+  box-shadow: inset 0 0 0 2px #7d6a52;
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 3px 0;
 }
 
-/* Группа машин на общей каретке, скользящей по балке */
-.stamp-rig__group {
+.stamp-unit__splice i {
+  width: 6px;
+  height: 6px;
+  background: #17110d;
+  border: 1px solid #8d7860;
+}
+
+/* Машины: верхние 26px лежат на балке — прикручены внахлёст */
+.stamp-unit__machines {
   position: relative;
+  z-index: 2;
   display: flex;
   gap: 6px;
-}
-
-.stamp-rig__group::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: 12px;
-  right: 12px;
-  height: 9px;
-  background: #4d4034 url("/images/metal-tile.png");
-  border: 2px solid #15100d;
-  box-shadow: inset 0 2px 0 #7d6a52, 0 3px 0 #090705;
-  z-index: 4;
+  padding-top: 78px;
 }
 
 .stamp-machine {

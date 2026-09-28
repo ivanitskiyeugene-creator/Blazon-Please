@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { BookTab, DayConfig, FieldKey, RuleItem } from "../game/types";
+import { useI18n } from "../i18n";
 import { AtomEmblem, PartyEmblem } from "./Emblems";
 import { sfx } from "../audio";
 
@@ -18,14 +19,15 @@ function cls(k: FieldKey, sel: FieldKey[], proven: FieldKey[]) {
   return "fld";
 }
 
-const TABS: { key: BookTab; label: string; icon: string }[] = [
-  { key: "rules", label: "Директива", icon: "ДР" },
-  { key: "emblems", label: "Гербы", icon: "ГР" },
-  { key: "calendar", label: "Календарь", icon: "КЛ" },
-];
-
 export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
+  const { t } = useI18n();
   const [tab, setTab] = useState<BookTab>("rules");
+
+  const TABS: { key: BookTab; label: string; icon: string }[] = [
+    { key: "rules", label: t.ui.rulebook.tabs.rules, icon: t.ui.rulebook.icons.rules },
+    { key: "emblems", label: t.ui.rulebook.tabs.emblems, icon: t.ui.rulebook.icons.emblems },
+    { key: "calendar", label: t.ui.rulebook.tabs.calendar, icon: t.ui.rulebook.icons.calendar },
+  ];
 
   if (!open) {
     return (
@@ -33,7 +35,7 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
         className="w-full py-2 text-center text-[10px] uppercase tracking-[0.3em] text-[var(--color-gold)] border-2 border-[var(--color-line)] hover:border-[var(--color-gold)] hover:bg-[rgba(232,195,74,0.06)] transition-colors cursor-pointer"
         onClick={() => { sfx.paper(); onToggle(); }}
       >
-        [КН] Открыть книжку инспектора
+        [{t.ui.docIcons.book}] {t.ui.rulebook.openBtn}
       </button>
     );
   }
@@ -59,7 +61,7 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
         <button
           className="px-3 py-2 text-[var(--color-ash)] hover:text-[var(--color-state2)] transition-colors text-xs"
           onClick={() => { sfx.paper(); onToggle(); }}
-          title="Закрыть книжку"
+          title={t.ui.rulebook.close}
         >
           ✕
         </button>
@@ -84,13 +86,14 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
 // =========== СТРАНИЦЫ ===========
 
 function RulesPage({ rules, dayN, sel, proven, onSel }: { rules: RuleItem[]; dayN: number; sel: FieldKey[]; proven: FieldKey[]; onSel: (k: FieldKey) => void }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <div className="font-head text-[12px] tracking-widest text-[var(--color-state2)]" style={{ fontFamily: "var(--font-head)" }}>
-          ДИРЕКТИВА — СМЕНА {dayN}
+          {t.ui.rulebook.directiveN(dayN)}
         </div>
-        <div className="text-[8px] uppercase opacity-60 text-[var(--color-ash)]">министерство пропусков</div>
+        <div className="text-[8px] uppercase opacity-60 text-[var(--color-ash)]">{t.ui.rulebook.ministry}</div>
       </div>
       <div className="space-y-1.5">
         {rules.map((r, i) => (
@@ -106,7 +109,7 @@ function RulesPage({ rules, dayN, sel, proven, onSel }: { rules: RuleItem[]; day
             <span className="text-[var(--color-bone)]">{r.text}</span>
             {r.isNew && (
               <span className="shrink-0 px-1 py-0.5 text-[8px] font-bold uppercase bg-[var(--color-state2)] text-[var(--color-paper)] animate-blink h-fit">
-                ново
+                {t.ui.rulebook.newShort}
               </span>
             )}
           </button>
@@ -117,10 +120,11 @@ function RulesPage({ rules, dayN, sel, proven, onSel }: { rules: RuleItem[]; day
 }
 
 function EmblemsPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey[]; onSel: (k: FieldKey) => void }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="font-head text-[12px] tracking-widest text-[var(--color-state2)] mb-3" style={{ fontFamily: "var(--font-head)" }}>
-        СПРАВОЧНИК ГЕРБОВ
+        {t.ui.book.refTitle}
       </div>
       <div className="grid grid-cols-2 gap-3 mb-3">
         <button
@@ -132,7 +136,7 @@ function EmblemsPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey
             <AtomEmblem size={56} badge />
           </div>
           <div className="text-[9px] uppercase font-bold text-[var(--color-moss)] leading-tight">
-            АССР — ВЕРНО<br />три орбиты
+            {t.ui.rulebook.atomOk}<br />{t.ui.rulebook.atomOkSub}
           </div>
         </button>
         <button
@@ -144,7 +148,7 @@ function EmblemsPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey
             <AtomEmblem size={56} badge orbits={2} />
           </div>
           <div className="text-[9px] uppercase font-bold text-[var(--color-state2)] leading-tight">
-            ПОДДЕЛКА<br />две орбиты
+            {t.ui.rulebook.atomFake}<br />{t.ui.rulebook.atomFakeSub}
           </div>
         </button>
         <button
@@ -156,7 +160,7 @@ function EmblemsPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey
             <PartyEmblem size={56} mirrored />
           </div>
           <div className="text-[9px] uppercase font-bold text-[var(--color-moss)] leading-tight">
-            КПТА — ВЕРНО<br />молот справа
+            {t.ui.rulebook.partyOk}<br />{t.ui.rulebook.partyOkSub}
           </div>
         </button>
         <button
@@ -168,22 +172,23 @@ function EmblemsPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey
             <PartyEmblem size={56} mirrored={false} />
           </div>
           <div className="text-[9px] uppercase font-bold text-[var(--color-state2)] leading-tight">
-            ПОДДЕЛКА<br />молот слева
+            {t.ui.rulebook.atomFake}<br />{t.ui.rulebook.partyFakeSub}
           </div>
         </button>
       </div>
       <div className="text-[9px] uppercase text-[var(--color-ash)] leading-relaxed tracking-wide">
-        образцы утверждены ЦК — сверяй с документом на столе
+        {t.ui.rulebook.refNote}
       </div>
     </div>
   );
 }
 
 function CalendarPage({ date, dayN, sel, proven, onSel }: { date: string; dayN: number; sel: FieldKey[]; proven: FieldKey[]; onSel: (k: FieldKey) => void }) {
+  const { t } = useI18n();
   return (
     <div className="text-center py-4">
       <div className="text-[9px] uppercase tracking-widest text-[var(--color-ash)] mb-2">
-        календарь поста КПП-7
+        {t.ui.rulebook.calPost}
       </div>
       <button
         type="button"
@@ -194,14 +199,14 @@ function CalendarPage({ date, dayN, sel, proven, onSel }: { date: string; dayN: 
           {date}
         </div>
         <div className="text-[10px] uppercase mt-2 text-[var(--color-ash)]">
-          сегодняшняя дата
+          {t.ui.rulebook.todayDate}
         </div>
       </button>
       <div className="text-[10px] uppercase mt-4 text-[var(--color-ash)] tracking-wide">
-        смена {dayN} // год 51-й
+        {t.ui.rulebook.shiftYear(dayN)}
       </div>
       <div className="text-[9px] mt-2 text-[var(--color-ash)] opacity-70 leading-relaxed">
-        документы со сроком раньше этой даты — недействительны
+        {t.ui.rulebook.calNote}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { DETAIN_BONUS, ERROR_FINE, EVIDENCE_BONUS, PER_PAY } from "../game/data"
 import type { DayConfig, DayResult } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
 import { sfx } from "../audio";
+import { useI18n } from "../i18n";
 
 // ---------- ВЕДОМОСТЬ В КОНЦЕ СМЕНЫ ----------
 export function LedgerScreen({
@@ -20,35 +21,36 @@ export function LedgerScreen({
   isLast: boolean;
   onNext: (newBalance: number, fine: number, opts?: { heatSkipped?: boolean }) => void;
 }) {
+  const { t } = useI18n();
   const [heatSkipped, setHeatSkipped] = useState(false);
 
   const pay = result.correct * PER_PAY;
   const fine = result.errors.length * ERROR_FINE;
-  const isHeating = (label: string) => label.toLowerCase().startsWith("отоплен");
-  const expenses = day.expenses.reduce((s, e) => s + (heatSkipped && isHeating(e.label) ? 0 : e.amount), 0);
+  const isHeating = (id: string) => id === "heat";
+  const expenses = day.expenses.reduce((s, e) => s + (heatSkipped && isHeating(e.id) ? 0 : e.amount), 0);
   const total = creditsBefore + pay + result.bribeGain + result.detainBonus + result.evidenceBonus + result.agentCredits - fine - expenses;
   const broke = total < 0;
 
   const rows: { label: string; value: string; tone?: string }[] = [
-    { label: `Верных решений: ${result.correct} × ${PER_PAY}₳`, value: `+${pay} ₳`, tone: "var(--color-moss)" },
+    { label: t.ui.ledger.correct(result.correct, PER_PAY), value: `+${pay} ₳`, tone: "var(--color-moss)" },
     ...(result.evidence > 0
-      ? [{ label: `Доказано несоответствий: ${result.evidence} × ${EVIDENCE_BONUS}₳`, value: `+${result.evidenceBonus} ₳`, tone: "var(--color-moss)" }]
+      ? [{ label: t.ui.ledger.evidence(result.evidence, EVIDENCE_BONUS), value: `+${result.evidenceBonus} ₳`, tone: "var(--color-moss)" }]
       : []),
     ...(result.detains > 0
-      ? [{ label: `Задержано врагов народа: ${result.detains} × ${DETAIN_BONUS}₳`, value: `+${result.detainBonus} ₳`, tone: "var(--color-moss)" }]
+      ? [{ label: t.ui.ledger.detains(result.detains, DETAIN_BONUS), value: `+${result.detainBonus} ₳`, tone: "var(--color-moss)" }]
       : []),
     ...(result.bribeGain > 0
-      ? [{ label: "«Один денёк. Кто заметит?»", value: `+${result.bribeGain} ₳`, tone: "var(--color-gold)" }]
+      ? [{ label: t.ui.ledger.bribeRow, value: `+${result.bribeGain} ₳`, tone: "var(--color-gold)" }]
       : []),
     ...(result.agentCredits > 0
-      ? [{ label: "Конверты за разговоры через стекло", value: `+${result.agentCredits} ₳`, tone: "var(--color-gold)" }]
+      ? [{ label: t.ui.ledger.envelopes, value: `+${result.agentCredits} ₳`, tone: "var(--color-gold)" }]
       : []),
     ...(result.errors.length > 0
-      ? [{ label: `Протоколы нарушений: ${result.errors.length} × ${ERROR_FINE}₳`, value: `-${fine} ₳`, tone: "var(--color-state2)" }]
+      ? [{ label: t.ui.ledger.protocols(result.errors.length, ERROR_FINE), value: `-${fine} ₳`, tone: "var(--color-state2)" }]
       : []),
     ...day.expenses.map((e) =>
-      heatSkipped && isHeating(e.label)
-        ? { label: `${e.label} — ОТКЛЮЧЕНО`, value: "0 ₳", tone: "var(--color-ash)" }
+      heatSkipped && isHeating(e.id)
+        ? { label: `${e.label} ${t.ui.ledger.disabled}`, value: "0 ₳", tone: "var(--color-ash)" }
         : { label: e.label, value: `-${e.amount} ₳`, tone: "var(--color-state2)" }
     ),
   ];
@@ -62,15 +64,15 @@ export function LedgerScreen({
       >
         <div className="flex items-center justify-between border-b-4 border-double border-[#2b241c] pb-2 mb-4">
           <div className="font-head text-lg sm:text-xl uppercase tracking-wider" style={{ fontFamily: "var(--font-head)" }}>
-            Ведомость смены {day.n}
+            {t.ui.ledger.title(day.n)}
           </div>
           <div className="text-[10px] uppercase opacity-70 text-right">
-            КПП-7 // {day.dateShort}
+            {t.ui.checkpoint} // {day.dateShort}
           </div>
         </div>
 
         <div className="text-[10px] uppercase tracking-[0.25em] opacity-60 mb-2">
-          Расчёт произведён по закрытии поста — результаты дня:
+          {t.ui.ledger.header}
         </div>
         <div className="space-y-1.5">
           {rows.map((r, k) => (
@@ -109,7 +111,7 @@ export function LedgerScreen({
             className="mt-4 p-3 border-2 border-[#7c1d18] bg-[#7c1d1812]"
           >
             <div className="flex items-center gap-2 text-[#7c1d18] text-xs font-bold uppercase mb-1.5">
-              <PixelGlyph name="alert" size={14} /> протоколы дня
+              <PixelGlyph name="alert" size={14} /> {t.ui.ledger.protocolsTitle}
             </div>
             {result.errors.map((e, k) => (
               <div key={k} className="text-[11px] leading-snug py-0.5">— {e}</div>
@@ -134,7 +136,7 @@ export function LedgerScreen({
         >
           <span className="flex items-center gap-2 font-bold uppercase tracking-wide">
             <PixelGlyph name="flame" size={15} color={heatSkipped ? "#5a6490" : "#b93a25"} />
-            {heatSkipped ? "Отопление отключено — семья мёрзнет (экономия 4 ₳)" : "Отопление включено: −4 ₳. Нажми, чтобы сэкономить и помёрзнуть"}
+            {heatSkipped ? t.ui.ledger.heatOff : t.ui.ledger.heatOn}
           </span>
         </motion.button>
 
@@ -147,7 +149,7 @@ export function LedgerScreen({
           <div className="flex items-center gap-2">
             <PixelGlyph name="coin" size={18} />
             <span className="font-head uppercase text-sm" style={{ fontFamily: "var(--font-head)" }}>
-              Итог дома: {total} ₳
+              {t.ui.ledger.totalHome(total)}
             </span>
           </div>
           <div
@@ -158,7 +160,7 @@ export function LedgerScreen({
               borderColor: broke ? "#7c1d18" : "#2f5c33",
             }}
           >
-            {broke ? "Долг блоку" : "Смена закрыта"}
+            {broke ? t.ui.ledger.debt : t.ui.ledger.closed}
           </div>
         </motion.div>
 
@@ -172,7 +174,7 @@ export function LedgerScreen({
             onNext(total, fine, { heatSkipped });
           }}
         >
-          {broke ? "Сверить долг..." : isLast ? "Итоги службы" : "Лечь спать // смена " + (day.n + 1)}
+          {broke ? t.ui.ledger.checkDebt : isLast ? t.ui.ledger.totals : t.ui.ledger.sleep(day.n + 1)}
           <PixelGlyph name="next" size={18} />
         </motion.button>
       </motion.div>
@@ -190,6 +192,7 @@ export function EndingScreen({
   stats: { correct: number; errors: number; credits: number; detains?: number; evidence?: number };
   onRestart: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen rays flex items-center justify-center px-4 py-10 relative overflow-hidden">
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.08] pointer-events-none">
@@ -217,12 +220,12 @@ export function EndingScreen({
           >
             <img
               src="images/ending-poster-pixel.png"
-              alt="Инспектор КПП-7 смотрит на послевоенный атомный комплекс"
+              alt={t.ui.ending.posterAlt}
               className="pixel-art absolute inset-0 w-full h-full object-cover"
             />
             <div className="poster-halftone absolute inset-0" />
             <figcaption className="absolute inset-x-0 bottom-0 border-t-2 border-[#0b0907] bg-[#17130fee] px-3 py-2 text-[8px] uppercase tracking-wider text-[var(--color-gold)]">
-              пост не отпускает даже после последней смены
+              {t.ui.ending.posterCaption}
             </figcaption>
           </motion.figure>
 
@@ -231,7 +234,7 @@ export function EndingScreen({
               <AtomEmblem size={72} />
             </motion.div>
 
-            <div className="pixel-text text-[9px] text-[var(--color-ash)] mb-3 uppercase">итог службы на кпп-7</div>
+            <div className="pixel-text text-[9px] text-[var(--color-ash)] mb-3 uppercase">{t.ui.ending.stats}</div>
             <h1
               className="font-head text-3xl sm:text-5xl uppercase fringe mb-6"
               style={{ fontFamily: "var(--font-head)", color: ending.tone }}
@@ -246,21 +249,21 @@ export function EndingScreen({
               ))}
             </div>
             <div className="flex justify-center gap-5 text-[11px] uppercase tracking-widest text-[var(--color-ash)] mb-7 flex-wrap">
-              <span>верных: {stats.correct}</span>
-              <span>протоколов: {stats.errors}</span>
-              {stats.evidence !== undefined && <span>доказано: {stats.evidence}</span>}
+              <span>{t.ui.ending.correct(stats.correct)}</span>
+              <span>{t.ui.ending.protocols(stats.errors)}</span>
+              {stats.evidence !== undefined && <span>{t.ui.ending.proven(stats.evidence)}</span>}
               {stats.detains !== undefined && (
                 <span className="inline-flex items-center gap-1">
-                  <PixelGlyph name="siren" size={11} /> задержано: {stats.detains}
+                  <PixelGlyph name="siren" size={11} /> {t.ui.ending.detained(stats.detains)}
                 </span>
               )}
-              <span>на руках: {stats.credits} ₳</span>
+              <span>{t.ui.ending.onHands(stats.credits)}</span>
             </div>
             <button className="btn-soviet px-8 py-4 text-base inline-flex items-center justify-center gap-2 self-center" onClick={onRestart}>
-              <PixelGlyph name="restart" size={18} /> В главное меню
+              <PixelGlyph name="restart" size={18} /> {t.ui.ending.toMenu}
             </button>
             <div className="text-[10px] uppercase tracking-widest text-[var(--color-ash)] mt-4">
-              очередь и нарушители генерируются заново — следующая служба будет другой
+              {t.ui.ending.regen}
             </div>
           </div>
         </div>
@@ -277,6 +280,7 @@ export function GameOverScreen({
   gameover: { title: string; lines: string[] };
   onRestart: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#0d0a08" }}>
       <motion.div
@@ -313,7 +317,7 @@ export function GameOverScreen({
           className="btn-soviet px-8 py-4 text-base inline-flex items-center gap-2"
           onClick={onRestart}
         >
-          <PixelGlyph name="restart" size={18} /> В главное меню
+          <PixelGlyph name="restart" size={18} /> {t.ui.ending.toMenu}
         </motion.button>
       </motion.div>
     </div>

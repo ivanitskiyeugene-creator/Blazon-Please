@@ -17,6 +17,14 @@
 
 На Windows 11 WebView2 уже установлен вместе с системой. Дополнительно ставить движок или Unity не нужно.
 
+## Языки / Languages
+
+Игра двуязычна: **русский** и **английский**. Переключатель РУС/ENG — в верхних лентах главного меню и экрана смены, выбор запоминается.
+
+Шрифты: заголовки и логотип набираются **Agit Prop** (Сергей Казаков), документы и интерфейс — растровым **BM mini** (BitmapMania). Оба шрифта латинские, поэтому русские буквы автоматически подставляются из **PixelPlay** — как в оригинальных Papers, Please.
+
+The game is bilingual: Russian and English. Use the РУС/ENG switch in the top bars of the main menu and the shift screen; the choice is remembered.
+
 ## Разработка веб-версии
 
 ```bash

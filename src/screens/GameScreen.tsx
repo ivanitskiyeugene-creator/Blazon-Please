@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { PixelGlyph } from "../components/PixelGlyph";
 import { initAudio, isMuted, setMuted, sfx } from "../audio";
 import { startMusic, stopMusic, isMusicPlaying } from "../music";
-import { DETAIN_BONUS, EVIDENCE_BONUS, GENERIC_ADMIT, GENERIC_CAUGHT, GENERIC_DENY, WRONG_EVIDENCE } from "../game/data";
-import { PROBE_LINES } from "../game/names";
+import { DETAIN_BONUS, EVIDENCE_BONUS } from "../game/data";
+import { useI18n, LangSwitch } from "../i18n";
 import type { AgentOption, DayConfig, DayResult, Decision, DocId, EntrantSpec, FieldKey } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
 import { BoothDecor } from "../components/Booth";
@@ -23,14 +23,6 @@ interface DeskDoc {
   y: number;
   z: number;
 }
-
-const DOC_LABEL: Record<DocId, string> = {
-  passport: "Паспорт",
-  permit: "Разрешение",
-  party: "Карточка КПТА",
-  book: "Книжка",
-  news: "Газета",
-};
 
 function TypeLine({ text, className = "" }: { text: string; className?: string }) {
   const [n, setN] = useState(0);
@@ -64,6 +56,7 @@ export function GameScreen({
   onFinish: (res: DayResult) => void;
   onExit: () => void;
 }) {
+  const { t } = useI18n();
   const [i, setI] = useState(0);
   const [stage, setStage] = useState<Stage>("enter");
   const [stamped, setStamped] = useState<Decision | null>(null);
@@ -184,17 +177,17 @@ export function GameScreen({
       if (entrant?.partyCard) docs.push("party");
       setOfferedDocs(docs);
       if (entrant?.rareEvent === "forgot_permit" && entrant.permit) {
-        setRareMsg("Подождите... разрешение осталось в пальто. Сейчас достану.");
+        setRareMsg(t.rareStage.forgot);
         later(3800, () => {
           setOfferedDocs((v) => [...v, "permit"]);
           setRareMsg(null);
           sfx.paper();
         });
       } else if (entrant?.rareEvent === "nervous") {
-        setRareMsg("П-простите... руки дрожат.");
+        setRareMsg(t.rareStage.nervous);
         later(1800, () => setRareMsg(null));
       } else if (entrant?.rareEvent === "dual_passport") {
-        setRareMsg("У меня два паспорта... этот брать? Нет? Ладно, вот этот.");
+        setRareMsg(t.rareStage.dual);
         later(2200, () => setRareMsg(null));
       }
       if (entrant?.agentOffer) later(1400, () => setOfferOpen(true));
@@ -275,7 +268,7 @@ export function GameScreen({
       setProven((p) => [...new Set([...p, ...sel])]);
       setSel([]);
       setHasEvidence(true);
-      setReaction(entrant.caught ?? GENERIC_CAUGHT);
+      setReaction(entrant.caught ?? t.generic.caught);
       result.current.evidence += 1;
       result.current.evidenceBonus += EVIDENCE_BONUS;
       setShaking(true);
@@ -283,7 +276,7 @@ export function GameScreen({
     } else {
       sfx.bad();
       setSel([]);
-      setReaction(WRONG_EVIDENCE[i % WRONG_EVIDENCE.length]);
+      setReaction(t.generic.wrongEvidence[i % t.generic.wrongEvidence.length]);
     }
     later(3000, () => setReaction(null));
   };
@@ -304,12 +297,12 @@ export function GameScreen({
     if (entrant?.agent === "neighbor") f.metNeighbor = true;
     // предметы от агентов
     if (o.credits && entrant?.agent === "west") {
-      setInventory((inv) => [...inv, { id: "env_" + Date.now(), icon: "₳", name: "Конверт", desc: o.credits + " ₳ от Коула", from: "ЭДВАРД КОУЛ" }]);
+      setInventory((inv) => [...inv, { id: "env_" + Date.now(), icon: "₳", name: t.ui.game.inv.envelope, desc: t.ui.game.inv.envelopeDesc(o.credits ?? 0), from: t.ui.game.inv.envelopeFrom }]);
     }
     if (entrant?.agent === "neighbor" && o.neighbor && o.neighbor >= 2) {
       setInventory((inv) => {
         if (inv.some((it) => it.id === "apple")) return inv;
-        return [...inv, { id: "apple", icon: "ЯБ", name: "Яблоко", desc: "Белый налив из Краснославии", from: "БОГДАН ТИХИЙ" }];
+        return [...inv, { id: "apple", icon: t.ui.game.inv.appleIcon, name: t.ui.game.inv.apple, desc: t.ui.game.inv.appleDesc, from: t.ui.game.inv.appleFrom }];
       });
     }
     setOfferOpen(false);
@@ -338,13 +331,13 @@ export function GameScreen({
       if (e.detainable) {
         result.current.detains += 1;
         result.current.detainBonus += DETAIN_BONUS;
-        setReaction(e.reactDeny ?? "Меня свяжут с адвокатом!");
+        setReaction(e.reactDeny ?? t.violations.reactDetainOk);
       } else {
-        result.current.errors.push("Ошибочное задержание невиновного: жалоба ушла в Обком");
-        setReaction(e.reactDeny ?? "Это произвол! Честный человек!");
+        result.current.errors.push(t.violations.detainError);
+        setReaction(e.reactDeny ?? t.violations.reactDetainBad);
       }
     } else {
-      const pool = d === "ADMIT" ? GENERIC_ADMIT : GENERIC_DENY;
+      const pool = d === "ADMIT" ? t.generic.admit : t.generic.deny;
       const fallback = pool[(i + (d === "ADMIT" ? 1 : 2)) % pool.length];
       const react = d === "ADMIT" ? e.reactAdmit ?? fallback : e.reactDeny ?? fallback;
 
@@ -353,8 +346,8 @@ export function GameScreen({
         result.current.hidden += 1;
         result.current.flags.bribe = true;
         later(360, () => sfx.coin());
-        setInventory((inv) => [...inv, { id: "bribe_" + Date.now(), icon: "₳", name: "Купюры", desc: (e.bribe ?? 0) + " ₳ — взятка", from: e.passport.name }]);
-        setReaction("Кто заметит один денёк? Никто. Приятно иметь дело.");
+        setInventory((inv) => [...inv, { id: "bribe_" + Date.now(), icon: "₳", name: t.ui.game.inv.notes, desc: t.ui.game.inv.notesDesc(e.bribe ?? 0), from: e.passport.name }]);
+        setReaction(t.violations.bribeReact);
       } else if (d === e.expected) {
         result.current.correct += 1;
         setReaction(react);
@@ -431,28 +424,23 @@ export function GameScreen({
     initAudio();
     // легендарный грубый вызов через "громкоговоритель"
     sfx.ui();
-    setReaction("СЛЕДУЮЩИЙ!");
+    setReaction(t.ui.game.nextCall);
     later(450, () => setReaction(null));
     callNext();
   };
 
   const serviceItems: { id: DocId; label: string; icon: string }[] = [
-    { id: "book", label: "КНИЖКА", icon: "КН" },
-    { id: "news", label: "ГАЗЕТА", icon: "ГЗ" },
+    { id: "book", label: t.ui.game.serviceBook, icon: t.ui.docIcons.book },
+    { id: "news", label: t.ui.game.serviceNews, icon: t.ui.docIcons.news },
   ];
 
-  const docIcon = (id: DocId) => ({
-    passport: "ПС",
-    permit: "РЗ",
-    party: "КП",
-    book: "КН",
-    news: "ГЗ",
-  }[id]);
+  const docLabel = (id: DocId) => t.ui.docTypes[id];
+  const docIcon = (id: DocId) => t.ui.docIcons[id];
 
   return (
     <div className={`relative min-h-screen flex flex-col ${shaking ? "shake" : ""}`} style={shaking ? { transform: `translate(${Math.random()*shakeIntensity*10-5}px, ${Math.random()*shakeIntensity*10-5}px)` } : {}}>
-      {/* ШТАМПЫ — промышленная балка ровно по центру экрана,
-          машины въезжают по ней с боков и смыкаются в центре */}
+      {/* ШТАМПЫ — толстая несущая балка ровно по центру экрана;
+          машины прикручены к ней, половины кассеты съезжаются с боков */}
       <StampPad
         open={stampOpen}
         locked={!canStamp}
@@ -486,7 +474,7 @@ export function GameScreen({
         <div className="max-w-[1500px] mx-auto px-3 py-2 flex items-center gap-3 flex-wrap">
           <AtomEmblem size={28} />
           <div className="mr-auto">
-            <div className="pixel-text text-[8px] sm:text-[9px] text-[var(--color-gold)]">КПП-7 // СМЕНА {day.n}</div>
+            <div className="pixel-text text-[8px] sm:text-[9px] text-[var(--color-gold)]">{t.ui.game.header(day.n)}</div>
             <div className="text-[10px] text-[var(--color-ash)] uppercase tracking-widest">{day.date}</div>
           </div>
 
@@ -511,17 +499,18 @@ export function GameScreen({
           </div>
 
           <div className="panel px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-[var(--color-ash)]">
-            расчёт — вечером
+            {t.ui.game.settleEvening}
           </div>
           <div className="panel px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-[var(--color-ash)] hidden md:block">
-            баланс утра: <span className="text-[var(--color-bone)] font-bold">{credits} ₳</span>
+            {t.ui.game.morningBalance} <span className="text-[var(--color-bone)] font-bold">{credits} ₳</span>
           </div>
-          <button className="btn-ghost p-1.5" title="В главное меню" onClick={() => setAskExit(true)}>
+          <LangSwitch />
+          <button className="btn-ghost p-1.5" title={t.ui.game.toMenu} onClick={() => setAskExit(true)}>
             <PixelGlyph name="home" size={15} />
           </button>
           <button
             className="btn-ghost p-1.5"
-            title={musicOn ? "Выключить музыку" : "Включить музыку"}
+            title={musicOn ? t.ui.game.musicOff : t.ui.game.musicOn}
             onClick={() => {
               if (musicOn) { stopMusic(); setMusicOn(false); }
               else { startMusic(); setMusicOn(true); }
@@ -551,7 +540,7 @@ export function GameScreen({
             <span className="bolt" style={{ top: 5, left: 5 }} />
             <span className="bolt" style={{ top: 5, right: 5 }} />
             <div className="text-center py-1.5 border-b-2 border-[var(--color-line)] text-[10px] uppercase tracking-[0.3em] text-[var(--color-ash)]">
-              окно приёма
+              {t.ui.game.window}
             </div>
 
             {/* вид сверху / наружу + громкоговоритель */}
@@ -565,9 +554,9 @@ export function GameScreen({
                 disabled={!needCall}
               >
                 <div className="flex items-center gap-2">
-                  <span className="pixel-icon">ВЫЗ</span>
+                  <span className="pixel-icon">{t.ui.game.callIcon}</span>
                   <span className="font-head text-[12px] uppercase tracking-widest text-[var(--color-gold)]" style={{ fontFamily: "var(--font-head)" }}>
-                    СЛЕДУЮЩИЙ
+                    {t.ui.game.next}
                   </span>
                 </div>
               </button>
@@ -613,7 +602,7 @@ export function GameScreen({
                       <span className="text-[11px] sm:text-xs leading-snug block">{reaction}</span>
                     ) : (
                       <TypeLine
-                        text={probed ? entrant.interrogate ?? PROBE_LINES[i % PROBE_LINES.length] : entrant.dialogue}
+                        text={probed ? entrant.interrogate ?? t.probes[i % t.probes.length] : entrant.dialogue}
                         className="text-[11px] sm:text-xs leading-snug"
                       />
                     )}
@@ -642,7 +631,7 @@ export function GameScreen({
                           proven.includes("face") ? "fld fld-proven" : sel.includes("face") ? "fld fld-sel" : "fld"
                         }`}
                         style={{ left: "31%", top: "13%", width: "38%", height: "26%" }}
-                        title="Лицо предъявителя"
+                        title={t.ui.game.faceTitle}
                         onClick={(e) => {
                           e.stopPropagation();
                           onSel("face");
@@ -662,7 +651,7 @@ export function GameScreen({
                       className="panel px-2.5 py-2 text-[10px] uppercase tracking-widest text-[var(--color-bone)] hover:border-[var(--color-gold)] transition-colors"
                       onClick={() => handoverDoc(id)}
                     >
-                      <span className="pixel-icon mr-1">{docIcon(id)}</span>{id === "passport" ? "паспорт" : id === "permit" ? "пропуск" : "карточка"}
+                      <span className="pixel-icon mr-1">{docIcon(id)}</span>{id === "passport" ? t.ui.offerDoc.passport : id === "permit" ? t.ui.offerDoc.permit : t.ui.offerDoc.party}
                     </button>
                   ))}
                 </div>
@@ -679,7 +668,7 @@ export function GameScreen({
                     className="absolute left-1/2 -translate-x-1/2 bottom-3 z-20 px-3 py-2 text-[11px] font-bold uppercase tracking-wide border-2 border-[var(--color-gold)] text-[var(--color-gold)] bg-[rgba(30,24,14,0.92)] hover:bg-[var(--color-gold)] hover:text-[#241d0c] transition-colors"
                     onClick={() => decide("ADMIT", { bribe: true })}
                   >
-                    взять {entrant.bribe} ₳ и пропустить
+                    {t.ui.game.takeBribe(entrant.bribe)}
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -689,7 +678,7 @@ export function GameScreen({
             <div className="border-t-2 border-[var(--color-line)] px-3 py-2 flex items-center justify-between gap-2 text-[10px] uppercase tracking-widest text-[var(--color-ash)]">
               <span className="inline-flex items-center gap-1.5 min-w-0">
                 <PixelGlyph name="fingerprint" size={12} className="shrink-0" />
-                <span className="truncate">{entrant?.passport.name ?? "смена завершена"}</span>
+                <span className="truncate">{entrant?.passport.name ?? t.ui.game.shiftOver}</span>
               </span>
               <button
                 disabled={stage !== "review" || probed}
@@ -700,7 +689,7 @@ export function GameScreen({
                   setReaction(null);
                 }}
               >
-                <PixelGlyph name="message" size={12} /> {probed ? "Допрошен" : "Допрос"}
+                <PixelGlyph name="message" size={12} /> {probed ? t.ui.game.interrogated : t.ui.game.interrogate}
               </button>
               {entrant?.agentOffer && !offerDone && !offerOpen && stage === "review" && (
                 <button
@@ -716,10 +705,10 @@ export function GameScreen({
             {/* ЖУРНАЛ ПОСТА */}
             <div className="border-t-2 border-[var(--color-line)] px-3 py-2 flex-1 min-h-[96px] overflow-y-auto">
               <div className="text-[9px] uppercase tracking-[0.25em] text-[var(--color-ash)] mb-1.5">
-                журнал поста — смена {day.n}
+                {t.ui.game.journal(day.n)}
               </div>
               {journal.length === 0 ? (
-                <div className="text-[10px] text-[var(--color-ash)] opacity-60 uppercase">записей пока нет</div>
+                <div className="text-[10px] text-[var(--color-ash)] opacity-60 uppercase">{t.ui.game.journalEmpty}</div>
               ) : (
                 <div className="space-y-0.5">
                   {journal.map((j, k) => (
@@ -732,7 +721,7 @@ export function GameScreen({
                           color: j.d === "ADMIT" ? "#8fc190" : j.d === "DENY" ? "#e8a49b" : "#e8c34a",
                         }}
                       >
-                        {j.d === "ADMIT" ? "пропущен" : j.d === "DENY" ? "отказано" : "задержан"}
+                        {j.d === "ADMIT" ? t.ui.game.admitted : j.d === "DENY" ? t.ui.game.denied : t.ui.game.detained}
                       </span>
                     </div>
                   ))}
@@ -776,7 +765,7 @@ export function GameScreen({
                 style={{ border: "4px dashed rgba(20,14,10,0.42)", transform: "rotate(9deg)" }} />
               {!showDocs && !rareMsg && (
                 <div className="absolute inset-0 grid place-items-center text-[var(--color-ash)] text-xs uppercase tracking-[0.3em]">
-                  — стол пуст —
+                  {t.ui.game.deskEmpty}
                 </div>
               )}
               {rareMsg && (
@@ -793,9 +782,9 @@ export function GameScreen({
                   <DraggableDoc
                     key={`${d.id}-${i}`}
                     x={d.x} y={d.y} z={d.z}
-                    label={DOC_LABEL[d.id]}
+                    label={docLabel(d.id)}
                     showClose
-                    actionLabel={stage === "stamped" && d.id !== "book" && d.id !== "news" ? "ОТДАТЬ" : "УБРАТЬ"}
+                    actionLabel={stage === "stamped" && d.id !== "book" && d.id !== "news" ? t.ui.giveBtn : t.ui.removeBtn}
                     onClose={() => toggleDeskDoc(d.id)}
                     containerRef={deskRef}
                     onFront={() => bringToFront(d.id)}
@@ -818,7 +807,7 @@ export function GameScreen({
               {evidenceUnlocked && (
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="text-[9px] uppercase tracking-widest text-[var(--color-ash)]">
-                    несоответствие:
+                    {t.ui.game.mismatch}
                   </span>
                   {[0, 1].map((k) => (
                     <span
@@ -830,7 +819,7 @@ export function GameScreen({
                         borderStyle: sel[k] ? "solid" : "dashed",
                       }}
                     >
-                      {sel[k] ? "поле " + (k + 1) : "— пусто —"}
+                      {sel[k] ? t.ui.game.fieldN(k + 1) : t.ui.game.emptySlot}
                     </span>
                   ))}
                   <button
@@ -840,12 +829,12 @@ export function GameScreen({
                     onClick={present}
                   >
                     <span className="inline-flex items-center gap-1.5">
-                      !! Предъявить
+                      {t.ui.game.present}
                     </span>
                   </button>
                   {sel.length > 0 && (
                     <button className="btn-ghost px-2 py-1 text-[10px] inline-flex items-center gap-1" onClick={() => setSel([])}>
-                      <PixelGlyph name="eraser" size={11} /> Сброс
+                      <PixelGlyph name="eraser" size={11} /> {t.ui.game.reset}
                     </button>
                   )}
                   {hasEvidence && (
@@ -858,7 +847,7 @@ export function GameScreen({
 
               {/* СЛУЖЕБНЫЕ ВЕЩИ — физические книга и газета */}
               <div className="mb-2 pt-2 border-t-2 border-[var(--color-line)]">
-                <div className="text-[9px] uppercase tracking-[0.25em] text-[var(--color-ash)] mb-1.5">служебные вещи</div>
+                <div className="text-[9px] uppercase tracking-[0.25em] text-[var(--color-ash)] mb-1.5">{t.ui.game.service}</div>
                 <div className="flex gap-1.5 flex-wrap">
                   {serviceItems.map((it) => (
                     <button
@@ -876,10 +865,10 @@ export function GameScreen({
               {/* НОВЫЙ ЛОТОК ДОКУМЕНТОВ */}
               <div className="mt-auto mb-1">
                 <div className="relative p-2.5 bg-[#1d1814] border-2 border-[#3a322a] shadow-[inset_0_0_0_3px_#100c09]" style={{ minHeight: 90 }}>
-                  <div className="absolute top-1 left-2 text-[8px] uppercase tracking-widest text-[#5a5048]">Документы на лотке</div>
+                  <div className="absolute top-1 left-2 text-[8px] uppercase tracking-widest text-[#5a5048]">{t.ui.game.trayTitle}</div>
                   <div className="flex gap-2 flex-wrap items-start mt-3">
                     {trayDocs.length === 0 ? (
-                      <div className="text-[9px] text-[#4a4038] uppercase italic">лоток пуст</div>
+                      <div className="text-[9px] text-[#4a4038] uppercase italic">{t.ui.game.trayEmpty}</div>
                     ) : trayDocs.map((id) => (
                       <button
                         key={id}
@@ -889,9 +878,9 @@ export function GameScreen({
                       >
                         <span className="pixel-icon">{docIcon(id)}</span>
                         <div className="text-left">
-                          <div className="text-[9px] font-bold text-[#cbb89a] leading-tight">{DOC_LABEL[id].toUpperCase()}</div>
+                          <div className="text-[9px] font-bold text-[#cbb89a] leading-tight">{docLabel(id).toUpperCase()}</div>
                           <div className="text-[7px] text-[#8a7e74] uppercase">
-                            {stage === "stamped" ? "отдать посетителю" : desk.some(d => d.id === id) ? "убрать со стола" : "выложить на стол"}
+                            {stage === "stamped" ? t.ui.game.giveBack : desk.some(d => d.id === id) ? t.ui.game.removeDesk : t.ui.game.putDesk}
                           </div>
                         </div>
                       </button>
@@ -903,7 +892,7 @@ export function GameScreen({
                       className="mt-2 w-full border-2 border-[#8f211d] bg-[#3b100e] px-3 py-2 text-[9px] uppercase tracking-wider text-[#e0b19e] hover:bg-[#5a1713]"
                       onClick={returnAllDocs}
                     >
-                      Отдать все документы посетителю
+                      {t.ui.game.returnAll}
                     </button>
                   )}
                 </div>
@@ -911,10 +900,10 @@ export function GameScreen({
 
               {/* НОВЫЙ ИНВЕНТАРЬ ПРЕДМЕТОВ */}
               <div className="p-2.5 bg-[#1a1612] border-2 border-[#332c26] mt-2 relative">
-                <div className="absolute -top-2 left-3 px-1 bg-[#1a1612] text-[7px] uppercase tracking-widest text-[#5a5048]">Карман</div>
+                <div className="absolute -top-2 left-3 px-1 bg-[#1a1612] text-[7px] uppercase tracking-widest text-[#5a5048]">{t.ui.game.pocket}</div>
                 <div className="flex gap-2 flex-wrap min-h-[40px]">
                   {inventory.length === 0 ? (
-                    <div className="w-full flex items-center justify-center text-[8px] text-[#3a322a] uppercase tracking-widest">пусто</div>
+                    <div className="w-full flex items-center justify-center text-[8px] text-[#3a322a] uppercase tracking-widest">{t.ui.game.pocketEmpty}</div>
                   ) : inventory.map((it) => (
                     <div
                       key={it.id}
@@ -924,7 +913,7 @@ export function GameScreen({
                       <div className="absolute bottom-full left-0 mb-2 w-40 p-2 bg-[#1d1815] border-2 border-[#4a3e33] text-[9px] text-[#cbb89a] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[5px_5px_0_#070605]">
                         <div className="font-bold border-b border-[#3a322a] pb-1 mb-1 uppercase tracking-wider">{it.name}</div>
                         <div className="italic opacity-80">{it.desc}</div>
-                        {it.from && <div className="mt-1 text-[#8a7e74] text-[8px]">ОТ: {it.from}</div>}
+                        {it.from && <div className="mt-1 text-[#8a7e74] text-[8px]">{t.ui.game.from} {it.from}</div>}
                       </div>
                     </div>
                   ))}
@@ -963,7 +952,7 @@ export function GameScreen({
                   className="font-head uppercase tracking-widest text-sm"
                   style={{ fontFamily: "var(--font-head)", color: entrant.agent === "west" ? "#8fa0d8" : "#a8c185" }}
                 >
-                  {entrant.agent === "west" ? "Разговор вполголоса // Западный Союз" : "Разговор вполголоса // Краснославия"}
+                  {entrant.agent === "west" ? t.ui.game.offerTitleWest : t.ui.game.offerTitleNeighbor}
                 </span>
               </div>
               <div className="flex items-start gap-3 mb-4">
@@ -992,7 +981,7 @@ export function GameScreen({
                 ))}
               </div>
               <div className="text-[9.5px] uppercase tracking-widest text-[var(--color-ash)] mt-3 leading-relaxed">
-                разговор не заменяет решения: документы всё равно придётся проштамповать
+                {t.ui.game.offerNote}
               </div>
             </motion.div>
           </>
@@ -1017,17 +1006,17 @@ export function GameScreen({
               className="fixed z-[81] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(440px,92vw)] panel p-5 text-center"
             >
               <div className="font-head uppercase tracking-widest text-[var(--color-gold)] mb-2" style={{ fontFamily: "var(--font-head)" }}>
-                Покинуть пост?
+                {t.ui.game.exitTitle}
               </div>
               <p className="text-xs text-[var(--color-ash)] leading-relaxed mb-4">
-                Текущая смена не засчитается. Прогресс сохранён на утро смены {day.n} — продолжить можно из главного меню.
+                {t.ui.game.exitBody(day.n)}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <button className="btn-ghost px-4 py-2.5 text-sm" onClick={() => setAskExit(false)}>
-                  Остаться
+                  {t.ui.game.stay}
                 </button>
                 <button className="btn-soviet px-4 py-2.5 text-sm" onClick={onExit}>
-                  В меню
+                  {t.ui.game.toMenuBtn}
                 </button>
               </div>
             </motion.div>

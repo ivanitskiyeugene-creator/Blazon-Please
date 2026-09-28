@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { AtomEmblem, PartyEmblem } from "./Emblems";
 import { Person } from "./Person";
 
@@ -11,6 +12,7 @@ const LEADER = {
 
 /** Интерьер КПП-7, собранный вручную из жёстких пиксельных блоков. */
 export function BoothDecor({ date }: { date: string }) {
+  const { t } = useI18n();
   return (
     <>
       <div className="harsh-wall absolute inset-0" />
@@ -52,7 +54,7 @@ export function BoothDecor({ date }: { date: string }) {
           <div className="h-[54px] w-[46px] overflow-hidden bg-[#4a3b2c]">
             <Person spec={LEADER} width={46} gray />
           </div>
-          <div className="text-[6px] text-center text-[var(--color-ash)] uppercase mt-0.5 leading-none">председатель</div>
+          <div className="text-[6px] text-center text-[var(--color-ash)] uppercase mt-0.5 leading-none">{t.ui.booth.chairman}</div>
         </div>
       </div>
 
@@ -74,13 +76,13 @@ export function BoothDecor({ date }: { date: string }) {
       <div className="absolute right-[13px] bottom-[218px] pointer-events-none">
         <div className="panel px-2 py-1.5 opacity-90 w-[84px] rotate-[1deg]">
           <PartyEmblem size={28} mirrored />
-          <div className="text-[6px] text-[var(--color-ash)] uppercase leading-tight mt-1 text-center">порядок — атом в сердце</div>
+          <div className="text-[6px] text-[var(--color-ash)] uppercase leading-tight mt-1 text-center">{t.ui.booth.slogan}</div>
         </div>
       </div>
 
       <div className="absolute left-[14px] top-[152px] pointer-events-none">
         <div className="paper-tex border-2 border-[#5c4f3d] px-2 py-1 text-center rotate-[-2deg] shadow-[3px_3px_0_#120e0b]">
-          <div className="text-[6px] uppercase text-[#2b241c99] leading-none">пост №7</div>
+          <div className="text-[6px] uppercase text-[#2b241c99] leading-none">{t.ui.booth.postNo}</div>
           <div className="font-head text-[11px] text-[#7c1d18] leading-tight" style={{ fontFamily: "var(--font-head)" }}>{date}</div>
         </div>
       </div>

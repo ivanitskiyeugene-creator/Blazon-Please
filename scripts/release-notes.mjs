@@ -4,7 +4,7 @@ import fs from 'node:fs';
 
 const src = fs.readFileSync('src/game/changelog.ts', 'utf8');
 const head = src.slice(src.indexOf('export const CHANGELOG'));
-const m = head.match(/version:\s*"([^"]+)"[\s\S]*?tag:\s*"([^"]+)"[\s\S]*?items:\s*\[([\s\S]*?)\]/);
+const m = head.match(/version:\s*"([^"]+)"[\s\S]*?tag:\s*\{[^}]*?ru:\s*"([^"]+)"[\s\S]*?ru:\s*\[([\s\S]*?)\]/);
 if (!m) throw new Error('не удалось разобрать changelog');
 const items = [...m[3].matchAll(/"([^"]+)"/g)].map((x) => `- ${x[1]}`).join('\n');
 console.log(
