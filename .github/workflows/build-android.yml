@@ -43,14 +43,22 @@ jobs:
 
       - name: Setup Android NDK & Environment
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          SDK_PATH="/usr/local/lib/android/sdk"
+          if [ ! -d "$SDK_PATH" ] && [ -n "$ANDROID_SDK_ROOT" ]; then
+            SDK_PATH="$ANDROID_SDK_ROOT"
+          fi
+          if [ ! -d "$SDK_PATH" ] && [ -n "$ANDROID_HOME" ]; then
+            SDK_PATH="$ANDROID_HOME"
+          fi
 
-          NDK_PATH=$(find $ANDROID_HOME/ndk -maxdepth 1 -mindepth 1 | sort -V | tail -n 1)
+          echo "ANDROID_HOME=$SDK_PATH" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK_PATH" >> $GITHUB_ENV
+
+          NDK_PATH=$(find $SDK_PATH/ndk -maxdepth 1 -mindepth 1 2>/dev/null | sort -V | tail -n 1)
           if [ -z "$NDK_PATH" ]; then
             echo "Installing NDK via sdkmanager..."
-            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;26.3.11579264"
-            NDK_PATH="$ANDROID_HOME/ndk/26.3.11579264"
+            $SDK_PATH/cmdline-tools/latest/bin/sdkmanager --install "ndk;26.3.11579264"
+            NDK_PATH="$SDK_PATH/ndk/26.3.11579264"
           fi
           echo "Found NDK at: $NDK_PATH"
           echo "NDK_HOME=$NDK_PATH" >> $GITHUB_ENV
@@ -97,6 +105,7 @@ jobs:
 
       - name: Build Android APK
         run: |
+          echo "Building Android APK..."
           npx @tauri-apps/cli android build --apk --target aarch64 --ci || \
           (cd src-tauri/gen/android && ./gradlew assembleRelease --stacktrace) || \
           (cd src-tauri/gen/android && ./gradlew assembleDebug --stacktrace)
