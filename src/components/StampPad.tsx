@@ -7,7 +7,7 @@ import { useI18n } from "../i18n";
 /* Толщина несущей балки — как сам штамп (104px). */
 export const BEAM_H = 104;
 
-// ── РЫЧАГ: длинная железная рукоять, прикреплённая к балке кассеты ─────────
+// ── РЫЧАГ: длинная железная рукоять, прикрученная к краю стола ─────────────
 export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v: boolean) => void }) {
   const { t } = useI18n();
   const travel = 62;
@@ -151,6 +151,26 @@ function StampButton({ type, label, color, dark, textColor, pressed, disabled, o
   );
 }
 
+/** Половина кассеты: свой кусок толстой балки + прикрученные машины. */
+function StampUnit({ side, children }: { side: "left" | "right"; children: React.ReactNode }) {
+  return (
+    <div className={`stamp-unit stamp-unit--${side}`}>
+      <div className="stamp-unit__slab" aria-hidden="true">
+        <span className="stamp-unit__bolts">
+          <i /><i /><i /><i /><i /><i /><i /><i />
+        </span>
+        {side === "right" && (
+          // стыковая накладка: когда половины сходятся, шов закрыт болтами
+          <span className="stamp-unit__splice" aria-hidden="true">
+            <i /><i /><i /><i />
+          </span>
+        )}
+      </div>
+      <div className="stamp-unit__machines">{children}</div>
+    </div>
+  );
+}
+
 interface Props {
   open: boolean;
   locked: boolean;
@@ -164,11 +184,11 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
   const { t } = useI18n();
   const [pressing, setPressing] = useState<Decision | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
-  const [rig, setRig] = useState<{ left: number; top: number; width: number } | null>(null);
+  const [rig, setRig] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
 
-  // Кассета прикручена к СТОЛУ: балка лежит на столешнице, её ширина — ширина
-  // столешницы. Позицию считаем от .desk-surface и держим актуальной
-  // (открытие книжки меняет высоту стола — ловим ResizeObserver-ом).
+  // Кассета живёт внутри силуэта СТОЛА: пока штампы не вызваны, стол пуст.
+  // Позицию считаем от .desk-surface и держим актуальной (книжка меняет
+  // высоту стола — ловим ResizeObserver-ом).
   useLayoutEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
@@ -178,7 +198,7 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
       if (!desk) return;
       const lr = layer.getBoundingClientRect();
       const dr = desk.getBoundingClientRect();
-      setRig({ left: dr.left - lr.left, top: dr.top - lr.top, width: dr.width });
+      setRig({ left: dr.left - lr.left, top: dr.top - lr.top, width: dr.width, height: dr.height });
     };
     place();
     window.addEventListener("resize", place);
@@ -210,36 +230,35 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
     }, 100);
   };
 
-  // Машины не прилетают с краёв экрана: они раскладываются из самой балки.
-  const spring = { type: "spring", stiffness: 200, damping: 24 } as const;
+  // Половины выезжают из-за краёв СТОЛА и смыкаются посередине.
+  const slide = rig ? rig.width : 1200;
+  const spring = { type: "spring", stiffness: 200, damping: 26 } as const;
 
   return (
     <div className="stamp-drawer-layer" ref={layerRef} aria-hidden={!open}>
       {rig && (
-        <div className="stamp-rig" style={{ left: rig.left, top: rig.top, width: rig.width }}>
-          {/* Несущая балка на столешнице — прикручена к столу, видна всегда */}
-          <div className="stamp-beam" aria-hidden="true">
-            <span className="stamp-beam__bolts">
-              <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
-            </span>
-            <span className="stamp-beam__plate">{t.ui.beamPlate}</span>
-            <span className="stamp-beam__foot stamp-beam__foot--left"><i /><i /></span>
-            <span className="stamp-beam__foot stamp-beam__foot--right"><i /><i /></span>
-          </div>
+        <div
+          className="stamp-rig"
+          style={{ left: rig.left, top: rig.top, width: rig.width, height: rig.height }}
+        >
+          {/* Рычаг прикручен к правому краю столешницы — всегда под рукой */}
+          <StampLever active={open} onToggle={onToggleOpen} />
 
-          {/* Поезд машин: складывается в балку и вывешивается из-под неё */}
           <AnimatePresence>
             {open && (
               <motion.div
                 key="stamp-train"
                 className="stamp-train"
-                initial={{ x: "-50%", y: -14, rotateX: -90, opacity: 0 }}
-                animate={{ x: "-50%", y: 0, rotateX: 0, opacity: 1 }}
-                exit={{ x: "-50%", y: -14, rotateX: -90, opacity: 0, transition: { duration: 0.38 } }}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
                 transition={spring}
               >
-                <div className="stamp-train__scaler">
-                  <div className="stamp-train__machines">
+                <motion.div
+                  className="stamp-unit-wrap stamp-unit-wrap--left"
+                  variants={{ hidden: { x: -slide }, visible: { x: 0 } }}
+                >
+                  <StampUnit side="left">
                     <StampButton
                       type="DENY"
                       label={t.ui.stamps.DENY}
@@ -262,6 +281,13 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
                         onHit={hit}
                       />
                     )}
+                  </StampUnit>
+                </motion.div>
+                <motion.div
+                  className="stamp-unit-wrap stamp-unit-wrap--right"
+                  variants={{ hidden: { x: slide }, visible: { x: 0 } }}
+                >
+                  <StampUnit side="right">
                     <StampButton
                       type="ADMIT"
                       label={t.ui.stamps.ADMIT}
@@ -272,14 +298,18 @@ export function StampPad({ open, locked, hasEvidence, detainUnlocked, onToggleOp
                       disabled={locked}
                       onHit={hit}
                     />
-                  </div>
-                </div>
+                  </StampUnit>
+                </motion.div>
+                {/* Табличка на балке — проявляется, когда половины сошлись */}
+                <motion.div
+                  className="stamp-train__plate"
+                  variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+                >
+                  {t.ui.beamPlate}
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Рычаг — часть кассеты: прикреплён к правому концу балки */}
-          <StampLever active={open} onToggle={onToggleOpen} />
         </div>
       )}
     </div>

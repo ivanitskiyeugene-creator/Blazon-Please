@@ -236,7 +236,7 @@ export function GameScreen({
     };
     const base = pos[id] || { x: 18, y: 226 };
     const maxY = Math.max(120, (deskRef.current?.clientHeight ?? 500) - 190);
-    const maxX = Math.max(60, (deskRef.current?.clientWidth ?? 700) - 280);
+    const maxX = Math.max(60, (deskRef.current?.clientWidth ?? 700) - 380);
     const spot = { x: Math.min(base.x, maxX), y: Math.min(base.y, maxY) };
     setDesk((v) => [...v, { id, ...spot, z: ++topZ.current }]);
   };

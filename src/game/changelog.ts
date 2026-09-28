@@ -16,14 +16,16 @@ export const CHANGELOG: ChangeEntry[] = [
     tone: "#d2aa38",
     items: {
       ru: [
-        "Штемпельная кассета теперь смонтирована на самом столе инспектора: толстая балка лежит на столешнице во всю её ширину и притянута ножками с болтами, видна всегда.",
-        "Машины больше не залетают с краёв экрана — они раскладываются прямо из балки и вывешиваются под ней; рычаг перекочевал на правый конец балки.",
+        "Штампы «ОТКАЗ»/«АРЕСТ» и «ВХОД» съезжаются к середине стола, когда кассета вызвана рычагом; убрал — стол пуст.",
+        "Половины кассеты выезжают из-за краёв самого стола, а не из-за края экрана, и смыкаются в толстую балку шириной со штамп; шов закрыт болтовой накладкой.",
+        "Рычаг прикручен к правому краю столешницы и всегда под рукой.",
         "Документы выкладываются на стол ниже кассеты, чтобы машины не заслоняли бумаги.",
       ],
       en: [
-        "The stamp cassette is now mounted on the inspector's desk itself: a thick beam lies across the full width of the desktop, tied down with bolted feet, always visible.",
-        "The machines no longer fly in from the edges of the screen — they unfold straight out of the beam and hang beneath it; the lever moved to the beam's right end.",
-        "Documents are now laid out on the desk below the cassette so the machines never cover the papers.",
+        "The DENY/DETAIN and ADMIT stamps converge at the middle of the desk when the cassette is summoned by the lever; put away — the desk is empty.",
+        "The cassette halves ride out from behind the desk's own edges, not the screen's, and meet in a beam as thick as the stamp itself; the seam is covered by a bolted splice plate.",
+        "The lever is bolted to the right edge of the desktop, always within reach.",
+        "Documents are laid out on the desk below the cassette so the machines never cover the papers.",
       ],
     },
   },

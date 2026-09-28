@@ -28,7 +28,8 @@
 }
 
 .stamp-lever__mount i,
-.stamp-beam__bolts i,
+.stamp-unit__bolts i,
+.stamp-unit__splice i,
 .stamp-machine__beam i {
   width: 6px;
   height: 6px;
@@ -129,11 +130,11 @@
   border-color: #715c25;
 }
 
-/* ── ШТЕМПЕЛЬНАЯ КАССЕТА, ПРИКРУЧЕННАЯ К СТОЛУ ────────────────────────────
-   Балка лежит на столешнице во всю её ширину и видна всегда: ноги-пластины
-   с болтами притянуты к столу. Машины не залетают с краёв экрана — они
-   складываются в балку и вывешиваются из-под неё. Рычаг прикреплён к
-   правому концу балки. */
+/* ── ШТЕМПЕЛЬНАЯ КАССЕТА СТОЛА ─────────────────────────────────────────────
+   Пока штампы не вызваны — стол пуст. По команде рычага половины кассеты
+   («ОТКАЗ»/«АРЕСТ» слева, «ВХОД» справа) выезжают из-за краёв СТОЛА и
+   смыкаются посередине толстой балкой (в ширину самого штамма).
+   Рычаг прикручен к правому краю столешницы. */
 .stamp-drawer-layer {
   position: absolute;
   inset: 0;
@@ -141,38 +142,63 @@
   pointer-events: none;
 }
 
+/* Риг = силуэт стола: всё, что въезжает, обрезается его краями */
 .stamp-rig {
   position: absolute;
   pointer-events: none;
-  perspective: 720px;
-  /* выше балки ничего не торчит: сложенные машины обрезаются */
-  clip-path: inset(0 0 -170px 0);
+  overflow: hidden;
+}
+
+/* Поезд: две половины, смыкающиеся в центре стола */
+.stamp-train {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  transform: translateX(-50%);
+}
+
+.stamp-unit-wrap {
+  display: flex;
+}
+
+/* Половина кассеты: свой кусок толстой балки + прикрученные машины */
+.stamp-unit {
+  position: relative;
 }
 
 /* Толстая несущая балка — 104px, как сам штамп */
-.stamp-beam {
+.stamp-unit__slab {
   position: absolute;
-  left: 0;
-  right: 0;
   top: 0;
   height: 104px;
   background: #44382e url("/images/metal-tile.png");
   border-top: 4px solid #15100d;
   border-bottom: 5px solid #15100d;
   box-shadow: inset 0 4px 0 #6b5948, inset 0 -4px 0 #241b14, 0 6px 0 #090705;
-  z-index: 3;
 }
 
-.stamp-beam__bolts {
+.stamp-unit--left .stamp-unit__slab {
+  left: -14px;
+  right: -3px;
+}
+
+.stamp-unit--right .stamp-unit__slab {
+  left: -3px;
+  right: -14px;
+}
+
+.stamp-unit__bolts {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 10px;
+  padding: 0 8px;
 }
 
-.stamp-beam__bolts i {
+.stamp-unit__bolts i {
   width: 7px;
   height: 7px;
   background: #17110d;
@@ -180,10 +206,35 @@
   box-shadow: inset 1px 1px 0 #6b5948;
 }
 
-.stamp-beam__plate {
+/* стыковая накладка с болтами — закрывает шов, когда половины сошлись */
+.stamp-unit__splice {
+  position: absolute;
+  left: -10px;
+  top: -7px;
+  height: 118px;
+  width: 20px;
+  background: #57493c url("/images/metal-tile.png");
+  border: 3px solid #15100d;
+  box-shadow: inset 0 0 0 2px #7d6a52;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.stamp-unit__splice i {
+  width: 6px;
+  height: 6px;
+  background: #17110d;
+  border: 1px solid #8d7860;
+}
+
+/* Заводская табличка — по центру сомкнутой балки */
+.stamp-train__plate {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 52px;
   transform: translate(-50%, -50%);
   padding: 3px 8px;
   background: #2c231d url("/images/metal-tile.png");
@@ -194,76 +245,43 @@
   font-size: 6px;
   line-height: 1;
   white-space: nowrap;
+  z-index: 5;
 }
 
-/* Ноги балки: пластины с болтами, притянутые к столешнице */
-.stamp-beam__foot {
-  position: absolute;
-  bottom: -14px;
-  width: 46px;
-  height: 14px;
-  background: #3a2f27 url("/images/metal-tile.png");
-  border: 2px solid #15100d;
-  border-top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.stamp-beam__foot--left { left: 10px; }
-.stamp-beam__foot--right { right: 10px; }
-
-.stamp-beam__foot i {
-  width: 5px;
-  height: 5px;
-  background: #17110d;
-  border: 1px solid #8d7860;
-}
-
-/* Поезд машин: складывается в балку (rotateX) и вывешивается под ней */
-.stamp-train {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  z-index: 2;
-  transform-origin: top center;
-}
-
-.stamp-train__scaler {
+/* Машины: верхние 26px лежат на балке — прикручены внахлёст */
+.stamp-unit__machines {
   position: relative;
-  transform-origin: top center;
-}
-
-.stamp-train__machines {
+  z-index: 2;
   display: flex;
   gap: 6px;
   padding-top: 78px;
 }
 
-/* Рычаг — часть кассеты, стоит на балке справа */
+/* Рычаг прикручен к правому краю столешницы */
 .stamp-rig .stamp-lever {
-  top: 2px;
-  right: 10px;
+  top: 0;
+  right: 6px;
   pointer-events: auto;
 }
 
 @media (max-width: 700px) {
-  .stamp-train__scaler { transform: scale(0.78); }
+  .stamp-train { transform: translateX(-50%) scale(0.78); }
 }
 
 @media (max-width: 430px) {
-  .stamp-train__scaler { transform: scale(0.62); }
+  .stamp-train { transform: translateX(-50%) scale(0.62); }
   .stamp-rig .stamp-lever { right: 2px; }
 }
 
 /* низкие окна: машины компактнее, чтобы оставлять место бумагам */
 @media (max-height: 820px) {
-  .stamp-train__scaler { transform: scale(0.85); }
+  .stamp-train { transform: translateX(-50%) scale(0.85); }
 }
 
 @media (max-height: 720px) {
-  .stamp-train__scaler { transform: scale(0.72); }
+  .stamp-train { transform: translateX(-50%) scale(0.72); }
 }
+
 
 .stamp-machine {
   position: relative;
