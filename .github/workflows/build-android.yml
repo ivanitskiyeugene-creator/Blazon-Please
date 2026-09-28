@@ -139,12 +139,12 @@ jobs:
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
-          if ! npx @tauri-apps/cli android build --apk --target aarch64 --ci --verbose; then
-            echo "=== Tauri build failed, trying direct Gradle build ==="
+          npx @tauri-apps/cli android build --apk --target aarch64 --ci || (
+            echo "Direct Gradle build fallback..."
             cd src-tauri/gen/android
-            ./gradlew assembleUniversalRelease || ./gradlew assembleArm64Release || ./gradlew assembleRelease || ./gradlew assembleDebug --stacktrace
+            ./gradlew assembleDebug || ./gradlew assembleRelease
             cd ../..
-          fi
+          )
 
       - name: Prepare APK deliverables
         id: apks
