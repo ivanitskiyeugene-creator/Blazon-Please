@@ -100,14 +100,17 @@ jobs:
 
       - name: Setup Keystore for Android Signing
         run: |
-          KEYSTORE_PATH="/tmp/upload.jks"
+          KEYSTORE_PATH="src-tauri/gen/android/app/upload.jks"
           keytool -genkey -v -keystore "$KEYSTORE_PATH" \
             -alias upload -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass blazonplease -keypass blazonplease \
             -dname "CN=BlazonPlease,OU=Game,O=Blazon,L=Minsk,S=Minsk,C=BY"
 
           cp "$KEYSTORE_PATH" src-tauri/gen/android/upload.jks
-          cp "$KEYSTORE_PATH" src-tauri/gen/android/app/upload.jks
+          cp "$KEYSTORE_PATH" /tmp/upload.jks
+
+          printf "password=blazonplease\nkeyAlias=upload\nstoreFile=upload.jks\n" > src-tauri/gen/android/keystore.properties
+          printf "password=blazonplease\nkeyAlias=upload\nstoreFile=upload.jks\n" > src-tauri/gen/android/app/keystore.properties
 
       - name: Configure Android Manifest and Gradle
         run: |
@@ -128,7 +131,6 @@ jobs:
             kts = kts.replace(/compileSdk\s*=\s*\d+/g, "compileSdk = 34");
             kts = kts.replace(/targetSdk\s*=\s*\d+/g, "targetSdk = 34");
             kts = kts.replace(/isMinifyEnabled\s*=\s*true/g, "isMinifyEnabled = false");
-            kts = kts.replace(/signingConfig\s*=\s*signingConfigs\.getByName\("release"\)/g, "signingConfig = signingConfigs.getByName(\"debug\")");
             fs.writeFileSync(ktsPath, kts);
             console.log("Configured build.gradle.kts");
           }
@@ -137,7 +139,12 @@ jobs:
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
-          npx @tauri-apps/cli android build --apk --target aarch64 --ci
+          if ! npx @tauri-apps/cli android build --apk --target aarch64 --ci --verbose; then
+            echo "=== Tauri build failed, trying direct Gradle build ==="
+            cd src-tauri/gen/android
+            ./gradlew assembleUniversalRelease || ./gradlew assembleArm64Release || ./gradlew assembleRelease || ./gradlew assembleDebug --stacktrace
+            cd ../..
+          fi
 
       - name: Prepare APK deliverables
         id: apks
@@ -164,6 +171,10 @@ jobs:
           done
 
           ls -la deliverables/
+          if [ -z "$(ls -A deliverables/*.apk 2>/dev/null)" ]; then
+            echo "No APK produced!"
+            exit 1
+          fi
 
       - name: Upload Android Build Artifact
         uses: actions/upload-artifact@v4
