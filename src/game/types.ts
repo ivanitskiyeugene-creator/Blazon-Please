@@ -1,4 +1,4 @@
-export type CountryCode = "ASSR" | "KRS" | "ZPS" | "UGS" | "STV" | "VIC" | "OND" | "BLT";
+export type CountryCode = "ASSR" | "KRS" | "ZPS" | "UGS" | "STV" | "VIC";
 export type Sex = "M" | "F";
 export type Decision = "ADMIT" | "DENY" | "DETAIN";
 
@@ -24,20 +24,15 @@ export type EmblemKind =
   | "wings"
   | "gear"
   | "wheat"
-  | "gorn_hammer"
-  | "osto_ship"
   | "vic_eagle"
-  | "ond_sun"
-  | "blt_beacon"
   | "otep_eagle";
 
 export type FakeEmblemKind =
   | "orb2"
-  | "gorn_left"
-  | "osto_left"
+  | "krs_4ray"
+  | "ugs_broken"
+  | "stv_5grain"
   | "vic_5star"
-  | "ond_5ray"
-  | "blt_1beam"
   | "otep_sword_left";
 
 export interface Country {
@@ -59,7 +54,10 @@ export interface PersonSpec {
 }
 
 export interface PassportData {
+  /** Государство, выдавшее паспорт. Республики АССР никогда не являются отдельными эмитентами. */
   country: CountryCode;
+  /** Республика/автономия выдачи для единого паспорта АССР. */
+  unionRegion?: string;
   name: string;
   sex: Sex;
   dob: string;
@@ -83,7 +81,7 @@ export interface PartyCardData {
 }
 
 export interface TalonData {
-  kind: "transit" | "ration" | "acps";
+  kind: "transit" | "ration" | "cargo";
   code: string;
   name: string;
   passId: string;
@@ -200,7 +198,7 @@ export type ViolationKind =
   | "talonExpired"
   | "talonIdMismatch"
   | "talonForged"
-  | "acpsBanned"
+  | "contrabandCargo"
   | "veteranForged"
   | "photoMismatch"
   | "sexMismatch";

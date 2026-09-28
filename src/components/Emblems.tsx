@@ -137,75 +137,30 @@ export function PartyEmblem({
   return <PixelCanvas size={size} draw={draw} />;
 }
 
-/** Герб Горностана: наковальня и молот в шестерне. Подделка: молот влево. */
-export function GornostanEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
+/** Герб Угольного Союза: восьмизубая шестерня. Подделка — сломанный зуб. */
+export function GearEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
   const draw: Draw = (ctx) => {
-    badge(ctx, "#26292d", "#121416");
-    // Шестерня
-    rect(ctx, 13, 5, 6, 22, "#858c94");
-    rect(ctx, 5, 13, 22, 6, "#858c94");
-    rect(ctx, 8, 8, 16, 16, "#858c94");
-    rect(ctx, 11, 11, 10, 10, "#26292d");
-    // Наковальня в центре
-    rect(ctx, 10, 20, 12, 3, GOLD);
-    rect(ctx, 12, 17, 8, 3, GOLD);
-    // Молот: подлинник смотрит вправо (рукоять с наклоном), подделка — влево
-    if (!fake) {
-      // Подлинник: молот вправо
-      line(ctx, 9, 21, 20, 10, GOLD, 2);
-      rect(ctx, 18, 8, 7, 4, GOLD);
-      rect(ctx, 22, 7, 3, 6, GOLD);
-    } else {
-      // Подделка: молот влево
-      line(ctx, 23, 21, 12, 10, "#e06c75", 2);
-      rect(ctx, 7, 8, 7, 4, "#e06c75");
-      rect(ctx, 7, 7, 3, 6, "#e06c75");
-    }
+    badge(ctx, "#33302e", "#120e0b");
+    rect(ctx, 13, 5, 6, fake ? 7 : 9, GOLD);
+    rect(ctx, 13, 18, 6, 9, GOLD);
+    rect(ctx, 5, 13, 9, 6, GOLD);
+    rect(ctx, 18, 13, 9, 6, GOLD);
+    rect(ctx, 8, 8, 16, 16, GOLD);
+    rect(ctx, 12, 12, 8, 8, "#33302e");
+    if (fake) rect(ctx, 16, 5, 5, 5, "#33302e");
   };
   return <PixelCanvas size={size} draw={draw} />;
 }
 
-/** Герб Остоляндии: трехмачтовый клипер и 3 волны + 3 звезды. Подделка: корабль влево или 2 волны / 4 звезды. */
-export function OstolandiaEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
+/** Герб Степной Вольницы: стебель с семью зёрнами. Подделка — пять зёрен. */
+export function WheatEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
   const draw: Draw = (ctx) => {
-    badge(ctx, "#1b3754", "#0f1c2b");
-    // Волны
-    const waveCount = fake ? 2 : 3;
-    for (let w = 0; w < waveCount; w += 1) {
-      const y = 22 + w * 2;
-      for (let x = 6; x < 26; x += 4) {
-        rect(ctx, x, y, 2, 1, CYAN);
-        rect(ctx, x + 2, y + 1, 2, 1, CYAN);
-      }
-    }
-    // Звезды над кораблем: 3 в подлиннике, 4 в подделке
-    if (!fake) {
-      rect(ctx, 10, 7, 2, 2, GOLD);
-      rect(ctx, 15, 6, 2, 2, GOLD);
-      rect(ctx, 20, 7, 2, 2, GOLD);
-    } else {
-      rect(ctx, 8, 7, 2, 2, GOLD);
-      rect(ctx, 13, 6, 2, 2, GOLD);
-      rect(ctx, 18, 6, 2, 2, GOLD);
-      rect(ctx, 23, 7, 2, 2, GOLD);
-    }
-    // Корпус клипера
-    if (!fake) {
-      // Плывет вправо
-      rect(ctx, 9, 18, 14, 3, GOLD);
-      rect(ctx, 22, 17, 3, 2, GOLD);
-      // Паруса
-      rect(ctx, 11, 11, 3, 6, SILVER);
-      rect(ctx, 16, 9, 4, 8, SILVER);
-      rect(ctx, 21, 12, 2, 5, SILVER);
-    } else {
-      // Плывет влево (подделка)
-      rect(ctx, 9, 18, 14, 3, GOLD);
-      rect(ctx, 7, 17, 3, 2, GOLD);
-      rect(ctx, 9, 12, 2, 5, SILVER);
-      rect(ctx, 12, 9, 4, 8, SILVER);
-      rect(ctx, 18, 11, 3, 6, SILVER);
-    }
+    badge(ctx, "#5a4a2c", "#120e0b");
+    rect(ctx, 15, 6, 3, 22, GOLD);
+    const grains = fake
+      ? [[9, 9], [18, 12], [8, 16], [18, 20], [10, 23]]
+      : [[9, 8], [18, 10], [8, 13], [18, 15], [8, 18], [18, 20], [10, 23]];
+    grains.forEach(([x, y]) => rect(ctx, x, y, 6, 3, GOLD));
   };
   return <PixelCanvas size={size} draw={draw} />;
 }
@@ -248,62 +203,6 @@ export function VicteriaEmblem({ size = 48, fake = false }: { size?: number; fak
   return <PixelCanvas size={size} draw={draw} />;
 }
 
-/** Герб Ондара: восходящее солнце с 7 лучами + шестерня и колос. Подделка: 5 лучей. */
-export function OndarEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
-  const draw: Draw = (ctx) => {
-    badge(ctx, "#183822", "#0b1d11");
-    // Лучи солнца
-    const rayAngles = fake
-      ? [0, 45, 90, 135, 180] // 5 лучей
-      : [0, 30, 60, 90, 120, 150, 180]; // 7 лучей в подлиннике
-    rayAngles.forEach((deg) => {
-      const rad = (deg * Math.PI) / 180;
-      const x = Math.round(16 + 10 * Math.cos(rad));
-      const y = Math.round(16 - 10 * Math.sin(rad));
-      line(ctx, 16, 16, x, y, GOLD, 1);
-    });
-    // Солнечный диск
-    rect(ctx, 12, 12, 8, 8, GOLD);
-    // Шестерня внизу
-    rect(ctx, 10, 20, 12, 4, "#5c6b73");
-    rect(ctx, 14, 18, 4, 8, "#5c6b73");
-    rect(ctx, 15, 21, 2, 2, "#183822");
-    // Колосья по бокам
-    rect(ctx, 6, 16, 3, 8, GOLD);
-    rect(ctx, 23, 16, 3, 8, GOLD);
-  };
-  return <PixelCanvas size={size} draw={draw} />;
-}
-
-/** Герб Балтелии: маяк с двумя расходящимися лучами. Подделка: 1 луч или угасший фонарь. */
-export function BalteliaEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
-  const draw: Draw = (ctx) => {
-    badge(ctx, "#143a3c", "#0a2022");
-    // Волны
-    rect(ctx, 5, 24, 22, 2, "#38bdf8");
-    rect(ctx, 7, 26, 18, 2, "#0369a1");
-    // Башня маяка
-    line(ctx, 14, 12, 12, 24, SILVER, 2);
-    line(ctx, 17, 12, 19, 24, SILVER, 2);
-    rect(ctx, 13, 20, 6, 2, "#ef4444");
-    rect(ctx, 14, 16, 4, 2, "#ef4444");
-    // Фонарь
-    rect(ctx, 14, 9, 4, 3, GOLD);
-    // Лучи света
-    if (!fake) {
-      // 2 расходящихся луча
-      line(ctx, 13, 10, 5, 6, GOLD, 2);
-      line(ctx, 18, 10, 26, 6, GOLD, 2);
-      rect(ctx, 4, 5, 3, 3, "#fef08a");
-      rect(ctx, 25, 5, 3, 3, "#fef08a");
-    } else {
-      // 1 луч (подделка)
-      line(ctx, 13, 10, 5, 6, GOLD, 2);
-    }
-  };
-  return <PixelCanvas size={size} draw={draw} />;
-}
-
 /** Герб Отеплии: имперский орел с мечом в правой лапе и короной. Подделка: меч в левой лапе. */
 export function OtepliaEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
   const draw: Draw = (ctx) => {
@@ -320,7 +219,7 @@ export function OtepliaEmblem({ size = 48, fake = false }: { size?: number; fake
     line(ctx, 16, 9, 24, 15, "#e0e0e0", 2);
     line(ctx, 24, 15, 26, 22, "#e0e0e0", 2);
     rect(ctx, 13, 11, 6, 9, "#1c1c1c");
-    rect(ctx, 14, 13, 4, 5, "#8b0000"); // красный щиток MAWU
+    rect(ctx, 14, 13, 4, 5, "#8b0000"); // красный щиток старого королевства
 
     // Меч
     if (!fake) {
@@ -336,14 +235,20 @@ export function OtepliaEmblem({ size = 48, fake = false }: { size?: number; fake
   return <PixelCanvas size={size} draw={draw} />;
 }
 
-/** Герб Краснославии / Аргестана: звезда. */
-export function StarEmblem({ size = 48 }: { size?: number }) {
+/** Герб Краснославии: пятиконечная звезда. Подделка — четырёхлучевая. */
+export function StarEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
   const draw: Draw = (ctx) => {
     badge(ctx, "#5e1d1d", "#120e0b");
-    const rows = [
-      [15, 2], [14, 4], [13, 6], [5, 22], [8, 16], [10, 12], [12, 8], [10, 12], [9, 6], [7, 5],
-    ];
-    rows.forEach(([x, w], i) => rect(ctx, x, 5 + i * 2, w, 2, GOLD));
+    if (fake) {
+      rect(ctx, 14, 6, 4, 20, GOLD);
+      rect(ctx, 6, 14, 20, 4, GOLD);
+      rect(ctx, 11, 11, 10, 10, GOLD);
+    } else {
+      const rows = [
+        [15, 2], [14, 4], [13, 6], [5, 22], [8, 16], [10, 12], [12, 8], [10, 12], [9, 6], [7, 5],
+      ];
+      rows.forEach(([x, w], i) => rect(ctx, x, 5 + i * 2, w, 2, GOLD));
+    }
   };
   return <PixelCanvas size={size} draw={draw} />;
 }
@@ -360,20 +265,17 @@ export function CountryEmblem({
   switch (country.code) {
     case "ASSR":
       return <AtomEmblem size={size} color={GOLD} orbits={fake === "orb2" ? 2 : 3} badge />;
+    case "KRS":
+      return <StarEmblem size={size} fake={fake === "krs_4ray"} />;
     case "UGS":
-      return <GornostanEmblem size={size} fake={fake === "gorn_left"} />;
+      return <GearEmblem size={size} fake={fake === "ugs_broken"} />;
     case "STV":
-      return <OstolandiaEmblem size={size} fake={fake === "osto_left"} />;
+      return <WheatEmblem size={size} fake={fake === "stv_5grain"} />;
     case "VIC":
       return <VicteriaEmblem size={size} fake={fake === "vic_5star"} />;
-    case "OND":
-      return <OndarEmblem size={size} fake={fake === "ond_5ray"} />;
-    case "BLT":
-      return <BalteliaEmblem size={size} fake={fake === "blt_1beam"} />;
     case "ZPS":
       return <OtepliaEmblem size={size} fake={fake === "otep_sword_left"} />;
-    case "KRS":
     default:
-      return <StarEmblem size={size} />;
+      return <AtomEmblem size={size} color={GOLD} badge />;
   }
 }

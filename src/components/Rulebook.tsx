@@ -3,13 +3,12 @@ import type { BookTab, DayConfig, FieldKey, RuleItem } from "../game/types";
 import { useI18n } from "../i18n";
 import {
   AtomEmblem,
-  BalteliaEmblem,
-  GornostanEmblem,
-  OndarEmblem,
-  OstolandiaEmblem,
+  GearEmblem,
   OtepliaEmblem,
   PartyEmblem,
+  StarEmblem,
   VicteriaEmblem,
+  WheatEmblem,
 } from "./Emblems";
 import { sfx } from "../audio";
 
@@ -169,6 +168,16 @@ function EmblemsPage({
   onSel: (k: FieldKey) => void;
 }) {
   const { t } = useI18n();
+  const entries = [
+    { key: "ref.atom", icon: <AtomEmblem size={38} badge />, name: t.ui.rulebook.emblems.assr, ok: t.ui.rulebook.emblems.assrOk, fake: t.ui.rulebook.emblems.assrFake },
+    { key: "ref.party", icon: <PartyEmblem size={38} mirrored />, name: t.ui.rulebook.emblems.party, ok: t.ui.rulebook.emblems.partyOk, fake: t.ui.rulebook.emblems.partyFake },
+    { key: "ref.emblem_krs", icon: <StarEmblem size={38} />, name: t.ui.rulebook.emblems.krasnoslavia, ok: t.ui.rulebook.emblems.krsOk, fake: t.ui.rulebook.emblems.krsFake },
+    { key: "ref.emblem_ugs", icon: <GearEmblem size={38} />, name: t.ui.rulebook.emblems.coalUnion, ok: t.ui.rulebook.emblems.ugsOk, fake: t.ui.rulebook.emblems.ugsFake },
+    { key: "ref.emblem_stv", icon: <WheatEmblem size={38} />, name: t.ui.rulebook.emblems.steppe, ok: t.ui.rulebook.emblems.stvOk, fake: t.ui.rulebook.emblems.stvFake },
+    { key: "ref.emblem_vic", icon: <VicteriaEmblem size={38} />, name: t.ui.rulebook.emblems.victeria, ok: t.ui.rulebook.emblems.vicOk, fake: t.ui.rulebook.emblems.vicFake },
+    { key: "ref.emblem_zps", icon: <OtepliaEmblem size={38} />, name: t.ui.rulebook.emblems.oteplia, ok: t.ui.rulebook.emblems.otepOk, fake: t.ui.rulebook.emblems.otepFake },
+  ];
+
   return (
     <div>
       <div
@@ -180,193 +189,26 @@ function EmblemsPage({
       <div className="text-[8.5px] uppercase text-[var(--color-ash)] mb-3 leading-tight">
         {t.ui.rulebook.refSubtitle}
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-        {/* АССР */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.atom",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.atom");
-          }}
-        >
-          <div className="shrink-0">
-            <AtomEmblem size={38} badge />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.assr}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.assrOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.assrFake}</div>
-          </div>
-        </button>
-
-        {/* КПТА */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.party",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.party");
-          }}
-        >
-          <div className="shrink-0">
-            <PartyEmblem size={38} mirrored />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.party}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.partyOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.partyFake}</div>
-          </div>
-        </button>
-
-        {/* ГОРНОСТАН */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.emblem_ugs",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.emblem_ugs");
-          }}
-        >
-          <div className="shrink-0">
-            <GornostanEmblem size={38} />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.gornostan}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.gornOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.gornFake}</div>
-          </div>
-        </button>
-
-        {/* ОСТОЛЯНДИЯ */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.emblem_stv",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.emblem_stv");
-          }}
-        >
-          <div className="shrink-0">
-            <OstolandiaEmblem size={38} />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.ostolandia}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.ostoOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.ostoFake}</div>
-          </div>
-        </button>
-
-        {/* ВИКТЕРИЯ */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.emblem_vic",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.emblem_vic");
-          }}
-        >
-          <div className="shrink-0">
-            <VicteriaEmblem size={38} />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.victeria}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.vicOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.vicFake}</div>
-          </div>
-        </button>
-
-        {/* ОНДАР */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.emblem_ond",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.emblem_ond");
-          }}
-        >
-          <div className="shrink-0">
-            <OndarEmblem size={38} />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.ondar}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.ondOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.ondFake}</div>
-          </div>
-        </button>
-
-        {/* БАЛТЕЛИЯ */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.emblem_blt",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.emblem_blt");
-          }}
-        >
-          <div className="shrink-0">
-            <BalteliaEmblem size={38} />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.baltelia}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.bltOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.bltFake}</div>
-          </div>
-        </button>
-
-        {/* ОТЕПЛИЯ */}
-        <button
-          type="button"
-          className={`${cls(
-            "ref.emblem_zps",
-            sel,
-            proven
-          )} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSel("ref.emblem_zps");
-          }}
-        >
-          <div className="shrink-0">
-            <OtepliaEmblem size={38} />
-          </div>
-          <div>
-            <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{t.ui.rulebook.emblems.oteplia}</div>
-            <div className="text-[8px] text-[var(--color-moss)]">{t.ui.rulebook.emblems.otepOk}</div>
-            <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{t.ui.rulebook.emblems.otepFake}</div>
-          </div>
-        </button>
+        {entries.map((entry) => (
+          <button
+            key={entry.key}
+            type="button"
+            className={`${cls(entry.key, sel, proven)} p-2 text-left border border-[var(--color-line)] hover:border-[var(--color-gold)] transition-colors flex items-center gap-2`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSel(entry.key);
+            }}
+          >
+            <div className="shrink-0">{entry.icon}</div>
+            <div>
+              <div className="text-[9.5px] font-bold text-[var(--color-gold)]">{entry.name}</div>
+              <div className="text-[8px] text-[var(--color-moss)]">{entry.ok}</div>
+              <div className="text-[7.5px] text-[var(--color-state2)] opacity-80">{entry.fake}</div>
+            </div>
+          </button>
+        ))}
       </div>
-
       <div className="text-[9px] uppercase text-[var(--color-ash)] leading-relaxed tracking-wide">
         {t.ui.rulebook.refNote}
       </div>

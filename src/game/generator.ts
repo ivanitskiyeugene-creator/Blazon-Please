@@ -1,4 +1,5 @@
 import { getDict, type Lang } from "../i18n";
+import { FOREIGN_PASSPORT_ISSUERS } from "./data";
 import type {
   CountryCode,
   DayConfig,
@@ -108,7 +109,7 @@ const DETAINABLE: ViolationKind[] = [
   "fakeParty",
   "fakeEmblem",
   "talonForged",
-  "acpsBanned",
+  "contrabandCargo",
   "veteranForged",
   "photoMismatch",
   "sexMismatch",
@@ -138,20 +139,25 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
   const dayN = day.n;
   const D = getDict(lang);
 
-  // пул стран
+  // Только суверенные государства могут быть эмитентами иностранных паспортов.
+  // Союзные республики (Аргестан, Гартелия, Горностан, Балтелия,
+  // Остоляндия и Ондар) выдают единый паспорт АССР.
   const foreignPool: CountryCode[] =
     dayN >= 4
-      ? ["KRS", "UGS", "STV", "VIC", "OND", "BLT", "ZPS"]
+      ? [...FOREIGN_PASSPORT_ISSUERS]
       : dayN >= 2
       ? ["KRS", "UGS", "STV", "ZPS"]
       : ["KRS", "UGS", "ZPS"];
 
-  const isLocal = chance(r, 0.4);
+  // Первый посетитель смены всегда действительно чистый. В первую смену это
+  // также не позволяет случайному иностранцу обойти полный запрет на въезд.
+  const isLocal = forceClean || chance(r, 0.4);
   const country: CountryCode = isLocal ? "ASSR" : pick(r, foreignPool);
   const sex: Sex = chance(r, 0.45) ? "F" : "M";
   const person = makePerson(r, sex);
   const name = makeName(r, country, sex, lang);
   const id = String(int(r, 100000, 999999));
+  const unionRegion = country === "ASSR" ? pick(r, D.unionRegions) : undefined;
 
   // выбор нарушения
   const pool = day.violations.filter((v) => {
@@ -172,9 +178,12 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
   const wantViolation = !forceClean && chance(r, 0.5) && pool.length > 0;
   let violation: ViolationKind | null = wantViolation ? pick(r, pool) : null;
 
-  // Отеплия (ZPS) после дня 3 — всегда невъездной по директиве
+  // В первую смену действует полный запрет на въезд иностранцев, поэтому
+  // иностранный посетитель не может быть ошибочно помечен как «чистый».
+  if (country !== "ASSR" && dayN === 1) violation = "foreignNoPermit";
+
+  // Отеплия (ZPS) после дня 3 — всегда невъездная по директиве.
   if (country === "ZPS" && day.violations.includes("westBanned")) violation = "westBanned";
-  if (country !== "ASSR" && !day.violations.includes("foreignNoPermit") && violation === null) violation = null;
 
   const mismatch: [FieldKey, FieldKey][] = [];
   let expiry = futureDate(r, dayN);
@@ -203,23 +212,23 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
     partyCard = { name, rank: pick(r, D.ranks), mirrored: true };
   }
 
-  // Талоны (Транзитный / Пайковый / ACPS) со дня 3+
+  // Талоны (грузовой / пайковый / транзитный) со дня 3+
   let talon: TalonData | undefined;
   const wantTalon =
     violation === "talonExpired" ||
     violation === "talonIdMismatch" ||
     violation === "talonForged" ||
-    violation === "acpsBanned" ||
+    violation === "contrabandCargo" ||
     (dayN >= 3 && chance(r, 0.35));
 
   if (wantTalon) {
-    const isAcps = violation === "acpsBanned" || (country === "VIC" || country === "ZPS" || country === "UGS");
-    const kind = isAcps ? "acps" : country === "ASSR" ? "ration" : "transit";
-    const prefix = kind === "acps" ? "ACPS-" : kind === "ration" ? "PK-" : "TR-";
+    const isCargo = violation === "contrabandCargo" || (country === "VIC" || country === "ZPS" || country === "UGS");
+    const kind = isCargo ? "cargo" : country === "ASSR" ? "ration" : "transit";
+    const prefix = kind === "cargo" ? "GR-" : kind === "ration" ? "PK-" : "TR-";
     const talonCode = `${prefix}${int(r, 10000, 99999)}`;
     const talonPurposes =
-      kind === "acps"
-        ? D.talons.purposesAcps
+      kind === "cargo"
+        ? D.talons.purposesCargo
         : kind === "ration"
         ? D.talons.purposesRation
         : D.talons.purposesTransit;
@@ -249,36 +258,31 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
     };
   }
 
-  // Подделка гербов чужих стран
+  // Подделка гербов суверенных иностранных государств. Гербы союзных
+  // республик здесь намеренно отсутствуют: отдельных паспортов у них нет.
   if (violation === "fakeEmblem") {
     switch (country) {
+      case "KRS":
+        fake = "krs_4ray";
+        mismatch.push(["p.emblem", "ref.emblem_krs"]);
+        break;
       case "UGS":
-        fake = "gorn_left";
+        fake = "ugs_broken";
         mismatch.push(["p.emblem", "ref.emblem_ugs"]);
         break;
       case "STV":
-        fake = "osto_left";
+        fake = "stv_5grain";
         mismatch.push(["p.emblem", "ref.emblem_stv"]);
         break;
       case "VIC":
         fake = "vic_5star";
         mismatch.push(["p.emblem", "ref.emblem_vic"]);
         break;
-      case "OND":
-        fake = "ond_5ray";
-        mismatch.push(["p.emblem", "ref.emblem_ond"]);
-        break;
-      case "BLT":
-        fake = "blt_1beam";
-        mismatch.push(["p.emblem", "ref.emblem_blt"]);
-        break;
       case "ZPS":
         fake = "otep_sword_left";
         mismatch.push(["p.emblem", "ref.emblem_zps"]);
         break;
       default:
-        fake = "orb2";
-        mismatch.push(["p.emblem", "ref.atom"]);
         break;
     }
   }
@@ -339,10 +343,10 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
         mismatch.push(["t.seal", "rule.rTalon"]);
       }
       break;
-    case "acpsBanned":
+    case "contrabandCargo":
       if (talon) {
-        talon.purpose = D.talons.bannedAcpsPurpose;
-        mismatch.push(["t.purpose", "rule.rAcps"]);
+        talon.purpose = D.talons.bannedCargoPurpose;
+        mismatch.push(["t.purpose", "rule.rCargo"]);
       }
       break;
     case "veteranForged":
@@ -383,7 +387,7 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
     person,
     dialogue,
     interrogate: pick(r, D.probes),
-    passport: { country, name, sex: passSex, dob: birthDate(r), expiry, id, fake },
+    passport: { country, unionRegion, name, sex: passSex, dob: birthDate(r), expiry, id, fake },
     permit,
     partyCard,
     talon,

@@ -6,9 +6,31 @@ export interface ChangeEntry {
   items: { ru: string[]; en: string[] };
 }
 
-export const APP_VERSION = "0.9.0";
+export const APP_VERSION = "0.9.1";
 
 export const CHANGELOG: ChangeEntry[] = [
+  {
+    version: "0.9.1",
+    date: { ru: "канон октября 1951-го", en: "the canon of October 1951" },
+    tag: { ru: "КРАСНОСЛАВИЯ ВОЗВРАЩЕНА", en: "KRASNOSLAVIA RESTORED" },
+    tone: "#d2aa38",
+    items: {
+      ru: [
+        "Краснославия вернулась в очередь и справочник гербов. Богдан Тихий снова приезжает с краснославским паспортом, а западного атташе во всех документах и финалах зовут Эдвард Коул.",
+        "Аргестан, Гартелия, Горностан, Балтелия, Остоляндия и Ондар больше не выдают отдельные иностранные паспорта: в 1951 году это части АССР. Их граждане предъявляют единый паспорт АССР, где республика указана только как место выдачи.",
+        "Кампания очищена от анахронизмов: EASA образован только в 2007 году, поэтому его талоны, блок MAWU, ACPS и рельсотроны убраны из 1951-го. Новые документы сохранены как талоны Минпропа и грузовые декларации эпохи радиоламп.",
+        "Послевоенная Отеплия теперь показана разделённой оккупационной зоной, как на вики; даты ВАВ закреплены как 1938–1947, существование АССР — 1931–1995.",
+        "Исправлены правила смен: для каждого возможного нарушения снова есть действующая строка директивы; при полном запрете на въезд иностранец больше не может быть ошибочно помечен как чистый, а первый посетитель смены гарантированно соответствует правилам.",
+      ],
+      en: [
+        "Krasnoslavia is back in the queue and emblem guide. Bohdan Tikhiy once again carries a Krasnoslavian passport, while the western attaché is consistently named Edward Cole in documents and endings.",
+        "Argestan, Gartelia, Gornostan, Baltelia, Ostolandia and Ondar no longer issue separate foreign passports: in 1951 they are parts of the ASSR. Their citizens carry one ASSR passport, with the republic shown only as the place of issue.",
+        "The campaign has been cleared of anachronisms: EASA was not founded until 2007, so its talons, the MAWU bloc, ACPS and railguns were removed from 1951. The new paperwork remains as Ministry talons and radio-era cargo declarations.",
+        "Post-war Oteplia is now shown as a divided occupation zone as documented by the wiki; the GAW dates are fixed at 1938–1947 and the ASSR at 1931–1995.",
+        "Shift directives were reconciled with generation: every possible violation once again has an active rule; a foreigner cannot be marked clean while a total entry ban is in force, and each shift's first entrant is guaranteed to satisfy the rules.",
+      ],
+    },
+  },
   {
     version: "0.9.0",
     date: { ru: "эпоха блоков и геральдики", en: "the era of blocs & heraldry" },
@@ -16,17 +38,17 @@ export const CHANGELOG: ChangeEntry[] = [
     tone: "#e8c34a",
     items: {
       ru: [
-        "8 государств вселенной Avalon Project: АССР, Народная Республика Аргестан, Королевство Отеплия (MAWU), Республика Горностан (Брунь), Республика Остоляндия (Порт-Артур), Соединённые Штаты Виктерии (USV), Ондарская Народная Республика (СНС) и Республика Балтелия.",
-        "Механика подделки гербов зарубежных стран: проверка ориентации молота Горностана, числа волн и звёзд Остоляндии, молний и звёзд орла Виктерии, лучей солнца Ондара, лучей маяка Балтелии и меча Отеплии.",
+        "В 0.9.0 Аргестан, Горностан, Остоляндия, Ондар и Балтелия были ошибочно представлены отдельными паспортными государствами. Эта ошибка исправлена в 0.9.1: в 1951 году они находятся внутри АССР.",
+        "Подделки гербов были привязаны к ошибочному набору паспортов; в 0.9.1 их заменили гербы восстановленных независимых эмитентов.",
         "Интерактивный «Справочник гербов и символов» в книжке инспектора: сверка эталонов и выявление признаков фальсификата с возможностью доказательства нарушения.",
-        "Новые документы: транзитные талоны EASA, пайковые талоны АССР, декларации микроэлектроники ACPS и удостоверения ветеранов Великой Аргелийской войны (1938–1947).",
+        "В 0.9.0 появились талоны EASA и декларации ACPS; 0.9.1 сохраняет механику документов, но заменяет анахронизмы формами Министерства Пропусков и грузовыми декларациями 1951 года.",
         "Мобильная адаптация: сенсорные быстрые действия, переключение вкладок «Будка / Стол / Свод», выдвижные штампы и отзывчивая раскладка.",
       ],
       en: [
-        "8 sovereign nations of the Avalon Project lore: ASSR, People's Republic of Argestan, Kingdom of Oteplia (MAWU), Republic of Gornostan (Brun), Republic of Ostolandia (Port-Arthur), United States of Victeria (USV), Ondar People's Republic (SNS), and Republic of Baltelia.",
-        "Counterfeit foreign coat of arms mechanics: inspect Gornostan's hammer direction, Ostolandia's waves and stars, Victeria's eagle talons and stars, Ondar's sun rays, Baltelia's lighthouse beams, and Oteplia's sword hand.",
+        "Version 0.9.0 mistakenly presented Argestan, Gornostan, Ostolandia, Ondar and Baltelia as separate passport states. Version 0.9.1 corrects this: in 1951 they are inside the ASSR.",
+        "Emblem forgeries were tied to the incorrect passport set; 0.9.1 replaces them with emblems of the restored independent issuers.",
         "Interactive «Emblems & Crests Reference Guide» in the Inspector Rulebook: compare genuine standards against known counterfeit flaws to prove violations.",
-        "New documents: EASA transit vouchers, ASSR ration coupons, ACPS tech clearance declarations, and Great Argelian War (1938–1947) veteran certificates.",
+        "Version 0.9.0 introduced EASA talons and ACPS declarations; 0.9.1 keeps the document mechanics but replaces the anachronisms with Ministry of Passes forms and 1951 cargo declarations.",
         "Mobile viewport optimization: touch quick-action bars, responsive Booth / Desk / Rules tabs, expandable stamps, and ergonomic desk layouts.",
       ],
     },

@@ -1,8 +1,8 @@
 {
   "name": "blazon-please",
   "private": true,
-  "version": "0.9.0",
-  "mobileVersion": "0.9.0",
+  "version": "0.9.1",
+  "mobileVersion": "0.9.1",
   "type": "module",
   "scripts": {
     "dev": "vite",

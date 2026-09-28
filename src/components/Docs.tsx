@@ -116,6 +116,20 @@ export function PassportDoc({
             >
               {c.name}
             </div>
+            {data.unionRegion && (
+              <div
+                style={{
+                  marginTop: 3,
+                  fontSize: 6.5,
+                  color: "rgba(232,195,74,0.72)",
+                  letterSpacing: "0.025em",
+                  textTransform: "uppercase",
+                  lineHeight: 1.15,
+                }}
+              >
+                {t.ui.passport.issuedBy}: {data.unionRegion}
+              </div>
+            )}
           </button>
         </div>
       </div>
@@ -308,7 +322,7 @@ export function PartyCardDoc({ data, s }: { data: PartyCardData; s: SelProps }) 
 }
 
 // =============================================
-// НОВЫЙ ТАЛОН (Транзитный / Пайковый / ACPS)
+// ТАЛОН (транзитный / пайковый / грузовой)
 // =============================================
 export function TalonDoc({ data, s }: { data: TalonData; s: SelProps }) {
   const { t } = useI18n();
@@ -317,7 +331,7 @@ export function TalonDoc({ data, s }: { data: TalonData; s: SelProps }) {
       ? t.ui.talons.transitTitle
       : data.kind === "ration"
       ? t.ui.talons.rationTitle
-      : t.ui.talons.acpsTitle;
+      : t.ui.talons.cargoTitle;
 
   const bgStyle =
     data.kind === "transit"
@@ -363,7 +377,7 @@ export function TalonDoc({ data, s }: { data: TalonData; s: SelProps }) {
           >
             {data.sealValid ? t.ui.talons.sealValid : t.ui.talons.sealForged}
           </button>
-          <span className="text-[6.5px] uppercase opacity-60">{t.ui.talons.easaControl}</span>
+          <span className="text-[6.5px] uppercase opacity-60">{t.ui.talons.borderControl}</span>
         </div>
       </div>
     </div>

@@ -3,13 +3,12 @@ import type { DayConfig, FieldKey, RuleItem } from "../game/types";
 import { useI18n } from "../i18n";
 import {
   AtomEmblem,
-  BalteliaEmblem,
-  GornostanEmblem,
-  OndarEmblem,
-  OstolandiaEmblem,
+  GearEmblem,
   OtepliaEmblem,
   PartyEmblem,
+  StarEmblem,
   VicteriaEmblem,
+  WheatEmblem,
 } from "./Emblems";
 
 interface SelProps {
@@ -94,6 +93,16 @@ function RulesPage({ rules, s }: { rules: RuleItem[]; s: SelProps }) {
 
 function EmblemsPage({ s }: { s: SelProps }) {
   const { t } = useI18n();
+  const entries = [
+    { key: "ref.atom", icon: <AtomEmblem size={32} badge />, name: t.ui.rulebook.emblems.assr, detail: t.ui.rulebook.emblems.assrOk },
+    { key: "ref.party", icon: <PartyEmblem size={32} mirrored />, name: t.ui.rulebook.emblems.party, detail: t.ui.rulebook.emblems.partyOk },
+    { key: "ref.emblem_krs", icon: <StarEmblem size={32} />, name: t.ui.rulebook.emblems.krasnoslavia, detail: t.ui.rulebook.emblems.krsOk },
+    { key: "ref.emblem_ugs", icon: <GearEmblem size={32} />, name: t.ui.rulebook.emblems.coalUnion, detail: t.ui.rulebook.emblems.ugsOk },
+    { key: "ref.emblem_stv", icon: <WheatEmblem size={32} />, name: t.ui.rulebook.emblems.steppe, detail: t.ui.rulebook.emblems.stvOk },
+    { key: "ref.emblem_vic", icon: <VicteriaEmblem size={32} />, name: t.ui.rulebook.emblems.victeria, detail: t.ui.rulebook.emblems.vicOk },
+    { key: "ref.emblem_zps", icon: <OtepliaEmblem size={32} />, name: t.ui.rulebook.emblems.oteplia, detail: t.ui.rulebook.emblems.otepOk },
+  ];
+
   return (
     <div>
       <div
@@ -103,151 +112,24 @@ function EmblemsPage({ s }: { s: SelProps }) {
         {t.ui.book.refTitle}
       </div>
       <div className="text-[8px] uppercase opacity-70 mb-2">{t.ui.rulebook.refSubtitle}</div>
-
       <div className="grid grid-cols-2 gap-2 text-left">
-        {/* АССР */}
-        <button
-          type="button"
-          className={`${cls("ref.atom", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.atom");
-          }}
-        >
-          <div className="shrink-0">
-            <AtomEmblem size={32} badge />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.assr}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.assrOk}</div>
-          </div>
-        </button>
-
-        {/* КПТА */}
-        <button
-          type="button"
-          className={`${cls("ref.party", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.party");
-          }}
-        >
-          <div className="shrink-0">
-            <PartyEmblem size={32} mirrored />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.party}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.partyOk}</div>
-          </div>
-        </button>
-
-        {/* Горностан */}
-        <button
-          type="button"
-          className={`${cls("ref.emblem_ugs", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.emblem_ugs");
-          }}
-        >
-          <div className="shrink-0">
-            <GornostanEmblem size={32} />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.gornostan}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.gornOk}</div>
-          </div>
-        </button>
-
-        {/* Остоляндия */}
-        <button
-          type="button"
-          className={`${cls("ref.emblem_stv", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.emblem_stv");
-          }}
-        >
-          <div className="shrink-0">
-            <OstolandiaEmblem size={32} />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.ostolandia}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.ostoOk}</div>
-          </div>
-        </button>
-
-        {/* Виктерия */}
-        <button
-          type="button"
-          className={`${cls("ref.emblem_vic", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.emblem_vic");
-          }}
-        >
-          <div className="shrink-0">
-            <VicteriaEmblem size={32} />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.victeria}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.vicOk}</div>
-          </div>
-        </button>
-
-        {/* Ондар */}
-        <button
-          type="button"
-          className={`${cls("ref.emblem_ond", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.emblem_ond");
-          }}
-        >
-          <div className="shrink-0">
-            <OndarEmblem size={32} />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.ondar}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.ondOk}</div>
-          </div>
-        </button>
-
-        {/* Балтелия */}
-        <button
-          type="button"
-          className={`${cls("ref.emblem_blt", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.emblem_blt");
-          }}
-        >
-          <div className="shrink-0">
-            <BalteliaEmblem size={32} />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.baltelia}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.bltOk}</div>
-          </div>
-        </button>
-
-        {/* Отеплия */}
-        <button
-          type="button"
-          className={`${cls("ref.emblem_zps", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
-          onClick={(e) => {
-            e.stopPropagation();
-            s.onSel("ref.emblem_zps");
-          }}
-        >
-          <div className="shrink-0">
-            <OtepliaEmblem size={32} />
-          </div>
-          <div>
-            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.oteplia}</div>
-            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.otepOk}</div>
-          </div>
-        </button>
+        {entries.map((entry) => (
+          <button
+            key={entry.key}
+            type="button"
+            className={`${cls(entry.key, s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+            onClick={(e) => {
+              e.stopPropagation();
+              s.onSel(entry.key);
+            }}
+          >
+            <div className="shrink-0">{entry.icon}</div>
+            <div>
+              <div className="text-[8.5px] font-bold">{entry.name}</div>
+              <div className="text-[7px] text-[#2f5c33]">{entry.detail}</div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
