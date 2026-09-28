@@ -4,6 +4,7 @@ import { useI18n } from "../i18n";
 import {
   AtomEmblem,
   GearEmblem,
+  OndarEmblem,
   OtepliaEmblem,
   PartyEmblem,
   StarEmblem,
@@ -100,6 +101,7 @@ function EmblemsPage({ s }: { s: SelProps }) {
     { key: "ref.emblem_ugs", icon: <GearEmblem size={32} />, name: t.ui.rulebook.emblems.coalUnion, detail: t.ui.rulebook.emblems.ugsOk },
     { key: "ref.emblem_stv", icon: <WheatEmblem size={32} />, name: t.ui.rulebook.emblems.steppe, detail: t.ui.rulebook.emblems.stvOk },
     { key: "ref.emblem_vic", icon: <VicteriaEmblem size={32} />, name: t.ui.rulebook.emblems.victeria, detail: t.ui.rulebook.emblems.vicOk },
+    { key: "ref.emblem_ond", icon: <OndarEmblem size={32} />, name: t.ui.rulebook.emblems.ondar, detail: t.ui.rulebook.emblems.ondOk },
     { key: "ref.emblem_zps", icon: <OtepliaEmblem size={32} />, name: t.ui.rulebook.emblems.oteplia, detail: t.ui.rulebook.emblems.otepOk },
   ];
 

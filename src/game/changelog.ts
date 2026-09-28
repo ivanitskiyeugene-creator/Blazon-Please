@@ -6,9 +6,27 @@ export interface ChangeEntry {
   items: { ru: string[]; en: string[] };
 }
 
-export const APP_VERSION = "0.9.1";
+export const APP_VERSION = "0.9.2";
 
 export const CHANGELOG: ChangeEntry[] = [
+  {
+    version: "0.9.2",
+    date: { ru: "Ондар за рубежом", en: "Ondar abroad" },
+    tag: { ru: "ПАСПОРТ ОНДАРА ВОЗВРАЩЁН", en: "ONDAR PASSPORT RESTORED" },
+    tone: "#d2aa38",
+    items: {
+      ru: [
+        "Ондар в списке союзных республик статьи АССР отсутствует, поэтому он снова считается суверенным иностранным государством, а не частью Союза.",
+        "Ондарская Народная Республика опять выдаёт собственный паспорт со своим гербом-солнцем (7 лучей; подделка — 5 лучей) и требует разрешение на въезд, как прочие иностранцы.",
+        "Ондар убран из мест выдачи единого паспорта АССР; на границе он появляется с 4-й смены среди иностранных гостей, а его герб добавлен в справочник и в проверку подделок.",
+      ],
+      en: [
+        "Ondar is absent from the ASSR article's list of union republics, so it is once again treated as a sovereign foreign state rather than part of the Union.",
+        "The Ondar People's Republic issues its own passport again, with its sun emblem (7 rays; forgery — 5 rays) and an entry permit requirement like other foreigners.",
+        "Ondar was removed from the ASSR unified-passport places of issue; it appears at the border from shift 4 among foreign guests, and its emblem is back in the reference guide and forgery checks.",
+      ],
+    },
+  },
   {
     version: "0.9.1",
     date: { ru: "канон октября 1951-го", en: "the canon of October 1951" },

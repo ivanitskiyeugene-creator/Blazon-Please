@@ -140,8 +140,9 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
   const D = getDict(lang);
 
   // Только суверенные государства могут быть эмитентами иностранных паспортов.
-  // Союзные республики (Аргестан, Гартелия, Горностан, Балтелия,
-  // Остоляндия и Ондар) выдают единый паспорт АССР.
+  // Союзные республики (Аргестан, Гартелия, Горностан, Балтелия и
+  // Остоляндия) выдают единый паспорт АССР. Ондар в состав АССР не входит,
+  // поэтому это отдельное иностранное государство со своим паспортом.
   const foreignPool: CountryCode[] =
     dayN >= 4
       ? [...FOREIGN_PASSPORT_ISSUERS]
@@ -258,8 +259,9 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
     };
   }
 
-  // Подделка гербов суверенных иностранных государств. Гербы союзных
-  // республик здесь намеренно отсутствуют: отдельных паспортов у них нет.
+  // Подделка гербов суверенных иностранных государств (включая Ондар).
+  // Гербы союзных республик здесь намеренно отсутствуют: отдельных
+  // паспортов у них нет.
   if (violation === "fakeEmblem") {
     switch (country) {
       case "KRS":
@@ -281,6 +283,10 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
       case "ZPS":
         fake = "otep_sword_left";
         mismatch.push(["p.emblem", "ref.emblem_zps"]);
+        break;
+      case "OND":
+        fake = "ond_5ray";
+        mismatch.push(["p.emblem", "ref.emblem_ond"]);
         break;
       default:
         break;

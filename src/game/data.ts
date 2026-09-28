@@ -3,10 +3,12 @@ import type { Country, CountryCode, DayConfig } from "./types";
 
 /**
  * Государства, способные выдать отдельный паспорт в октябре 1951 года.
- * Аргестан, Гартелия, Горностан, Балтелия, Остоляндия и Ондар входят в
- * АССР и потому представлены только единым паспортом ASSR.
+ * Аргестан, Гартелия, Горностан, Балтелия и Остоляндия входят в АССР и
+ * потому представлены только единым паспортом ASSR. Ондар в состав АССР НЕ
+ * входит (его нет среди союзных республик в статье АССР), поэтому это
+ * суверенное иностранное государство со своим паспортом и гербом.
  */
-export const PASSPORT_ISSUERS = ["ASSR", "KRS", "UGS", "STV", "VIC", "ZPS"] as const satisfies readonly CountryCode[];
+export const PASSPORT_ISSUERS = ["ASSR", "KRS", "UGS", "STV", "VIC", "ZPS", "OND"] as const satisfies readonly CountryCode[];
 export const FOREIGN_PASSPORT_ISSUERS = PASSPORT_ISSUERS.filter((code) => code !== "ASSR");
 
 /** Визуальная часть стран: тексты берутся из словаря (см. i18n). */
@@ -17,6 +19,7 @@ export const COUNTRIES: Record<CountryCode, Country> = {
   UGS: { code: "UGS", name: "", short: "", emblem: "gear", color: "#33302e" },
   STV: { code: "STV", name: "", short: "", emblem: "wheat", color: "#5a4a2c" },
   VIC: { code: "VIC", name: "", short: "", emblem: "vic_eagle", color: "#132846" },
+  OND: { code: "OND", name: "", short: "", emblem: "ond_sun", color: "#1a3b23" },
 };
 
 /** Страна с локализованными названиями. */

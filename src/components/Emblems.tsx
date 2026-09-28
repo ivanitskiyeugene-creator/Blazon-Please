@@ -253,6 +253,33 @@ export function StarEmblem({ size = 48, fake = false }: { size?: number; fake?: 
   return <PixelCanvas size={size} draw={draw} />;
 }
 
+/** Герб Ондара: восходящее солнце с 7 лучами + шестерня и колосья. Подделка: 5 лучей. */
+export function OndarEmblem({ size = 48, fake = false }: { size?: number; fake?: boolean }) {
+  const draw: Draw = (ctx) => {
+    badge(ctx, "#183822", "#0b1d11");
+    // Лучи солнца
+    const rayAngles = fake
+      ? [0, 45, 90, 135, 180] // 5 лучей
+      : [0, 30, 60, 90, 120, 150, 180]; // 7 лучей в подлиннике
+    rayAngles.forEach((deg) => {
+      const rad = (deg * Math.PI) / 180;
+      const x = Math.round(16 + 10 * Math.cos(rad));
+      const y = Math.round(16 - 10 * Math.sin(rad));
+      line(ctx, 16, 16, x, y, GOLD, 1);
+    });
+    // Солнечный диск
+    rect(ctx, 12, 12, 8, 8, GOLD);
+    // Шестерня внизу
+    rect(ctx, 10, 20, 12, 4, "#5c6b73");
+    rect(ctx, 14, 18, 4, 8, "#5c6b73");
+    rect(ctx, 15, 21, 2, 2, "#183822");
+    // Колосья по бокам
+    rect(ctx, 6, 16, 3, 8, GOLD);
+    rect(ctx, 23, 16, 3, 8, GOLD);
+  };
+  return <PixelCanvas size={size} draw={draw} />;
+}
+
 export function CountryEmblem({
   country,
   size = 48,
@@ -275,6 +302,8 @@ export function CountryEmblem({
       return <VicteriaEmblem size={size} fake={fake === "vic_5star"} />;
     case "ZPS":
       return <OtepliaEmblem size={size} fake={fake === "otep_sword_left"} />;
+    case "OND":
+      return <OndarEmblem size={size} fake={fake === "ond_5ray"} />;
     default:
       return <AtomEmblem size={size} color={GOLD} badge />;
   }

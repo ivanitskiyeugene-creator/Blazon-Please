@@ -16,6 +16,7 @@ export const en: Dict = {
     UGS: { name: "Coal Union of Labouring Mines", short: "COAL UNION" },
     STV: { name: "Steppe Free Host", short: "STEPPE HOST" },
     VIC: { name: "United States of Victeria", short: "VICTERIA" },
+    OND: { name: "Ondar People's Republic", short: "ONDAR" },
   } as Record<CountryCode, { name: string; short: string }>,
 
   /** Place of issue inside the ASSR; these are not separate sovereign issuers. */
@@ -25,7 +26,6 @@ export const en: Dict = {
     "Gornostan SSR",
     "Baltelia SSR",
     "Ostolandia SSR",
-    "Ondar Autonomous Oblast",
   ],
 
   party: { short: "CPTA", full: "Communist Party of Labour and the Atom" },
@@ -40,7 +40,7 @@ export const en: Dict = {
     r6: "ASSR forgery: the true emblem has 3 orbits. Two orbits means enemy print shop.",
     r7: "CPTA card: the true emblem has the hammer on the RIGHT. Classic hammer and sickle means forgery.",
     rEmblem:
-      "FOREIGN PASSPORT EMBLEMS: Krasnoslavia (5-point star), Coal Union (intact gear), Steppe Host (7 grains), Victeria (6 stars, lightning on right), Western Oteplia (sword in right talon).",
+      "FOREIGN PASSPORT EMBLEMS: Krasnoslavia (5-point star), Coal Union (intact gear), Steppe Host (7 grains), Victeria (6 stars, lightning on right), Ondar (7 sun rays), Western Oteplia (sword in right talon).",
     rTalon: "TALONS: transit, cargo and ration quotas require a valid talon bearing the round Ministry of Passes seal.",
     rCargo: "MILITARY CONTRABAND: sights, aircraft gyroscopes and guidance parts from Oteplian caches are forbidden without special clearance.",
     r8: "Detention works only with a PROVEN mismatch. Enemy of the people: +8 ₳.",
@@ -104,7 +104,7 @@ export const en: Dict = {
       date: "OCTOBER 15, YEAR 51",
       headline: "FORGED BLAZONS AT THE BORDER",
       subline: "Foreign delegations arriving // verify state emblems",
-      body: "Victerian engineers and Krasnoslavian traders have arrived at the border. An enemy print shop is forging foreign passport emblems: count star points and grains, find the broken gear tooth, and check Victeria's lightning. Check CPTA cards too.",
+      body: "Victerian engineers and Ondar traders have arrived at the border. An enemy print shop is forging foreign passport emblems: count star points and grains, find the broken gear tooth, and check Victeria's lightning and Ondar's sun rays. Check CPTA cards too.",
       rules: [
         { key: "r1", isNew: false },
         { key: "r2", isNew: false },
@@ -244,6 +244,12 @@ export const en: Dict = {
       f: ["ELIZABETH", "CATHERINE", "VICTORIA", "CHLOE", "HELEN", "SARAH"],
       last: ["YAGN", "ARKIN", "WEST", "FOX", "SILVER", "THORNE", "BLAKE", "NORTH"],
       slavic: false,
+    },
+    OND: {
+      m: ["AKHMED", "SABIR", "RUSTAM", "DAMIR", "AZAT", "TAGIR"],
+      f: ["AYGUL", "LYAYSAN", "GULNARA", "ZARINA", "FARIDA"],
+      last: ["ONDAROV", "SAIDOV", "KARIMOV", "TURAN", "YUSUPOV", "BAKIEV"],
+      slavic: true,
     },
   } as Record<CountryCode, { m: string[]; f: string[]; last: string[]; slavic: boolean }>,
 
@@ -716,6 +722,9 @@ export const en: Dict = {
         victeria: "Victeria",
         vicOk: "6 stars, lightning in right claw",
         vicFake: "5 stars / lightning left",
+        ondar: "Ondar",
+        ondOk: "7 sun rays",
+        ondFake: "5 rays — forgery",
         oteplia: "Western Oteplia",
         otepOk: "sword in right talon, crown",
         otepFake: "sword in left talon — forgery",
@@ -861,7 +870,7 @@ export const en: Dict = {
         "reactor Zarya-1 prepares for the Great Launch",
         "CPTA reminder: hammer is on the right",
         "the atom has three orbits — count diligently",
-        "verify country crests: Krasnoslavia, Coal Union, Steppe Host, Victeria",
+        "verify country crests: Krasnoslavia, Coal Union, Steppe Host, Victeria, Ondar",
         "Oteplian military parts are prohibited",
         "queue at CP-7 served starting at 06:00",
       ],

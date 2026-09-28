@@ -1,4 +1,4 @@
-export type CountryCode = "ASSR" | "KRS" | "ZPS" | "UGS" | "STV" | "VIC";
+export type CountryCode = "ASSR" | "KRS" | "ZPS" | "UGS" | "STV" | "VIC" | "OND";
 export type Sex = "M" | "F";
 export type Decision = "ADMIT" | "DENY" | "DETAIN";
 
@@ -25,7 +25,8 @@ export type EmblemKind =
   | "gear"
   | "wheat"
   | "vic_eagle"
-  | "otep_eagle";
+  | "otep_eagle"
+  | "ond_sun";
 
 export type FakeEmblemKind =
   | "orb2"
@@ -33,7 +34,8 @@ export type FakeEmblemKind =
   | "ugs_broken"
   | "stv_5grain"
   | "vic_5star"
-  | "otep_sword_left";
+  | "otep_sword_left"
+  | "ond_5ray";
 
 export interface Country {
   code: CountryCode;
