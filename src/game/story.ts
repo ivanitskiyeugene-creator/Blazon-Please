@@ -15,7 +15,12 @@ export const NEIGHBOR_AGENT = {
 };
 
 // ---------------- ПОСТРОЕНИЕ ВИЗИТА ----------------
-export function agentEntrants(dayN: number, flags: Flags, dateShort: string, lang: Lang): { at: number; entrant: EntrantSpec }[] {
+export function agentEntrants(
+  dayN: number,
+  flags: Flags,
+  dateShort: string,
+  lang: Lang
+): { at: number; entrant: EntrantSpec }[] {
   const D = getDict(lang);
   const yy = dateShort.slice(-2);
   return D.story.visits

@@ -1,7 +1,16 @@
 import { useState } from "react";
 import type { DayConfig, FieldKey, RuleItem } from "../game/types";
 import { useI18n } from "../i18n";
-import { AtomEmblem, PartyEmblem } from "./Emblems";
+import {
+  AtomEmblem,
+  BalteliaEmblem,
+  GornostanEmblem,
+  OndarEmblem,
+  OstolandiaEmblem,
+  OtepliaEmblem,
+  PartyEmblem,
+  VicteriaEmblem,
+} from "./Emblems";
 
 interface SelProps {
   sel: FieldKey[];
@@ -18,7 +27,7 @@ export function BookDoc({ day, s }: { day: DayConfig; s: SelProps }) {
   const { t } = useI18n();
   const [tab, setTab] = useState<"rules" | "emblems" | "calendar">("rules");
   return (
-    <div className="doc select-none w-[360px]" style={{ background: "#4b3b2b" }}>
+    <div className="doc select-none w-[380px]" style={{ background: "#4b3b2b" }}>
       {/* обложка-корешок */}
       <div className="doc-grip !h-[18px] !text-[7px]">
         <span>{t.ui.book.title}</span>
@@ -43,7 +52,7 @@ export function BookDoc({ day, s }: { day: DayConfig; s: SelProps }) {
           </button>
         ))}
       </div>
-      <div className="paper-tex p-3 min-h-[260px] text-[#2b241c]">
+      <div className="paper-tex p-3 min-h-[260px] text-[#2b241c] max-h-[340px] overflow-y-auto">
         {tab === "rules" && <RulesPage rules={day.rules} s={s} />}
         {tab === "emblems" && <EmblemsPage s={s} />}
         {tab === "calendar" && <CalendarPage day={day} s={s} />}
@@ -56,12 +65,25 @@ function RulesPage({ rules, s }: { rules: RuleItem[]; s: SelProps }) {
   const { t } = useI18n();
   return (
     <div className="space-y-1.5">
-      <div className="font-head text-[14px] tracking-widest text-[#7c1d18] mb-2" style={{ fontFamily: "var(--font-head)" }}>
+      <div
+        className="font-head text-[14px] tracking-widest text-[#7c1d18] mb-2"
+        style={{ fontFamily: "var(--font-head)" }}
+      >
         {t.ui.book.directive}
       </div>
       {rules.map((r, i) => (
-        <button key={r.key} type="button" className={`${cls(`rule.${r.key}`, s)} w-full text-left flex gap-2 py-1 border-b border-dotted border-[#2b241c55] text-[10px] leading-snug`}
-          onClick={(e) => { e.stopPropagation(); s.onSel(`rule.${r.key}`); }}>
+        <button
+          key={r.key}
+          type="button"
+          className={`${cls(
+            `rule.${r.key}`,
+            s
+          )} w-full text-left flex gap-2 py-1 border-b border-dotted border-[#2b241c55] text-[10px] leading-snug`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel(`rule.${r.key}`);
+          }}
+        >
           <span className="opacity-50 w-4 shrink-0">{String(i + 1).padStart(2, "0")}</span>
           <span>{r.text}</span>
         </button>
@@ -74,19 +96,157 @@ function EmblemsPage({ s }: { s: SelProps }) {
   const { t } = useI18n();
   return (
     <div>
-      <div className="font-head text-[14px] tracking-widest text-[#7c1d18] mb-3" style={{ fontFamily: "var(--font-head)" }}>
+      <div
+        className="font-head text-[13px] tracking-widest text-[#7c1d18] mb-1"
+        style={{ fontFamily: "var(--font-head)" }}
+      >
         {t.ui.book.refTitle}
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <button type="button" className={`${cls("ref.atom", s)} p-2 border border-[#2b241c44] text-center`} onClick={(e) => { e.stopPropagation(); s.onSel("ref.atom"); }}>
-          <div className="grid place-items-center mb-1"><AtomEmblem size={56} badge /></div>
-          <div className="text-[9px] uppercase font-bold text-[#2f5c33]">{t.ui.book.atomOk}</div>
-          <div className="text-[8px] uppercase opacity-60">{t.ui.book.atomOkSub}</div>
+      <div className="text-[8px] uppercase opacity-70 mb-2">{t.ui.rulebook.refSubtitle}</div>
+
+      <div className="grid grid-cols-2 gap-2 text-left">
+        {/* АССР */}
+        <button
+          type="button"
+          className={`${cls("ref.atom", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.atom");
+          }}
+        >
+          <div className="shrink-0">
+            <AtomEmblem size={32} badge />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.assr}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.assrOk}</div>
+          </div>
         </button>
-        <button type="button" className={`${cls("ref.party", s)} p-2 border border-[#2b241c44] text-center`} onClick={(e) => { e.stopPropagation(); s.onSel("ref.party"); }}>
-          <div className="grid place-items-center mb-1"><PartyEmblem size={56} mirrored /></div>
-          <div className="text-[9px] uppercase font-bold text-[#2f5c33]">{t.ui.book.partyOk}</div>
-          <div className="text-[8px] uppercase opacity-60">{t.ui.book.partyOkSub}</div>
+
+        {/* КПТА */}
+        <button
+          type="button"
+          className={`${cls("ref.party", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.party");
+          }}
+        >
+          <div className="shrink-0">
+            <PartyEmblem size={32} mirrored />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.party}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.partyOk}</div>
+          </div>
+        </button>
+
+        {/* Горностан */}
+        <button
+          type="button"
+          className={`${cls("ref.emblem_ugs", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.emblem_ugs");
+          }}
+        >
+          <div className="shrink-0">
+            <GornostanEmblem size={32} />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.gornostan}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.gornOk}</div>
+          </div>
+        </button>
+
+        {/* Остоляндия */}
+        <button
+          type="button"
+          className={`${cls("ref.emblem_stv", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.emblem_stv");
+          }}
+        >
+          <div className="shrink-0">
+            <OstolandiaEmblem size={32} />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.ostolandia}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.ostoOk}</div>
+          </div>
+        </button>
+
+        {/* Виктерия */}
+        <button
+          type="button"
+          className={`${cls("ref.emblem_vic", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.emblem_vic");
+          }}
+        >
+          <div className="shrink-0">
+            <VicteriaEmblem size={32} />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.victeria}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.vicOk}</div>
+          </div>
+        </button>
+
+        {/* Ондар */}
+        <button
+          type="button"
+          className={`${cls("ref.emblem_ond", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.emblem_ond");
+          }}
+        >
+          <div className="shrink-0">
+            <OndarEmblem size={32} />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.ondar}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.ondOk}</div>
+          </div>
+        </button>
+
+        {/* Балтелия */}
+        <button
+          type="button"
+          className={`${cls("ref.emblem_blt", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.emblem_blt");
+          }}
+        >
+          <div className="shrink-0">
+            <BalteliaEmblem size={32} />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.baltelia}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.bltOk}</div>
+          </div>
+        </button>
+
+        {/* Отеплия */}
+        <button
+          type="button"
+          className={`${cls("ref.emblem_zps", s)} p-1.5 border border-[#2b241c44] flex items-center gap-1.5`}
+          onClick={(e) => {
+            e.stopPropagation();
+            s.onSel("ref.emblem_zps");
+          }}
+        >
+          <div className="shrink-0">
+            <OtepliaEmblem size={32} />
+          </div>
+          <div>
+            <div className="text-[8.5px] font-bold">{t.ui.rulebook.emblems.oteplia}</div>
+            <div className="text-[7px] text-[#2f5c33]">{t.ui.rulebook.emblems.otepOk}</div>
+          </div>
         </button>
       </div>
     </div>
@@ -98,9 +258,17 @@ function CalendarPage({ day, s }: { day: DayConfig; s: SelProps }) {
   return (
     <div className="text-center py-4">
       <div className="text-[9px] uppercase tracking-widest opacity-60 mb-2">{t.ui.book.calTitle}</div>
-      <button type="button" className={`${cls("cal.today", s)} inline-block px-6 py-4 border-4 border-[#7c1d18]`}
-        onClick={(e) => { e.stopPropagation(); s.onSel("cal.today"); }}>
-        <div className="font-head text-[30px] text-[#7c1d18]" style={{ fontFamily: "var(--font-head)" }}>{day.dateShort}</div>
+      <button
+        type="button"
+        className={`${cls("cal.today", s)} inline-block px-6 py-4 border-4 border-[#7c1d18]`}
+        onClick={(e) => {
+          e.stopPropagation();
+          s.onSel("cal.today");
+        }}
+      >
+        <div className="font-head text-[30px] text-[#7c1d18]" style={{ fontFamily: "var(--font-head)" }}>
+          {day.dateShort}
+        </div>
         <div className="text-[9px] uppercase mt-2 opacity-60">{t.ui.book.today}</div>
       </button>
     </div>
@@ -114,13 +282,26 @@ export function NewsDoc({ day }: { day: DayConfig }) {
       <div className="doc-grip !h-[18px] !text-[7px]">{t.ui.news.grip}</div>
       <div className="p-4">
         <div className="flex items-center justify-between border-b-4 border-double border-[#2b241c] pb-2 mb-2">
-          <div className="font-head text-[22px] tracking-wider" style={{ fontFamily: "var(--font-head)" }}>{t.ui.news.title}</div>
-          <div className="text-[8px] uppercase opacity-60 text-right">{t.ui.news.issuer}<br />{t.ui.news.issue}</div>
+          <div className="font-head text-[22px] tracking-wider" style={{ fontFamily: "var(--font-head)" }}>
+            {t.ui.news.title}
+          </div>
+          <div className="text-[8px] uppercase opacity-60 text-right">
+            {t.ui.news.issuer}
+            <br />
+            {t.ui.news.issue}
+          </div>
         </div>
         <div className="text-[8px] uppercase tracking-widest opacity-60 mb-2">{day.date}</div>
-        <div className="font-head text-[16px] leading-tight mb-2 uppercase" style={{ fontFamily: "var(--font-head)" }}>{day.headline}</div>
-        <div className="text-[9px] uppercase font-bold text-[#7c1d18] mb-2">{day.subline}</div>
-        <p className="text-[11px] leading-relaxed">{day.body}</p>
+        <div
+          className="font-head text-[15px] leading-tight text-[#7c1d18] mb-2"
+          style={{ fontFamily: "var(--font-head)" }}
+        >
+          {day.headline}
+        </div>
+        <div className="text-[10px] font-bold mb-2 italic text-[#4a3b2b]">{day.subline}</div>
+        <div className="text-[9.5px] leading-relaxed border-t border-dotted border-[#2b241c55] pt-2">
+          {day.body}
+        </div>
       </div>
     </div>
   );

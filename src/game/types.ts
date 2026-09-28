@@ -1,10 +1,10 @@
-export type CountryCode = "ASSR" | "KRS" | "ZPS" | "UGS" | "STV";
+export type CountryCode = "ASSR" | "KRS" | "ZPS" | "UGS" | "STV" | "VIC" | "OND" | "BLT";
 export type Sex = "M" | "F";
 export type Decision = "ADMIT" | "DENY" | "DETAIN";
 
 /** ключи кликабельных полей документов для предъявления несоответствий */
 export type FieldKey = string;
-export type DocId = "passport" | "permit" | "party" | "book" | "news";
+export type DocId = "passport" | "permit" | "party" | "talon" | "veteran" | "book" | "news";
 
 /** Предмет в инвентаре */
 export interface InvItem {
@@ -18,11 +18,33 @@ export interface InvItem {
 /** Вкладка книжки */
 export type BookTab = "rules" | "emblems" | "calendar";
 
+export type EmblemKind =
+  | "atom"
+  | "star"
+  | "wings"
+  | "gear"
+  | "wheat"
+  | "gorn_hammer"
+  | "osto_ship"
+  | "vic_eagle"
+  | "ond_sun"
+  | "blt_beacon"
+  | "otep_eagle";
+
+export type FakeEmblemKind =
+  | "orb2"
+  | "gorn_left"
+  | "osto_left"
+  | "vic_5star"
+  | "ond_5ray"
+  | "blt_1beam"
+  | "otep_sword_left";
+
 export interface Country {
   code: CountryCode;
   name: string;
   short: string;
-  emblem: "atom" | "star" | "wings" | "gear" | "wheat";
+  emblem: EmblemKind;
   color: string;
 }
 
@@ -43,7 +65,7 @@ export interface PassportData {
   dob: string;
   expiry: string;
   id: string;
-  fake?: "orb2";
+  fake?: FakeEmblemKind;
 }
 
 export interface PermitData {
@@ -58,6 +80,26 @@ export interface PartyCardData {
   name: string;
   rank: string;
   mirrored: boolean; // true = настоящий герб КПТА (молот справа)
+}
+
+export interface TalonData {
+  kind: "transit" | "ration" | "acps";
+  code: string;
+  name: string;
+  passId: string;
+  purpose: string;
+  expiry: string;
+  sealValid: boolean;
+  quota?: string;
+}
+
+export interface VeteranData {
+  name: string;
+  rank: string;
+  unit: string;
+  serviceYears: string;
+  medal: string;
+  sealValid: boolean;
 }
 
 export type AgentKind = "west" | "neighbor";
@@ -93,6 +135,8 @@ export interface EntrantSpec {
   passport: PassportData;
   permit?: PermitData;
   partyCard?: PartyCardData;
+  talon?: TalonData;
+  veteran?: VeteranData;
   photo?: PersonSpec;
   interrogate?: string;
   detainable?: boolean;
@@ -152,6 +196,12 @@ export type ViolationKind =
   | "westBanned"
   | "fakeAtom"
   | "fakeParty"
+  | "fakeEmblem"
+  | "talonExpired"
+  | "talonIdMismatch"
+  | "talonForged"
+  | "acpsBanned"
+  | "veteranForged"
   | "photoMismatch"
   | "sexMismatch";
 

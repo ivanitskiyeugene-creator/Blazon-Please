@@ -8,7 +8,7 @@ import { useI18n, LangSwitch } from "../i18n";
 import type { AgentOption, DayConfig, DayResult, Decision, DocId, EntrantSpec, FieldKey } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
 import { BoothDecor } from "../components/Booth";
-import { PartyCardDoc, PassportDoc, PermitDoc, type SelProps } from "../components/Docs";
+import { PartyCardDoc, PassportDoc, PermitDoc, TalonDoc, VeteranDoc, type SelProps } from "../components/Docs";
 import { BookDoc, NewsDoc } from "../components/ReferenceDocs";
 import { Person } from "../components/Person";
 import { Rulebook } from "../components/Rulebook";
@@ -178,6 +178,8 @@ export function GameScreen({
       const docs: DocId[] = ["passport"];
       if (entrant?.permit && entrant.rareEvent !== "forgot_permit") docs.push("permit");
       if (entrant?.partyCard) docs.push("party");
+      if (entrant?.talon) docs.push("talon");
+      if (entrant?.veteran) docs.push("veteran");
       setOfferedDocs(docs);
       if (entrant?.rareEvent === "forgot_permit" && entrant.permit) {
         setRareMsg(t.rareStage.forgot);
@@ -451,6 +453,10 @@ export function GameScreen({
         return entrant.permit ? <PermitDoc data={entrant.permit} s={selProps} /> : null;
       case "party":
         return entrant.partyCard ? <PartyCardDoc data={entrant.partyCard} s={selProps} /> : null;
+      case "talon":
+        return entrant.talon ? <TalonDoc data={entrant.talon} s={selProps} /> : null;
+      case "veteran":
+        return entrant.veteran ? <VeteranDoc data={entrant.veteran} s={selProps} /> : null;
       case "book":
         return <BookDoc day={day} s={selProps} />;
       case "news":

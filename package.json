@@ -1,39 +1,32 @@
 {
   "name": "blazon-please",
   "private": true,
-  "version": "0.8.0",
-  "mobileVersion": "0.1.0",
+  "version": "0.9.0",
+  "mobileVersion": "0.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "desktop:dev": "tauri dev",
-    "desktop:build": "tauri build",
-    "desktop:info": "tauri info",
-    "android:init": "tauri android init",
-    "android:dev": "tauri android dev",
-    "android:build": "tauri android build"
+    "desktop:build": "tauri build"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.12.0",
-    "clsx": "2.1.1",
-    "framer-motion": "^13.4.4",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "tailwind-merge": "3.4.0"
+    "framer-motion": "^12.42.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "4.1.17",
-    "@tauri-apps/cli": "^2.12.0",
-    "@types/node": "22.19.17",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "5.1.1",
-    "playwright": "^1.63.0",
-    "tailwindcss": "4.1.17",
-    "typescript": "5.9.3",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.7.2",
     "vite": "^7.3.6",
-    "vite-plugin-singlefile": "2.3.0"
+    "vite-plugin-singlefile": "^2.1.2"
   }
 }

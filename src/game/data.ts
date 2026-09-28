@@ -5,16 +5,20 @@ import type { Country, CountryCode, DayConfig } from "./types";
 export const COUNTRIES: Record<CountryCode, Country> = {
   ASSR: { code: "ASSR", name: "", short: "", emblem: "atom", color: "#8f2320" },
   KRS: { code: "KRS", name: "", short: "", emblem: "star", color: "#6e2a2a" },
-  ZPS: { code: "ZPS", name: "", short: "", emblem: "wings", color: "#2e3450" },
-  UGS: { code: "UGS", name: "", short: "", emblem: "gear", color: "#33302e" },
-  STV: { code: "STV", name: "", short: "", emblem: "wheat", color: "#5a4a2c" },
+  ZPS: { code: "ZPS", name: "", short: "", emblem: "otep_eagle", color: "#2b1919" },
+  UGS: { code: "UGS", name: "", short: "", emblem: "gorn_hammer", color: "#2d3036" },
+  STV: { code: "STV", name: "", short: "", emblem: "osto_ship", color: "#1c3552" },
+  VIC: { code: "VIC", name: "", short: "", emblem: "vic_eagle", color: "#132846" },
+  OND: { code: "OND", name: "", short: "", emblem: "ond_sun", color: "#1a3b23" },
+  BLT: { code: "BLT", name: "", short: "", emblem: "blt_beacon", color: "#184245" },
 };
 
 /** Страна с локализованными названиями. */
 export function country(code: CountryCode, lang: Lang): Country {
-  const base = COUNTRIES[code];
+  const base = COUNTRIES[code] ?? COUNTRIES.ASSR;
   const d = getDict(lang);
-  return { ...base, name: d.countries[code].name, short: d.countries[code].short };
+  const info = d.countries[code] ?? { name: code, short: code };
+  return { ...base, name: info.name, short: info.short };
 }
 
 export const PER_PAY = 5;
@@ -24,14 +28,72 @@ export const DETAIN_BONUS = 8;
 export const EVIDENCE_BONUS = 2;
 
 const DATE_SHORT = ["12.10.51", "13.10.51", "14.10.51", "15.10.51", "16.10.51", "17.10.51"];
-const COUNT = [7, 8, 9, 9, 10, 10];
+const COUNT = [7, 8, 9, 10, 11, 12];
 const VIOLATIONS: DayConfig["violations"][] = [
   ["foreignNoPermit"],
   ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"],
+  [
+    "foreignNoPermit",
+    "passportExpired",
+    "permitExpired",
+    "nameMismatch",
+    "idMismatch",
+    "westBanned",
+    "fakeAtom",
+    "talonExpired",
+    "talonIdMismatch",
+  ],
+  [
+    "foreignNoPermit",
+    "passportExpired",
+    "permitExpired",
+    "nameMismatch",
+    "idMismatch",
+    "westBanned",
+    "fakeAtom",
+    "fakeParty",
+    "fakeEmblem",
+    "talonExpired",
+    "talonIdMismatch",
+    "talonForged",
+    "photoMismatch",
+  ],
+  [
+    "foreignNoPermit",
+    "passportExpired",
+    "permitExpired",
+    "nameMismatch",
+    "idMismatch",
+    "westBanned",
+    "fakeAtom",
+    "fakeParty",
+    "fakeEmblem",
+    "talonExpired",
+    "talonIdMismatch",
+    "talonForged",
+    "acpsBanned",
+    "veteranForged",
+    "photoMismatch",
+    "sexMismatch",
+  ],
+  [
+    "foreignNoPermit",
+    "passportExpired",
+    "permitExpired",
+    "nameMismatch",
+    "idMismatch",
+    "westBanned",
+    "fakeAtom",
+    "fakeParty",
+    "fakeEmblem",
+    "talonExpired",
+    "talonIdMismatch",
+    "talonForged",
+    "acpsBanned",
+    "veteranForged",
+    "photoMismatch",
+    "sexMismatch",
+  ],
 ];
 
 /** Полные конфиги дней с текстами на выбранном языке. */
