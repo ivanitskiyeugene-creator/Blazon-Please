@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { PixelGlyph } from "../components/PixelGlyph";
-import { DETAIN_BONUS, ERROR_FINE, EVIDENCE_BONUS, PER_PAY } from "../game/data";
+import { DETAIN_BONUS, ERROR_FINE, EVIDENCE_BONUS, FREE_CITATIONS, PER_PAY } from "../game/data";
 import type { DayConfig, DayResult } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
 import { sfx } from "../audio";
@@ -25,7 +25,10 @@ export function LedgerScreen({
   const [heatSkipped, setHeatSkipped] = useState(false);
 
   const pay = result.correct * PER_PAY;
-  const fine = result.errors.length * ERROR_FINE;
+  // Первые FREE_CITATIONS протоколов за смену — предупреждение без штрафа.
+  const finedCount = Math.max(0, result.errors.length - FREE_CITATIONS);
+  const freeCount = Math.min(result.errors.length, FREE_CITATIONS);
+  const fine = finedCount * ERROR_FINE;
   const isHeating = (id: string) => id === "heat";
   const expenses = day.expenses.reduce((s, e) => s + (heatSkipped && isHeating(e.id) ? 0 : e.amount), 0);
   const total = creditsBefore + pay + result.bribeGain + result.detainBonus + result.evidenceBonus + result.agentCredits - fine - expenses;
@@ -45,8 +48,11 @@ export function LedgerScreen({
     ...(result.agentCredits > 0
       ? [{ label: t.ui.ledger.envelopes, value: `+${result.agentCredits} ₳`, tone: "var(--color-gold)" }]
       : []),
-    ...(result.errors.length > 0
-      ? [{ label: t.ui.ledger.protocols(result.errors.length, ERROR_FINE), value: `-${fine} ₳`, tone: "var(--color-state2)" }]
+    ...(freeCount > 0
+      ? [{ label: t.ui.ledger.warnings(freeCount), value: "0 ₳", tone: "var(--color-ash)" }]
+      : []),
+    ...(finedCount > 0
+      ? [{ label: t.ui.ledger.protocols(finedCount, ERROR_FINE), value: `-${fine} ₳`, tone: "var(--color-state2)" }]
       : []),
     ...day.expenses.map((e) =>
       heatSkipped && isHeating(e.id)

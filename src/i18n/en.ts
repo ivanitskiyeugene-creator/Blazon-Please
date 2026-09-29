@@ -348,6 +348,7 @@ export const en: Dict = {
   story: {
     westName: "EDWARD COLE",
     neighborName: "BOGDAN TIKHIY",
+    commissarName: "COMMISSAR KRASNOGRAD",
     purpose: "TRADE MISSION",
     duration: "1 YEAR",
     cites: {
@@ -357,14 +358,43 @@ export const en: Dict = {
     caught: {
       west: "Papers, papers. We are above mere papers, inspector.",
       neighbor: "You caught me. So what? I will come again tomorrow.",
+      commissar: "Detain a commissar? Bold. And very stupid, inspector.",
     },
     reacts: {
       westAdmit: "Until tomorrow, inspector.",
       westDeny: "No matter. I will find another window.",
       neighborAdmit: "Stay well. And dress warmly.",
       neighborDeny: "The river will wait. And so will I.",
+      commissarAdmit: "Serve well, inspector. The Party sees everyone.",
+      commissarDeny: "Deny a commissar? We shall note that on a separate line.",
     },
     visits: [
+      {
+        day: 3,
+        at: 5,
+        agent: "commissar" as const,
+        dialogue: "Commissar Krasnograd, special department. Don't stand at attention, inspector. I'm not here for your passport — I'm here for you.",
+        interrogate: "I ask the questions here. Your job is to answer short and true.",
+        prompt: "«Word reached me that strangers frequent your window. A western attaché reeking of cologne, and a boatman from across the river. The Party wants to know: which of them approached you with a conversation, inspector?»",
+        options: [
+          { label: "«The western attaché. Cole is recruiting» (report)", reply: "Good. We'll put Cole under watch. You serve faithfully.", loyal: 2, west: -2 },
+          { label: "«The neighbor lures me to flee» (report)", reply: "A boatman, then. The river is watched too. Well done.", loyal: 2, neighbor: -2 },
+          { label: "«All quiet at the post, comrade commissar»", reply: "Quiet. We'll remember that word. And we'll remember you.", loyal: 1 },
+        ],
+      },
+      {
+        day: 5,
+        at: 4,
+        agent: "commissar" as const,
+        dialogue: "Me again. Tomorrow is the Great Launch, and on my desk lies a denunciation of your post. Let's sort it out.",
+        interrogate: "Don't weasel. Before ZARYA-1, Post No. 7 must be clean as a teardrop.",
+        prompt: "«I need one answer, inspector, and it decides where you meet the launch — in an office in Neuburg, or a mine cart past North Terminus. Foreigners offered to spirit you away, or paid for intel. Confess — and name who to hand over.»",
+        options: [
+          { label: "«I hand over the western attaché Cole»", reply: "The right choice. We'll squeeze Oteplia. Keep serving.", loyal: 3, west: -3 },
+          { label: "«I hand over the boatman»", reply: "The river will wait for a boatman on our side. Good.", loyal: 3, neighbor: -3 },
+          { label: "«I have no one to hand over. I'm clean»", reply: "Clean. Sure. We watch the clean ones the closest.", loyal: 1 },
+        ],
+      },
       {
         day: 2,
         at: 3,
@@ -779,6 +809,7 @@ export const en: Dict = {
       serviceNews: "GAZETTE",
       offerTitleWest: "Subdued conversation // Western Union",
       offerTitleNeighbor: "Subdued conversation // Krasnoslavia",
+      offerTitleCommissar: "Special department interrogation // COMMISSAR",
       offerNote: "talk does not substitute for a decision: documents must still be stamped",
       exitTitle: "Leave the post?",
       exitBody: (n: number) =>
@@ -819,7 +850,8 @@ export const en: Dict = {
       detains: (n: number, p: number) => `Enemies of the people detained: ${n} × ${p}₳`,
       bribeRow: "«One single day. Who will notice?»",
       envelopes: "Envelopes for conversations through the glass",
-      protocols: (n: number, p: number) => `Violation citations: ${n} × ${p}₳`,
+      protocols: (n: number, p: number) => `Fined citations: ${n} × ${p}₳`,
+      warnings: (n: number) => `Warnings (no fine): ${n}`,
       protocolsTitle: "daily citations",
       heatOn: "Heating active: −4 ₳. Click to save money and freeze",
       heatOff: "Heating deactivated — family freezes (saving 4 ₳)",
@@ -901,6 +933,16 @@ export const en: Dict = {
     arrest: {
       title: "Detention — only with proven discrepancy",
       confiscated: "Detainee documents confiscated into the protocol.",
+    },
+
+    citation: {
+      title: "VIOLATION CITATION",
+      ministry: "Ministry of Passes // CP-7",
+      reason: "Grounds:",
+      fine: (a: number) => `FINE: −${a} ₳`,
+      warning: "WARNING · NO FINE",
+      warningLeft: (n: number) =>
+        n > 0 ? `Warnings left: ${n}` : "Next mistake will be fined",
     },
 
     lever: { label: "CASSETTES", open: "EXTENDED", closed: "CLOSED", aria: "Stamp cassettes lever" },

@@ -6,9 +6,27 @@ export interface ChangeEntry {
   items: { ru: string[]; en: string[] };
 }
 
-export const APP_VERSION = "0.9.2";
+export const APP_VERSION = "0.9.3";
 
 export const CHANGELOG: ChangeEntry[] = [
+  {
+    version: "0.9.3",
+    date: { ru: "Комиссар и протоколы", en: "The Commissar & citations" },
+    tag: { ru: "ОСОБЫЙ ОТДЕЛ НА ПОСТУ", en: "SPECIAL DEPARTMENT AT THE POST" },
+    tone: "#c0392b",
+    items: {
+      ru: [
+        "На пост периодически наведывается комиссар Особого отдела: он не показывает паспорт, а допрашивает инспектора об агентах — с кем вы имели дело, западный ли атташе или сосед-лодочник, — и предлагает кого-нибудь сдать.",
+        "Штрафы теперь выписываются почти сразу: через пару секунд после ошибки из окна выезжает протокол. Первые два протокола за смену — предупреждение без штрафа, дальше каждый стоит денег.",
+        "Экономика переработана: ставка за штамп, премии за улики и задержания и суточные расходы снижены так, чтобы честная смена приносила около 10 атоморублей, а взятки агентов оставались соблазном.",
+      ],
+      en: [
+        "A Special Department commissar drops by the post from time to time: he shows no passport but interrogates the inspector about the agents — whom you dealt with, the western attaché or the boatman neighbour — and offers you someone to hand over.",
+        "Fines are now issued almost immediately: a citation slides out of the window a couple of seconds after a mistake. The first two citations of a shift are warnings with no fine; after that each one costs money.",
+        "Economy reworked: the per-stamp rate, evidence and detention bonuses and daily expenses were lowered so an honest shift nets about 10 atomrubles, while agent bribes stay a temptation.",
+      ],
+    },
+  },
   {
     version: "0.9.2",
     date: { ru: "Ондар за рубежом", en: "Ondar abroad" },

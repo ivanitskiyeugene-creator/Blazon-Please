@@ -27,11 +27,12 @@ export function Person({
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const commissar = spec.uniform === "commissar";
   const skin = SKINS[spec.skin % SKINS.length];
   const skinDark = SKIN_DARK[spec.skin % SKIN_DARK.length];
   const hair = HAIRS[spec.hairTone % HAIRS.length];
-  const coat = COATS[spec.coat % COATS.length];
-  const coatDark = COAT_SHADOWS[spec.coat % COAT_SHADOWS.length];
+  const coat = commissar ? "#3e4a2c" : COATS[spec.coat % COATS.length];
+  const coatDark = commissar ? "#28311b" : COAT_SHADOWS[spec.coat % COAT_SHADOWS.length];
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -193,7 +194,53 @@ export function Person({
       rect(22, 38, 5, 10, scarfDark);
       rect(23, 39, 3, 8, scarf);
     }
-  }, [coat, coatDark, hair, skin, skinDark, spec]);
+
+    // ---- Форма комиссара: шинель, петлицы с атомом, портупея, фуражка ----
+    if (commissar) {
+      const capGreen = "#5b6a3a";
+      const capLite = "#71804c";
+      const capBand = "#3f4c29";
+      const capBandDark = "#2b331c";
+      const visor = "#141109";
+      const gold = "#d9b23a";
+      const strap = "#5b3a1e";
+      const strapLite = "#7a5028";
+
+      // Диагональная портупея через грудь (правое плечо → левый бок).
+      const strapCells: [number, number][] = [
+        [30, 40], [28, 43], [26, 46], [24, 49], [22, 52], [20, 55], [19, 58],
+      ];
+      strapCells.forEach(([x, y]) => {
+        rect(x, y, 3, 3, strap);
+        rect(x, y, 1, 3, strapLite);
+      });
+      rect(26, 46, 1, 1, gold); // пряжка-блик
+
+      // Петлицы на воротнике с золотым атомом.
+      rect(15, 34, 6, 4, "#161009");
+      rect(28, 34, 6, 4, "#161009");
+      rect(17, 35, 2, 1, gold);
+      rect(30, 35, 2, 1, gold);
+      rect(17, 36, 2, 1, "#8a6a1c");
+      rect(30, 36, 2, 1, "#8a6a1c");
+
+      // Фуражка поверх головы. Тулья, околыш, козырёк, красная звезда.
+      rect(14, 3, 18, 3, capGreen);   // тулья (верх)
+      rect(13, 5, 20, 2, capGreen);
+      rect(15, 3, 13, 1, capLite);    // блик тульи
+      rect(13, 6, 20, 1, capBandDark); // кант
+      rect(12, 7, 24, 3, capBand);    // околыш
+      rect(12, 7, 3, 3, capBandDark);
+      rect(33, 7, 3, 3, capBandDark);
+      rect(11, 10, 26, 2, visor);     // козырёк
+      rect(13, 12, 20, 1, "#0c0a06"); // тень под козырьком
+      rect(16, 13, 16, 1, skinDark);  // тень козырька на лбу
+      // Красная звезда на околыше.
+      rect(22, 7, 4, 3, "#c0241f");
+      rect(23, 7, 2, 1, "#e34b3f");
+      rect(23, 9, 2, 1, "#7c1512");
+    }
+  }, [coat, coatDark, commissar, hair, skin, skinDark, spec]);
 
   return (
     <canvas

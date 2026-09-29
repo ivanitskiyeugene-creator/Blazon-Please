@@ -53,6 +53,8 @@ export interface PersonSpec {
   coat: number;
   redScarf?: boolean;
   female?: boolean;
+  /** особая форма — например, шинель и фуражка комиссара */
+  uniform?: "commissar";
 }
 
 export interface PassportData {
@@ -102,7 +104,7 @@ export interface VeteranData {
   sealValid: boolean;
 }
 
-export type AgentKind = "west" | "neighbor";
+export type AgentKind = "west" | "neighbor" | "commissar";
 
 export interface AgentOption {
   label: string;

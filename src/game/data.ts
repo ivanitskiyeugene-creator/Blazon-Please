@@ -30,11 +30,13 @@ export function country(code: CountryCode, lang: Lang): Country {
   return { ...base, name: info.name, short: info.short };
 }
 
-export const PER_PAY = 5;
+export const PER_PAY = 2;
 export const ERROR_FINE = 3;
 export const START_CREDITS = 25;
-export const DETAIN_BONUS = 8;
-export const EVIDENCE_BONUS = 2;
+export const DETAIN_BONUS = 4;
+export const EVIDENCE_BONUS = 1;
+/** Сколько первых протоколов за смену — предупреждение без штрафа. */
+export const FREE_CITATIONS = 2;
 
 const DATE_SHORT = ["12.10.51", "13.10.51", "14.10.51", "15.10.51", "16.10.51", "17.10.51"];
 const COUNT = [7, 8, 9, 10, 11, 12];
@@ -123,7 +125,7 @@ export function getDays(lang: Lang): DayConfig[] {
     expenses: day.expenses.map((e) => ({
       id: e.id,
       label: e.label,
-      amount: e.id === "food" ? 8 : e.id === "heat" ? 4 : 6,
+      amount: e.id === "food" ? 6 : e.id === "heat" ? 3 : 4,
     })),
     count: COUNT[i],
     violations: VIOLATIONS[i],

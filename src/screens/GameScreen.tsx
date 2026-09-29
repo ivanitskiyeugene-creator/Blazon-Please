@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { PixelGlyph } from "../components/PixelGlyph";
 import { initAudio, isMuted, setMuted, sfx } from "../audio";
 import { startMusic, stopMusic, isMusicPlaying } from "../music";
-import { DETAIN_BONUS, EVIDENCE_BONUS } from "../game/data";
+import { DETAIN_BONUS, ERROR_FINE, EVIDENCE_BONUS, FREE_CITATIONS } from "../game/data";
 import { useI18n, LangSwitch } from "../i18n";
 import type { AgentOption, DayConfig, DayResult, Decision, DocId, EntrantSpec, FieldKey } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
@@ -73,6 +73,7 @@ export function GameScreen({
   const [bookOpen, setBookOpen] = useState(false);
   const [inventory, setInventory] = useState<InvItem[]>([]);
   const [rareMsg, setRareMsg] = useState<string | null>(null); // редкое событие
+  const [citation, setCitation] = useState<{ reason: string; fined: boolean; left: number } | null>(null);
   const [musicOn, setMusicOn] = useState(isMusicPlaying());
   const [needCall, setNeedCall] = useState(true);
   const [entrantVisible, setEntrantVisible] = useState(false);
@@ -125,6 +126,21 @@ export function GameScreen({
     timers.current.push(window.setTimeout(fn, ms));
   };
 
+  // Протокол выписывается почти сразу после ошибки: через пару секунд
+  // из окна выезжает билет. Первые FREE_CITATIONS протоколов за смену —
+  // предупреждение без штрафа.
+  const raiseCitation = (reason: string) => {
+    const n = result.current.errors.length; // ошибка уже учтена
+    const fined = n > FREE_CITATIONS;
+    const left = Math.max(0, FREE_CITATIONS - n);
+    later(2000, () => {
+      sfx.bad();
+      doShake(0.8);
+      setCitation({ reason, fined, left });
+      later(5200, () => setCitation(null));
+    });
+  };
+
   useEffect(() => {
     initAudio();
     return () => timers.current.forEach((t) => window.clearTimeout(t));
@@ -150,6 +166,7 @@ export function GameScreen({
     setOfferOpen(false);
     setStampOpen(false);
     setRareMsg(null);
+    setCitation(null);
     setDesk((prev) => prev.filter((d) => d.id === "book" || d.id === "news"));
     setTrayDocs([]);
     setOfferedDocs([]);
@@ -374,6 +391,7 @@ export function GameScreen({
       } else {
         result.current.errors.push(t.violations.detainError);
         setReaction(e.reactDeny ?? t.violations.reactDetainBad);
+        raiseCitation(t.violations.detainError);
       }
     } else {
       const pool = d === "ADMIT" ? t.generic.admit : t.generic.deny;
@@ -393,6 +411,7 @@ export function GameScreen({
       } else {
         result.current.errors.push(e.cite);
         setReaction(react);
+        raiseCitation(e.cite);
       }
 
     }
@@ -1131,6 +1150,58 @@ export function GameScreen({
         </div>
       </div>
 
+      {/* ---------- БИЛЕТ СО ШТРАФОМ (протокол) ---------- */}
+      <AnimatePresence>
+        {citation && (
+          <motion.div
+            initial={{ opacity: 0, y: -90, rotate: -4 }}
+            animate={{ opacity: 1, y: 0, rotate: -1.5 }}
+            exit={{ opacity: 0, y: -70 }}
+            transition={{ type: "spring", stiffness: 240, damping: 20 }}
+            className="fixed z-[75] left-1/2 top-16 -translate-x-1/2 w-[min(340px,90vw)] paper-tex text-[#2b241c] p-3 shadow-[6px_6px_0_#070605]"
+            style={{ border: `2px solid ${citation.fined ? "#7c1d18" : "#7f6a2a"}` }}
+          >
+            <div
+              className="flex items-center justify-between border-b-2 pb-1 mb-1.5"
+              style={{ borderColor: citation.fined ? "#7c1d18" : "#7f6a2a" }}
+            >
+              <span
+                className="font-head text-[13px] uppercase tracking-wider"
+                style={{ fontFamily: "var(--font-head)", color: citation.fined ? "#7c1d18" : "#6b551c" }}
+              >
+                {t.ui.citation.title}
+              </span>
+              <PixelGlyph name="alert" size={14} color={citation.fined ? "#7c1d18" : "#7f6a2a"} />
+            </div>
+            <div className="text-[8px] uppercase tracking-widest opacity-60 mb-1">{t.ui.citation.ministry}</div>
+            <div className="text-[10px] leading-snug">
+              <span className="uppercase opacity-60">{t.ui.citation.reason} </span>
+              {citation.reason}
+            </div>
+            <div className="mt-2 flex items-end justify-between gap-2">
+              {citation.fined ? (
+                <span className="font-head text-[15px] uppercase text-[#7c1d18]" style={{ fontFamily: "var(--font-head)" }}>
+                  {t.ui.citation.fine(ERROR_FINE)}
+                </span>
+              ) : (
+                <div>
+                  <div className="font-head text-[13px] uppercase text-[#2f5c33]" style={{ fontFamily: "var(--font-head)" }}>
+                    {t.ui.citation.warning}
+                  </div>
+                  <div className="text-[8px] uppercase opacity-60">{t.ui.citation.warningLeft(citation.left)}</div>
+                </div>
+              )}
+              <div
+                className="shrink-0 px-1.5 py-1 border-2 rotate-[-8deg] text-[7px] uppercase font-bold opacity-80"
+                style={{ borderColor: citation.fined ? "#7c1d18" : "#7f6a2a", color: citation.fined ? "#7c1d18" : "#6b551c" }}
+              >
+                {t.ui.checkpoint}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ---------- ТАЙНОЕ ПРЕДЛОЖЕНИЕ ---------- */}
       <AnimatePresence>
         {offerOpen && entrant?.agentOffer && (
@@ -1147,19 +1218,36 @@ export function GameScreen({
               exit={{ opacity: 0, y: 20 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
               className="fixed z-[71] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(620px,94vw)] max-h-[92vh] overflow-y-auto panel p-5 sm:p-6"
-              style={{ borderColor: entrant.agent === "west" ? "#2e3450" : "#5c6e46", borderWidth: 3 }}
+              style={{ borderColor: entrant.agent === "commissar" ? "#7c1d18" : entrant.agent === "west" ? "#2e3450" : "#5c6e46", borderWidth: 3 }}
             >
               <span className="bolt" style={{ top: 6, left: 6 }} />
               <span className="bolt" style={{ top: 6, right: 6 }} />
               <div className="flex items-center gap-2 mb-3">
-                <PixelGlyph name="handshake" size={17} color={entrant.agent === "west" ? "#8fa0d8" : "#a8c185"} />
+                <PixelGlyph
+                  name={entrant.agent === "commissar" ? "siren" : "handshake"}
+                  size={17}
+                  color={entrant.agent === "commissar" ? "#e07a6b" : entrant.agent === "west" ? "#8fa0d8" : "#a8c185"}
+                />
                 <span
                   className="font-head uppercase tracking-widest text-sm"
-                  style={{ fontFamily: "var(--font-head)", color: entrant.agent === "west" ? "#8fa0d8" : "#a8c185" }}
+                  style={{ fontFamily: "var(--font-head)", color: entrant.agent === "commissar" ? "#e07a6b" : entrant.agent === "west" ? "#8fa0d8" : "#a8c185" }}
                 >
-                  {entrant.agent === "west" ? t.ui.game.offerTitleWest : t.ui.game.offerTitleNeighbor}
+                  {entrant.agent === "commissar"
+                    ? t.ui.game.offerTitleCommissar
+                    : entrant.agent === "west"
+                      ? t.ui.game.offerTitleWest
+                      : t.ui.game.offerTitleNeighbor}
                 </span>
               </div>
+              {entrant.agent === "commissar" && (
+                <div className="mb-4 -mt-1 overflow-hidden border-2 border-[#0b0907] outline outline-2 outline-[#7c1d18] bg-[#0b0907]">
+                  <img
+                    src="images/commissar.png"
+                    alt={t.ui.game.offerTitleCommissar}
+                    className="pixel-art w-full h-[150px] object-cover object-[center_28%]"
+                  />
+                </div>
+              )}
               <div className="flex items-start gap-3 mb-4">
                 <div className="shrink-0 border-2 border-[var(--color-line)] bg-[#1c1712] p-1">
                   <Person spec={entrant.person} width={78} />

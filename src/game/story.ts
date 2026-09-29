@@ -14,6 +14,13 @@ export const NEIGHBOR_AGENT = {
   person: { skin: 1, hairStyle: "ushanka", hairTone: 1, facial: "mustache", coat: 4 } as PersonSpec,
 };
 
+// Комиссар Красноград — приходит на пост и допрашивает про иностранных агентов.
+export const COMMISSAR = {
+  id: "700007",
+  country: "ASSR" as const,
+  person: { skin: 0, hairStyle: "bald", hairTone: 0, facial: "none", coat: 1, uniform: "commissar" } as PersonSpec,
+};
+
 // ---------------- ПОСТРОЕНИЕ ВИЗИТА ----------------
 export function agentEntrants(
   dayN: number,
@@ -32,6 +39,33 @@ export function agentEntrants(
       return true;
     })
     .map((v) => {
+      // Комиссар Краснограда — гражданин АССР, приходит с допросом про агентов.
+      if (v.agent === "commissar") {
+        const entrant: EntrantSpec = {
+          person: COMMISSAR.person,
+          dialogue: v.dialogue,
+          interrogate: v.interrogate,
+          passport: {
+            country: COMMISSAR.country,
+            name: D.story.commissarName,
+            sex: "M",
+            dob: "07.11.09",
+            expiry: `31.12.${Number(yy) + 3}`,
+            id: COMMISSAR.id,
+          },
+          expected: "ADMIT",
+          cite: D.story.cites.clean,
+          mismatch: [],
+          caught: D.story.caught.commissar,
+          detainable: false,
+          agent: "commissar",
+          agentOffer: { prompt: v.prompt, options: v.options },
+          reactAdmit: D.story.reacts.commissarAdmit,
+          reactDeny: D.story.reacts.commissarDeny,
+        };
+        return { at: v.at, entrant };
+      }
+
       const west = v.agent === "west";
       const a = west ? WEST_AGENT : NEIGHBOR_AGENT;
       const name = west ? D.story.westName : D.story.neighborName;
