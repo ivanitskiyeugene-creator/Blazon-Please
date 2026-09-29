@@ -125,7 +125,7 @@ export function getDays(lang: Lang): DayConfig[] {
     expenses: day.expenses.map((e) => ({
       id: e.id,
       label: e.label,
-      amount: e.id === "food" ? 6 : e.id === "heat" ? 3 : 4,
+      amount: e.id === "food" ? 8 : e.id === "heat" ? 4 : 6,
     })),
     count: COUNT[i],
     violations: VIOLATIONS[i],

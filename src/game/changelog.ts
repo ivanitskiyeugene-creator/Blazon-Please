@@ -18,12 +18,12 @@ export const CHANGELOG: ChangeEntry[] = [
       ru: [
         "На пост периодически наведывается комиссар Особого отдела: он не показывает паспорт, а допрашивает инспектора об агентах — с кем вы имели дело, западный ли атташе или сосед-лодочник, — и предлагает кого-нибудь сдать.",
         "Штрафы теперь выписываются почти сразу: через пару секунд после ошибки из окна выезжает протокол. Первые два протокола за смену — предупреждение без штрафа, дальше каждый стоит денег.",
-        "Экономика переработана: ставка за штамп, премии за улики и задержания и суточные расходы снижены так, чтобы честная смена приносила около 10 атоморублей, а взятки агентов оставались соблазном.",
+        "Экономика затянута под послевоенный дефицит: ставка за штамп и премии за улики и задержания урезаны (PER_PAY 5→2, улики 2→1, задержание 8→4), а суточные расходы оставлены высокими — денег теперь еле хватает, и взятки агентов становятся настоящим соблазном.",
       ],
       en: [
         "A Special Department commissar drops by the post from time to time: he shows no passport but interrogates the inspector about the agents — whom you dealt with, the western attaché or the boatman neighbour — and offers you someone to hand over.",
         "Fines are now issued almost immediately: a citation slides out of the window a couple of seconds after a mistake. The first two citations of a shift are warnings with no fine; after that each one costs money.",
-        "Economy reworked: the per-stamp rate, evidence and detention bonuses and daily expenses were lowered so an honest shift nets about 10 atomrubles, while agent bribes stay a temptation.",
+        "Economy tightened for post-war scarcity: the per-stamp rate and the evidence/detention bonuses were cut (PER_PAY 5→2, evidence 2→1, detention 8→4) while daily expenses stay high — money is barely enough now, making agent bribes a real temptation.",
       ],
     },
   },
