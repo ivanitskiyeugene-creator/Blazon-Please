@@ -20,8 +20,9 @@ export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v
   const settle = () => {
     const next = y.get() > travel / 2;
     y.set(next ? travel : 0);
+    sfx.metalDragStop();
     if (next !== active) {
-      sfx.ui();
+      next ? sfx.stampBarOpen() : sfx.stampBarClose();
       onToggle(next);
     }
   };
@@ -46,12 +47,13 @@ export function StampLever({ active, onToggle }: { active: boolean; onToggle: (v
           role="switch"
           aria-checked={active}
           tabIndex={0}
+          onDragStart={() => sfx.metalDragStart()}
           onDragEnd={settle}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
               y.set(active ? 0 : travel);
-              sfx.ui();
+              !active ? sfx.stampBarOpen() : sfx.stampBarClose();
               onToggle(!active);
             }
           }}

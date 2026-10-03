@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { AtomEmblem, PartyEmblem } from "../components/Emblems";
 import { PixelGlyph } from "../components/PixelGlyph";
+import { AudioSettings } from "../components/AudioSettings";
 import { sfx } from "../audio";
 import { APP_VERSION, CHANGELOG } from "../game/changelog";
 import { getDays } from "../game/data";
@@ -45,6 +46,7 @@ export function TitleScreen({
           <span className="hidden lg:inline">{t.ui.title.archive}</span>
           <span className="flex items-center gap-3">
             {t.ui.title.version(APP_VERSION)}
+            <AudioSettings />
             <LangSwitch />
           </span>
         </div>

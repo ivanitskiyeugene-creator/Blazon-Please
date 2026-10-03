@@ -57,19 +57,19 @@ function birthDate(r: R) {
 }
 
 // ---------- внешность ----------
-const HAIR_M: PersonSpec["hairStyle"][] = ["flat", "side", "mop", "bald", "cap", "ushanka"];
-const HAIR_F: PersonSpec["hairStyle"][] = ["bun", "mop", "side", "ushanka"];
-const FACIAL_M: PersonSpec["facial"][] = ["none", "mustache", "beard", "glasses", "glassesMustache"];
-const FACIAL_F: PersonSpec["facial"][] = ["none", "none", "glasses"];
+const HAIR_M: PersonSpec["hairStyle"][] = ["flat", "side", "mop", "bald", "cap", "ushanka", "crew", "wave"];
+const HAIR_F: PersonSpec["hairStyle"][] = ["bun", "mop", "side", "ushanka", "braids", "wave", "scarf"];
+const FACIAL_M: PersonSpec["facial"][] = ["none", "mustache", "beard", "glasses", "glassesMustache", "scar", "eyepatch"];
+const FACIAL_F: PersonSpec["facial"][] = ["none", "none", "glasses", "scar"];
 
 function makePerson(r: R, sex: Sex): PersonSpec {
   const female = sex === "F";
   return {
-    skin: int(r, 0, 2),
+    skin: int(r, 0, 4),
     hairStyle: female ? pick(r, HAIR_F) : pick(r, HAIR_M),
     hairTone: int(r, 0, 2),
     facial: female ? pick(r, FACIAL_F) : pick(r, FACIAL_M),
-    coat: int(r, 0, 5),
+    coat: int(r, 0, 7),
     female,
   };
 }
@@ -84,7 +84,10 @@ function altPerson(r: R, base: PersonSpec, sex: Sex): PersonSpec {
 }
 
 function makeName(r: R, country: CountryCode, sex: Sex, lang: Lang) {
-  const pool = getDict(lang).names[country];
+  const dict = getDict(lang);
+  const base = dict.names[country];
+  const extra = dict.extraNames[country];
+  const pool = { ...base, m: [...base.m, ...extra.m], f: [...base.f, ...extra.f], last: [...base.last, ...extra.last] };
   const first = sex === "M" ? pick(r, pool.m) : pick(r, pool.f);
   let last = pick(r, pool.last);
   if (sex === "F" && pool.slavic) {
@@ -101,7 +104,7 @@ function makeName(r: R, country: CountryCode, sex: Sex, lang: Lang) {
   return `${first} ${last}`;
 }
 
-const DETAINABLE: ViolationKind[] = ["fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"];
+const DETAINABLE: ViolationKind[] = ["fakeAtom", "fakeParty", "photoMismatch", "sexMismatch", "blockedEmployer", "forbiddenCargo"];
 
 function mutateName(r: R, name: string, lang: Lang) {
   const [first, last] = name.split(" ");
@@ -137,9 +140,12 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
 
   // нарушение
   const pool = day.violations.filter((v) => {
-    if (country === "ASSR") return !["foreignNoPermit", "permitExpired", "nameMismatch", "idMismatch", "westBanned"].includes(v);
+    const employmentViolation = v === "employmentExpired" || v === "blockedEmployer" || v === "invalidWorkSeal";
+    const transitViolation = v === "forbiddenCargo" || v === "closedDestination" || v === "invalidCustomsSeal" || v === "routeMismatch";
+    if (country === "ASSR") return !["foreignNoPermit", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "forbiddenCargo", "closedDestination"].includes(v);
+    if (employmentViolation) return false;
     if (country === "ZPS") return v !== "fakeParty" && v !== "fakeAtom";
-    return v !== "fakeAtom" && v !== "fakeParty";
+    return v !== "fakeAtom" && v !== "fakeParty" && (!transitViolation || dayN >= 4);
   });
   const wantViolation = !forceClean && chance(r, 0.48) && pool.length > 0;
   let violation: ViolationKind | null = wantViolation ? pick(r, pool) : null;
@@ -150,6 +156,8 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
 
   const mismatch: [FieldKey, FieldKey][] = [];
   let expiry = futureDate(r, dayN);
+  let dob = birthDate(r);
+  let passportIssued = pastDate(r, dayN);
   let fake: "orb2" | undefined;
   let photo: PersonSpec | undefined;
   let passSex = sex;
@@ -157,17 +165,27 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
   // разрешение нужно иностранцам со дня 2
   const permitsAllowed = day.violations.includes("permitExpired") || dayN >= 2;
   let permit:
-    | { name: string; passId: string; purpose: string; duration: string; expiry: string }
+    | { name: string; passId: string; purpose: string; duration: string; issued: string; expiry: string }
     | undefined;
   if (country !== "ASSR" && permitsAllowed && violation !== "foreignNoPermit") {
     permit = {
       name,
       passId: id,
-      purpose: pick(r, D.purposes),
+      purpose: ["forbiddenCargo", "closedDestination", "invalidCustomsSeal", "routeMismatch"].includes(violation ?? "") ? D.purposes[3] : pick(r, D.purposes),
       duration: pick(r, D.durations),
+      issued: pastDate(r, dayN),
       expiry: futureDate(r, dayN),
     };
   }
+
+  // Новые документы 0.8: справка гражданина с дня 3 и транзитная декларация с дня 4.
+  let employment = country === "ASSR" && dayN >= 3 ? {
+    employer: pick(r, [D.documents.employers.factory, D.documents.employers.institute, D.documents.employers.reactor, D.documents.employers.depot]),
+    position: pick(r, D.documents.positions), issued: fmt(int(r, 1, 28), int(r, 1, 9), 51), seal: D.documents.workSeal,
+  } : undefined;
+  let transit = country !== "ASSR" && dayN >= 4 && permit?.purpose === D.purposes[3] ? {
+    cargo: pick(r, D.documents.cargo), route: `${country}—ASSR`, destination: pick(r, D.documents.destinations), seal: D.documents.customsSeal,
+  } : undefined;
 
   // карточка КПТА — иногда у граждан АССР
   let partyCard: { name: string; rank: string; mirrored: boolean } | undefined;
@@ -217,6 +235,43 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
       photo = altPerson(r, person, sex);
       mismatch.push(["p.photo", "face"]);
       break;
+    case "employmentExpired":
+      if (employment) { employment.issued = fmt(1, 1, 49); mismatch.push(["e.issued", "cal.today"]); }
+      break;
+    case "blockedEmployer":
+      if (employment) { employment.employer = D.documents.blockedEmployer; mismatch.push(["e.employer", "ref.blocked"]); }
+      break;
+    case "forbiddenCargo":
+      if (transit) { transit.cargo = D.documents.forbiddenCargo; mismatch.push(["t.cargo", "ref.cargo"]); }
+      else violation = null;
+      break;
+    case "closedDestination":
+      if (transit) { transit.destination = D.documents.closedDestination; mismatch.push(["t.destination", "ref.closed"]); }
+      else violation = null;
+      break;
+    case "futureBirth":
+      dob = fmt(todayOf(dayN).d + 1, todayOf(dayN).m, todayOf(dayN).y);
+      mismatch.push(["p.dob", "cal.today"]);
+      break;
+    case "passportDateConflict":
+      passportIssued = fmt(20, 12, 60);
+      mismatch.push(["p.issued", "p.expiry"]);
+      break;
+    case "permitDateConflict":
+      if (permit) { permit.issued = fmt(20, 12, 60); mismatch.push(["w.issued", "w.expiry"]); }
+      else violation = null;
+      break;
+    case "invalidWorkSeal":
+      if (employment) { employment.seal = D.documents.invalidSeal; mismatch.push(["e.seal", "rule.r10"]); }
+      break;
+    case "invalidCustomsSeal":
+      if (transit) { transit.seal = D.documents.invalidSeal; mismatch.push(["t.seal", "rule.r11"]); }
+      else violation = null;
+      break;
+    case "routeMismatch":
+      if (transit) { transit.route = `STV—ASSR`; mismatch.push(["t.route", "p.country"]); }
+      else violation = null;
+      break;
     case "sexMismatch":
       passSex = sex === "M" ? "F" : "M";
       photo = altPerson(r, person, passSex);
@@ -224,8 +279,34 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
       break;
   }
 
-  const detainable = violation !== null && DETAINABLE.includes(violation);
-  const expected = violation ? "DENY" : "ADMIT";
+  let detainable = violation !== null && DETAINABLE.includes(violation);
+  let expected: "ADMIT" | "DENY" = violation ? "DENY" : "ADMIT";
+  let cite = violation ? D.violations.cite[violation] : D.violations.cleanCite;
+
+  // Системы 1.0: розыск, биометрия, измерения, контрабанда и нападения.
+  const declaredHeight = dayN >= 2 ? int(r, 158, 194) : undefined;
+  const declaredWeight = dayN >= 2 ? int(r, 52, 104) : undefined;
+  let measuredHeight = declaredHeight;
+  let measuredWeight = declaredWeight;
+  let wanted = false;
+  let fingerprintMismatch = false;
+  let contraband: string | undefined;
+  let special: EntrantSpec["special"];
+  if (!violation && dayN >= 2 && chance(r, 0.06)) {
+    wanted = true; expected = "DENY"; detainable = true; cite = D.systems.wantedCite;
+    mismatch.push(["face", "ref.wanted"]);
+  } else if (!violation && dayN >= 3 && chance(r, 0.07)) {
+    fingerprintMismatch = true; expected = "DENY"; detainable = true; cite = D.systems.fingerprintCite;
+    mismatch.push(["fp.print", "p.id"]);
+  } else if (!violation && dayN >= 2 && chance(r, 0.07) && measuredHeight && measuredWeight) {
+    measuredHeight += 9; measuredWeight += 12; expected = "DENY"; cite = D.systems.measurementCite;
+    mismatch.push(["measure.actual", "measure.declared"]);
+  } else if (!violation && dayN >= 4 && chance(r, 0.08)) {
+    contraband = pick(r, D.systems.contrabandItems); expected = "DENY"; detainable = true; cite = D.systems.contrabandCite;
+    mismatch.push(["scan.cargo", "rule.contraband"]);
+  } else if (dayN >= 5 && chance(r, 0.018)) {
+    special = "attacker"; expected = "DENY"; cite = D.systems.attackCite;
+  }
 
   // Редкое событие — 8% шанс, только со 2-го посетителя дня, только у иностранцев с пропуском или граждан АССР
   let rareEvent: RareEventKind | undefined;
@@ -235,28 +316,40 @@ export function makeEntrant(r: R, day: DayConfig, lang: Lang, forceClean = false
     } else if (violation === null && chance(r, 0.5)) {
       rareEvent = "nervous";
     } else if (violation === null) {
-      rareEvent = "dual_passport";
+      rareEvent = pick(r, ["dual_passport", "bribed_guard", "wrong_queue"] as RareEventKind[]);
     }
   }
 
-  const dialogue = rareEvent
-    ? D.rare[rareEvent]
-    : pick(r, D.smalltalk);
+  const dialogue = rareEvent ? D.rare[rareEvent] : pick(r, sex === "F" ? D.smalltalkFemale : D.smalltalkMale);
+  const wrongQueuePassport = rareEvent === "wrong_queue"
+    ? { country: pick(r, foreignPool.filter((c) => c !== country)), name, sex: passSex, dob: birthDate(r), expiry, id }
+    : undefined;
+  const agentOffer = rareEvent === "bribed_guard" ? {
+    prompt: D.rareStage.bribed,
+    options: [
+      { label: D.rareStage.report, reply: D.rareStage.reportReply, loyal: 1, guardReported: true },
+      { label: D.rareStage.silent, reply: D.rareStage.silentReply, loyal: -1, guardReported: false },
+    ],
+  } : undefined;
 
   return {
     person,
     dialogue,
     interrogate: pick(r, D.probes),
-    passport: { country, name, sex: passSex, dob: birthDate(r), expiry, id, fake },
+    passport: { country, name, sex: passSex, dob, issued: passportIssued, expiry, id, fake },
     permit,
     partyCard,
+    employment,
+    transit,
+    wrongQueuePassport,
     photo,
-    detainable,
-    expected,
-    cite: violation ? D.violations.cite[violation] : D.violations.cleanCite,
-    mismatch,
-    caught: violation ? pick(r, D.violations.caught[violation]) : undefined,
+    detainable, expected, cite, mismatch,
+    wanted, fingerprintMismatch, contraband, special,
+    declaredHeight, measuredHeight, declaredWeight, measuredWeight,
+    // Отсутствующий перевод реплики не должен валить целую смену пустым экраном.
+    caught: violation ? pick(r, D.violations.caught[violation] ?? [D.generic.caught]) : undefined,
     rareEvent,
+    agentOffer,
   };
 }
 

@@ -11,6 +11,8 @@ export const EMPTY_FLAGS: Flags = {
   finalChoice: null,
   metWest: false,
   metNeighbor: false,
+  guardReported: false,
+  commissionerScore: 0,
 };
 
 export function loadSave(): SaveData | null {

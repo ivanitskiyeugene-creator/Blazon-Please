@@ -1,4 +1,5 @@
 import { useRef, useEffect, type ReactNode } from "react";
+import { sfx } from "../audio";
 
 interface Props {
   x: number;
@@ -34,6 +35,7 @@ export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, ch
       if ((e.target as HTMLElement).closest("button, input, textarea, select, a, [data-nodrag]")) return;
       e.preventDefault();
       dragging.current = true;
+      sfx.paperDragStart();
       startMouse.current = { x: e.clientX, y: e.clientY };
       startPos.current = { x, y };
       el.setPointerCapture(e.pointerId);
@@ -54,6 +56,7 @@ export function DraggableDoc({ x, y, z, label, onMove, onFront, containerRef, ch
     };
 
     const onPointerUp = () => {
+      if (dragging.current) sfx.paperDragStop();
       dragging.current = false;
     };
 

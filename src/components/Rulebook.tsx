@@ -26,6 +26,8 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
   const TABS: { key: BookTab; label: string; icon: string }[] = [
     { key: "rules", label: t.ui.rulebook.tabs.rules, icon: t.ui.rulebook.icons.rules },
     { key: "emblems", label: t.ui.rulebook.tabs.emblems, icon: t.ui.rulebook.icons.emblems },
+    { key: "stoplist", label: t.ui.rulebook.stoplistTab, icon: t.ui.rulebook.stoplistIcon },
+    { key: "cities", label: t.ui.rulebook.citiesTab, icon: t.ui.rulebook.citiesIcon },
     { key: "calendar", label: t.ui.rulebook.tabs.calendar, icon: t.ui.rulebook.icons.calendar },
   ];
 
@@ -75,6 +77,8 @@ export function Rulebook({ day, open, onToggle, sel, proven, onSel }: Props) {
         {tab === "emblems" && (
           <EmblemsPage sel={sel} proven={proven} onSel={onSel} />
         )}
+        {tab === "stoplist" && <StopListPage sel={sel} proven={proven} onSel={onSel} />}
+        {tab === "cities" && <CitiesPage sel={sel} proven={proven} onSel={onSel} />}
         {tab === "calendar" && (
           <CalendarPage date={day.dateShort} dayN={day.n} sel={sel} proven={proven} onSel={onSel} />
         )}
@@ -181,6 +185,21 @@ function EmblemsPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey
       </div>
     </div>
   );
+}
+
+function StopListPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey[]; onSel: (k: FieldKey) => void }) {
+  const { t } = useI18n();
+  return <div><div className="font-head text-[12px] text-[var(--color-state2)] mb-3">{t.ui.rulebook.stoplistTitle}</div>
+    <button className={`${cls("ref.blocked", sel, proven)} w-full border-2 border-[var(--color-state2)] p-3 text-left`} onClick={() => onSel("ref.blocked")}>
+      <b>{t.documents.blockedEmployer}</b><div className="text-[9px] mt-2 text-[var(--color-ash)]">{t.ui.rulebook.stoplistNote}</div>
+    </button></div>;
+}
+function CitiesPage({ sel, proven, onSel }: { sel: FieldKey[]; proven: FieldKey[]; onSel: (k: FieldKey) => void }) {
+  const { t } = useI18n();
+  return <div><div className="font-head text-[12px] text-[var(--color-state2)] mb-3">{t.ui.rulebook.citiesTitle}</div>
+    <button className={`${cls("ref.closed", sel, proven)} w-full border-2 border-[var(--color-state2)] p-3 text-left mb-2`} onClick={() => onSel("ref.closed")}><b>{t.documents.closedDestination}</b></button>
+    <button className={`${cls("ref.cargo", sel, proven)} w-full border border-[var(--color-line)] p-3 text-left`} onClick={() => onSel("ref.cargo")}><b>{t.documents.forbiddenCargo}</b><div className="text-[9px] mt-2 text-[var(--color-ash)]">{t.ui.rulebook.citiesNote}</div></button>
+  </div>;
 }
 
 function CalendarPage({ date, dayN, sel, proven, onSel }: { date: string; dayN: number; sel: FieldKey[]; proven: FieldKey[]; onSel: (k: FieldKey) => void }) {

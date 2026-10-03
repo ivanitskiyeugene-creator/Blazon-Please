@@ -1,6 +1,6 @@
 [package]
 name = "blazon-please"
-version = "0.6.5"
+version = "1.2.0"
 description = "Гербы, пожалуйста! — игра об инспекторе КПП-7"
 authors = ["Blazon Please"]
 edition = "2024"

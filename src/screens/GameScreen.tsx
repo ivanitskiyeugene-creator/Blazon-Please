@@ -1,14 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { PixelGlyph } from "../components/PixelGlyph";
+import { AudioSettings } from "../components/AudioSettings";
+import { InspectionDevices } from "../components/InspectionDevices";
 import { initAudio, isMuted, setMuted, sfx } from "../audio";
 import { startMusic, stopMusic, isMusicPlaying } from "../music";
 import { DETAIN_BONUS, EVIDENCE_BONUS } from "../game/data";
+import { createCommissionerEntrant } from "../game/commissioner";
 import { useI18n, LangSwitch } from "../i18n";
 import type { AgentOption, DayConfig, DayResult, Decision, DocId, EntrantSpec, FieldKey } from "../game/types";
 import { AtomEmblem } from "../components/Emblems";
 import { BoothDecor } from "../components/Booth";
 import { PartyCardDoc, PassportDoc, PermitDoc, type SelProps } from "../components/Docs";
+import { EmploymentDoc, TransitDoc } from "../components/NewDocs";
 import { BookDoc, NewsDoc } from "../components/ReferenceDocs";
 import { Person } from "../components/Person";
 import { Rulebook } from "../components/Rulebook";
@@ -45,7 +49,7 @@ function TypeLine({ text, className = "" }: { text: string; className?: string }
 
 export function GameScreen({
   day,
-  entrants,
+  entrants: initialEntrants,
   credits,
   onFinish,
   onExit,
@@ -56,7 +60,8 @@ export function GameScreen({
   onFinish: (res: DayResult) => void;
   onExit: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const [entrants, setEntrants] = useState(initialEntrants);
   const [i, setI] = useState(0);
   const [stage, setStage] = useState<Stage>("enter");
   const [stamped, setStamped] = useState<Decision | null>(null);
@@ -80,6 +85,13 @@ export function GameScreen({
   const [trayDocs, setTrayDocs] = useState<DocId[]>([]);         // взял у посетителя
   const [stampMarks, setStampMarks] = useState<{ type: Decision; x: number; y: number }[]>([]);
   const [shutterClosed, setShutterClosed] = useState(false); // железный занавес будки
+  const [surveillance, setSurveillance] = useState(0);
+  const [decisionSeconds, setDecisionSeconds] = useState<number | null>(null);
+  const [wrongQueuePhase, setWrongQueuePhase] = useState(false);
+  const [scanned, setScanned] = useState(false);
+  const [fingerprintsTaken, setFingerprintsTaken] = useState(false);
+  const [instantCitation, setInstantCitation] = useState<string | null>(null);
+  const [emergency, setEmergency] = useState(false);
 
   // документы на столе
   const [desk, setDesk] = useState<DeskDoc[]>([]);
@@ -154,11 +166,37 @@ export function GameScreen({
     setOfferedDocs([]);
     setStampMarks([]);
     setShutterClosed(false);
+    setWrongQueuePhase(false);
+    setScanned(false); setFingerprintsTaken(false); setInstantCitation(null); setEmergency(false);
     setEntrantVisible(false);
     setNeedCall(true);
     finalizingEntrant.current = false;
     decisionCommitted.current = false;
   }, [i]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (stage !== "review" || surveillance <= 0 || entrant?.special === "commissioner") { setDecisionSeconds(null); return; }
+    setDecisionSeconds(45);
+    const timer = window.setInterval(() => setDecisionSeconds((v) => {
+      if (v === null) return null;
+      if (v <= 1) {
+        window.clearInterval(timer);
+        result.current.errors.push(t.ui.game.commissionerDelay);
+        setReaction(t.ui.game.commissionerPenalty);
+        return 0;
+      }
+      if (v <= 10) sfx.typeBlip();
+      return v - 1;
+    }), 1000);
+    return () => window.clearInterval(timer);
+  }, [i, stage, surveillance]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (stage !== "review" || entrant?.special !== "attacker" || emergency) return;
+    setEmergency(true); sfx.alarm(); setShutterClosed(true); doShake(2);
+    result.current.errors.push(entrant.cite);
+    later(2600, () => { if (!done.current) { done.current = true; onFinish(result.current); } });
+  }, [stage, entrant?.special]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const callNext = () => {
     if (i >= entrants.length) {
@@ -169,14 +207,19 @@ export function GameScreen({
       return;
     }
     setNeedCall(false);
-    setEntrantVisible(true);
     setStage("enter");
-    sfx.walk();
-    later(850, () => {
-      setStage("review");
-      const docs: DocId[] = ["passport"];
+    // Сначала команда из громкоговорителя, затем короткая пауза —
+    // посетитель начинает входить только через секунду.
+    later(1000, () => {
+      setEntrantVisible(true);
+      sfx.walk();
+      later(850, () => {
+        setStage("review");
+        const docs: DocId[] = ["passport"];
       if (entrant?.permit && entrant.rareEvent !== "forgot_permit") docs.push("permit");
       if (entrant?.partyCard) docs.push("party");
+      if (entrant?.employment) docs.push("employment");
+      if (entrant?.transit) docs.push("transit");
       setOfferedDocs(docs);
       if (entrant?.rareEvent === "forgot_permit" && entrant.permit) {
         setRareMsg(t.rareStage.forgot);
@@ -191,8 +234,25 @@ export function GameScreen({
       } else if (entrant?.rareEvent === "dual_passport") {
         setRareMsg(t.rareStage.dual);
         later(2200, () => setRareMsg(null));
+      } else if (entrant?.rareEvent === "wrong_queue") {
+        setWrongQueuePhase(true);
+        setRareMsg(t.rareStage.wrongQueue);
+        setOfferedDocs(["passport"]);
+        // Человек действительно покидает окно и возвращается с правильным комплектом.
+        later(1400, () => {
+          setStage("exit"); setEntrantVisible(false); setOfferedDocs([]); setTrayDocs([]);
+          setDesk((current) => current.filter((d) => d.id === "book" || d.id === "news"));
+          sfx.walk();
+        });
+        later(2400, () => { setWrongQueuePhase(false); setStage("enter"); setEntrantVisible(true); sfx.walk(); });
+        later(3250, () => { setStage("review"); setOfferedDocs(docs); setRareMsg(null); sfx.paper(); });
+      } else if (entrant?.rareEvent === "bribed_guard") {
+        setRareMsg(t.rareStage.bribed);
+        result.current.flags.guardReported = false;
+        later(3000, () => setRareMsg(null));
       }
-      if (entrant?.agentOffer) later(1400, () => setOfferOpen(true));
+        if (entrant?.agentOffer) later(1400, () => setOfferOpen(true));
+      });
     });
   };
 
@@ -233,6 +293,8 @@ export function GameScreen({
       passport: { x: 18, y: 226 },
       permit: { x: 252, y: 238 },
       party: { x: 236, y: 398 },
+      employment: { x: 390, y: 226 },
+      transit: { x: 390, y: 390 },
       book: { x: 540, y: 226 },
       news: { x: 540, y: 440 },
     };
@@ -264,6 +326,13 @@ export function GameScreen({
 
   const selProps: SelProps = { sel, proven, onSel };
 
+  const proveTool = (keys: FieldKey[], message: string) => {
+    if (hasEvidence) return;
+    setHasEvidence(true); setProven((p) => [...new Set([...p, ...keys])]); setReaction(message);
+    result.current.evidence += 1; result.current.evidenceBonus += EVIDENCE_BONUS; sfx.alarm();
+    later(2400, () => setReaction(null));
+  };
+
   const present = () => {
     if (sel.length !== 2 || !entrant || stage !== "review") return;
     const pairs = entrant.mismatch ?? [];
@@ -293,6 +362,13 @@ export function GameScreen({
     if (o.west) f.westTrust = (f.westTrust ?? 0) + o.west;
     if (o.neighbor) f.neighborTrust = (f.neighborTrust ?? 0) + o.neighbor;
     if (o.loyal) f.loyalty = (f.loyalty ?? 0) + o.loyal;
+    if (o.commissionerScore) f.commissionerScore = (f.commissionerScore ?? 0) + o.commissionerScore;
+    if (o.guardReported !== undefined) f.guardReported = o.guardReported;
+    // Молчание о взятках резко повышает шанс проверки ещё в эту смену.
+    if (entrant?.rareEvent === "bribed_guard" && o.guardReported === false && Math.random() < 0.7 && !entrants.slice(i + 1).some((e) => e.special === "commissioner")) {
+      const visit = createCommissionerEntrant(lang, true);
+      setEntrants((queue) => [...queue.slice(0, i + 2), visit, ...queue.slice(i + 2)]);
+    }
     if (o.final && (o.final !== "loyal" || !f.finalChoice)) f.finalChoice = o.final;
     if (o.credits) {
       result.current.agentCredits += o.credits;
@@ -332,6 +408,9 @@ export function GameScreen({
     later(330, () => setShaking(false));
 
     const e = entrant;
+    setDecisionSeconds(null);
+    if (e.special === "commissioner") setSurveillance(3);
+    else if (surveillance > 0) setSurveillance((v) => Math.max(0, v - 1));
 
     if (d === "DETAIN") {
       later(250, () => sfx.alarm());
@@ -341,6 +420,7 @@ export function GameScreen({
         setReaction(e.reactDeny ?? t.violations.reactDetainOk);
       } else {
         result.current.errors.push(t.violations.detainError);
+        setInstantCitation(t.violations.detainError); sfx.bad();
         setReaction(e.reactDeny ?? t.violations.reactDetainBad);
       }
     } else {
@@ -360,6 +440,7 @@ export function GameScreen({
         setReaction(react);
       } else {
         result.current.errors.push(e.cite);
+        setInstantCitation(e.cite); sfx.bad();
         setReaction(react);
       }
 
@@ -410,16 +491,21 @@ export function GameScreen({
   const mm = Math.floor(minutes % 60).toString().padStart(2, "0");
 
   const queue = [entrants[i + 1], entrants[i + 2]].filter(Boolean) as EntrantSpec[];
+  const wantedTarget = entrants.find((e) => e.wanted);
 
   const renderDoc = (d: DeskDoc) => {
     if (!entrant) return null;
     switch (d.id) {
       case "passport":
-        return <PassportDoc data={entrant.passport} person={entrant.photo ?? entrant.person} s={selProps} stampMarks={stampMarks} />;
+        return <PassportDoc data={wrongQueuePhase && entrant.wrongQueuePassport ? entrant.wrongQueuePassport : entrant.passport} person={entrant.photo ?? entrant.person} s={selProps} stampMarks={stampMarks} />;
       case "permit":
         return entrant.permit ? <PermitDoc data={entrant.permit} s={selProps} /> : null;
       case "party":
         return entrant.partyCard ? <PartyCardDoc data={entrant.partyCard} s={selProps} /> : null;
+      case "employment":
+        return entrant.employment ? <EmploymentDoc data={entrant.employment} s={selProps} /> : null;
+      case "transit":
+        return entrant.transit ? <TransitDoc data={entrant.transit} s={selProps} /> : null;
       case "book":
         return <BookDoc day={day} s={selProps} />;
       case "news":
@@ -451,8 +537,8 @@ export function GameScreen({
   const speakerNext = () => {
     if (!needCall) return;
     initAudio();
-    // легендарный грубый вызов через "громкоговоритель"
-    sfx.ui();
+    // голос из громкоговорителя: загруженная команда «Следующий!»
+    sfx.announce();
     setReaction(t.ui.game.nextCall);
     later(450, () => setReaction(null));
     callNext();
@@ -468,6 +554,8 @@ export function GameScreen({
 
   return (
     <div className={`relative min-h-screen flex flex-col ${shaking ? "shake" : ""}`} style={shaking ? { transform: `translate(${Math.random()*shakeIntensity*10-5}px, ${Math.random()*shakeIntensity*10-5}px)` } : {}}>
+      {instantCitation && <motion.div initial={{ x: 360 }} animate={{ x: 0 }} className="instant-citation"><b>{t.ui.game.citationTitle}</b><span>{instantCitation}</span><button onClick={() => setInstantCitation(null)}>×</button></motion.div>}
+      {emergency && <div className="emergency-banner">{t.ui.game.emergency}</div>}
       {/* ШТАМПЫ — кассета прикручена к столу: балка лежит на столешнице,
           машины раскладываются из неё, рычаг — на правом конце балки */}
       <StampPad
@@ -475,6 +563,9 @@ export function GameScreen({
         locked={!canStamp}
         onToggleOpen={(v) => setStampOpen(v)}
         onStamp={(type, px, py) => {
+          if (type === "DENY" && entrant?.expected === "DENY" && (entrant.mismatch?.length ?? 0) > 0 && !hasEvidence) {
+            sfx.bad(); setReaction(t.ui.game.denyReasonRequired); later(2200, () => setReaction(null)); return;
+          }
           const passNode = nodes.current["passport"];
           if (!passNode) {
             sfx.bad();
@@ -506,6 +597,11 @@ export function GameScreen({
             <div className="text-[10px] text-[var(--color-ash)] uppercase tracking-widest">{day.date}</div>
           </div>
 
+          {decisionSeconds !== null && (
+            <div className={`panel px-2.5 py-1.5 pixel-text text-[9px] ${decisionSeconds <= 10 ? "text-[var(--color-state2)] animate-blink" : "text-[var(--color-gold)]"}`}>
+              {t.ui.game.commissionerTimer(decisionSeconds)}
+            </div>
+          )}
           <div className="panel px-2.5 py-1.5 flex items-center gap-1.5">
             <PixelGlyph name="clock" size={13} className="text-[var(--color-gold)]" />
             <span className="pixel-text text-[9px] text-[var(--color-gold)]">
@@ -532,6 +628,7 @@ export function GameScreen({
           <div className="panel px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-[var(--color-ash)] hidden md:block">
             {t.ui.game.morningBalance} <span className="text-[var(--color-bone)] font-bold">{credits} ₳</span>
           </div>
+          <AudioSettings />
           <LangSwitch />
           <button
             type="button"
@@ -581,7 +678,6 @@ export function GameScreen({
             <div className="text-center py-1.5 border-b-2 border-[var(--color-line)] text-[10px] uppercase tracking-[0.3em] text-[var(--color-ash)]">
               {t.ui.game.window}
             </div>
-
             {/* вид сверху / наружу + громкоговоритель */}
             <div className="harsh-wall relative border-b-2 border-[var(--color-line)]" style={{ height: 90 }}>
               <div className="absolute inset-x-0 top-0 h-5 border-b-2 border-[#17120f]" style={{ background: "url('images/desk-tile.png') repeat" }} />
@@ -652,46 +748,55 @@ export function GameScreen({
               {/* человек + кликабельное лицо */}
               <div className="absolute inset-x-0 bottom-0 h-[290px] overflow-hidden z-[4]">
                 <div className="absolute bottom-0 inset-x-0 h-10 bg-[#16110d] border-t-2 border-[var(--color-line)] z-10" />
-                <motion.div
-                  key={`person-${i}`}
-                  className="absolute left-1/2 bottom-7 z-[5]"
-                  style={{ marginLeft: -95 }}
-                  initial={{ x: 380 }}
-                  animate={stage === "exit" ? { x: stamped === "DENY" || stamped === "DETAIN" ? 420 : -420 } : { x: 0 }}
-                  transition={stage === "exit" ? { duration: 0.6, ease: "easeIn" } : { duration: 0.95, ease: [0.22, 0.9, 0.3, 1] }}
-                >
+                <AnimatePresence>
                   {entrantVisible && entrant && (
-                    <div className="animate-sway origin-bottom relative">
-                      <Person spec={entrant.person} width={190} />
-                      {/* хотспот лица для сверки с фото */}
-                      <button
-                        type="button"
-                        className={`absolute ${
-                          proven.includes("face") ? "fld fld-proven" : sel.includes("face") ? "fld fld-sel" : "fld"
-                        }`}
-                        style={{ left: "31%", top: "13%", width: "38%", height: "26%" }}
-                        title={t.ui.game.faceTitle}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSel("face");
-                        }}
-                      />
-                    </div>
+                    <motion.div
+                      key={`person-${i}`}
+                      className="absolute left-1/2 bottom-7 z-[5]"
+                      style={{ marginLeft: -95 }}
+                      initial={{ x: 420, opacity: 0, scale: 0.94 }}
+                      animate={stage === "exit" ? { x: stamped === "DENY" || stamped === "DETAIN" ? 420 : -420, opacity: 0, scale: 0.96 } : { x: 0, opacity: 1, scale: 1 }}
+                      exit={{ x: stamped === "DENY" || stamped === "DETAIN" ? 420 : -420, opacity: 0 }}
+                      transition={stage === "exit" ? { duration: 0.6, ease: "easeIn" } : { duration: 0.95, ease: [0.22, 0.9, 0.3, 1] }}
+                    >
+                      <div className="animate-sway origin-bottom relative">
+                        <Person spec={entrant.person} width={190} />
+                        {entrant.special === "commissioner" && <span className="commissioner-folder" aria-hidden="true"><i /><b /></span>}
+                        {/* Для сверки можно выделить всего предъявителя, а не ловить маленький хотспот лица. */}
+                        <button
+                          type="button"
+                          className={`person-select-target ${
+                            proven.includes("face") ? "is-proven" : sel.includes("face") ? "is-selected" : ""
+                          }`}
+                          title={t.ui.game.faceTitle}
+                          aria-label={t.ui.game.faceTitle}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSel("face");
+                          }}
+                        >
+                          <span>{t.ui.game.faceTitle}</span>
+                        </button>
+                      </div>
+                    </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* ДОКУМЕНТЫ В РУКАХ У ПОСЕТИТЕЛЯ — нужно забрать */}
               {entrantVisible && stage !== "exit" && offeredDocs.length > 0 && (
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-14 z-[20] flex gap-2">
                   {offeredDocs.map((id) => (
-                    <button
+                    <motion.button
                       key={id}
+                      initial={{ opacity: 0, y: 20, rotate: -2, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 360, damping: 24 }}
                       className="panel px-2.5 py-2 text-[10px] uppercase tracking-widest text-[var(--color-bone)] hover:border-[var(--color-gold)] transition-colors"
                       onClick={() => handoverDoc(id)}
                     >
-                      <span className="pixel-icon mr-1">{docIcon(id)}</span>{id === "passport" ? t.ui.offerDoc.passport : id === "permit" ? t.ui.offerDoc.permit : t.ui.offerDoc.party}
-                    </button>
+                      <span className="pixel-icon mr-1">{docIcon(id)}</span>{t.ui.offerDoc[id as keyof typeof t.ui.offerDoc] ?? docLabel(id)}
+                    </motion.button>
                   ))}
                 </div>
               )}
@@ -844,6 +949,15 @@ export function GameScreen({
 
             {/* ПАНЕЛЬ РЕШЕНИЙ */}
             <div className="relative mt-2.5 pt-2.5 border-t-2 border-[var(--color-line)]">
+              {entrant && entrantVisible && stage === "review" && day.n >= 2 && <InspectionDevices
+                key={`devices-${i}`}
+                entrant={entrant}
+                wanted={wantedTarget}
+                onWanted={() => { onSel("ref.wanted"); sfx.ui(); }}
+                onScan={() => { setScanned(true); if (entrant.contraband) proveTool(["scan.cargo", "rule.contraband"], entrant.contraband); }}
+                onFingerprints={() => { setFingerprintsTaken(true); if (entrant.fingerprintMismatch) proveTool(["fp.print", "p.id"], t.ui.game.fingerprintBad); }}
+                onMeasure={() => { if (entrant.measuredHeight !== entrant.declaredHeight || entrant.measuredWeight !== entrant.declaredWeight) proveTool(["measure.actual", "measure.declared"], t.ui.game.measurements); }}
+              />}
               {/* предъявление */}
               {evidenceUnlocked && (
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -880,7 +994,7 @@ export function GameScreen({
                   )}
                   {hasEvidence && (
                     <span className="text-[10px] uppercase tracking-widest text-[var(--color-state2)] font-bold animate-blink">
-                      нарушение доказано
+                      {t.ui.game.evidenceProven}
                     </span>
                   )}
                 </div>
@@ -913,7 +1027,7 @@ export function GameScreen({
                     ) : trayDocs.map((id) => (
                       <button
                         key={id}
-                        className="panel px-3 py-2 bg-[#2a241e] border-[#4a4038] hover:border-[#e8c34a] transition-colors flex items-center gap-2 group"
+                        className="item-arrive panel px-3 py-2 bg-[#2a241e] border-[#4a4038] hover:border-[#e8c34a] transition-colors flex items-center gap-2 group"
                         style={{ borderStyle: desk.some(d => d.id === id) ? "dashed" : "solid", opacity: desk.some(d => d.id === id) ? 0.6 : 1 }}
                         onClick={() => toggleDeskDoc(id)}
                       >
@@ -948,7 +1062,7 @@ export function GameScreen({
                   ) : inventory.map((it) => (
                     <div
                       key={it.id}
-                      className="group relative w-10 h-10 bg-[#241f1a] border border-[#3a322a] hover:border-[#e8c34a] flex items-center justify-center cursor-help transition-colors"
+                      className="item-arrive group relative w-10 h-10 bg-[#241f1a] border border-[#3a322a] hover:border-[#e8c34a] flex items-center justify-center cursor-help transition-colors"
                     >
                       <span className="pixel-item">{it.icon}</span>
                       <div className="absolute bottom-full left-0 mb-2 w-40 p-2 bg-[#1d1815] border-2 border-[#4a3e33] text-[9px] text-[#cbb89a] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[5px_5px_0_#070605]">

@@ -27,11 +27,11 @@ const DATE_SHORT = ["12.10.51", "13.10.51", "14.10.51", "15.10.51", "16.10.51", 
 const COUNT = [7, 8, 9, 9, 10, 10];
 const VIOLATIONS: DayConfig["violations"][] = [
   ["foreignNoPermit"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "futureBirth", "passportDateConflict", "permitDateConflict"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "employmentExpired", "blockedEmployer", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "routeMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "employmentExpired", "blockedEmployer", "forbiddenCargo", "closedDestination", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "invalidCustomsSeal", "routeMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch", "employmentExpired", "blockedEmployer", "forbiddenCargo", "closedDestination", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "invalidCustomsSeal", "routeMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch", "employmentExpired", "blockedEmployer", "forbiddenCargo", "closedDestination", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "invalidCustomsSeal", "routeMismatch"],
 ];
 
 /** Полные конфиги дней с текстами на выбранном языке. */

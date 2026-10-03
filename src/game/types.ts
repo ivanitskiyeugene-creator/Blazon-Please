@@ -4,7 +4,7 @@ export type Decision = "ADMIT" | "DENY" | "DETAIN";
 
 /** ключи кликабельных полей документов для предъявления несоответствий */
 export type FieldKey = string;
-export type DocId = "passport" | "permit" | "party" | "book" | "news";
+export type DocId = "passport" | "permit" | "party" | "employment" | "transit" | "fingerprints" | "book" | "news";
 
 /** Предмет в инвентаре */
 export interface InvItem {
@@ -16,7 +16,7 @@ export interface InvItem {
 }
 
 /** Вкладка книжки */
-export type BookTab = "rules" | "emblems" | "calendar";
+export type BookTab = "rules" | "emblems" | "stoplist" | "cities" | "calendar";
 
 export interface Country {
   code: CountryCode;
@@ -28,9 +28,9 @@ export interface Country {
 
 export interface PersonSpec {
   skin: number;
-  hairStyle: "bald" | "flat" | "side" | "mop" | "bun" | "ushanka" | "cap";
+  hairStyle: "bald" | "flat" | "side" | "mop" | "bun" | "ushanka" | "cap" | "braids" | "crew" | "wave" | "scarf";
   hairTone: number;
-  facial: "none" | "mustache" | "beard" | "glasses" | "glassesMustache";
+  facial: "none" | "mustache" | "beard" | "glasses" | "glassesMustache" | "scar" | "eyepatch";
   coat: number;
   redScarf?: boolean;
   female?: boolean;
@@ -41,6 +41,7 @@ export interface PassportData {
   name: string;
   sex: Sex;
   dob: string;
+  issued: string;
   expiry: string;
   id: string;
   fake?: "orb2";
@@ -51,8 +52,12 @@ export interface PermitData {
   passId: string;
   purpose: string;
   duration: string;
+  issued: string;
   expiry: string;
 }
+
+export interface EmploymentData { employer: string; position: string; issued: string; seal: string; }
+export interface TransitData { cargo: string; route: string; destination: string; seal: string; }
 
 export interface PartyCardData {
   name: string;
@@ -68,6 +73,8 @@ export interface AgentOption {
   west?: number;
   neighbor?: number;
   loyal?: number;
+  guardReported?: boolean;
+  commissionerScore?: number;
   credits?: number;
   final?: "west" | "neighbor" | "loyal";
 }
@@ -93,6 +100,15 @@ export interface EntrantSpec {
   passport: PassportData;
   permit?: PermitData;
   partyCard?: PartyCardData;
+  employment?: EmploymentData;
+  transit?: TransitData;
+  wanted?: boolean;
+  fingerprintMismatch?: boolean;
+  contraband?: string;
+  declaredHeight?: number; measuredHeight?: number;
+  declaredWeight?: number; measuredWeight?: number;
+  /** Для события неправильной очереди: первый, ошибочно поданный паспорт. */
+  wrongQueuePassport?: PassportData;
   photo?: PersonSpec;
   interrogate?: string;
   detainable?: boolean;
@@ -103,7 +119,7 @@ export interface EntrantSpec {
   caught?: string;
   agent?: AgentKind;
   agentOffer?: AgentOffer;
-  special?: "bribe" | "redScarf";
+  special?: "bribe" | "redScarf" | "commissioner" | "attacker";
   /** редкое событие */
   rareEvent?: RareEventKind;
   /** допдокументы которые посетитель достаёт только по просьбе */
@@ -153,7 +169,17 @@ export type ViolationKind =
   | "fakeAtom"
   | "fakeParty"
   | "photoMismatch"
-  | "sexMismatch";
+  | "sexMismatch"
+  | "employmentExpired"
+  | "blockedEmployer"
+  | "forbiddenCargo"
+  | "closedDestination"
+  | "futureBirth"
+  | "passportDateConflict"
+  | "permitDateConflict"
+  | "invalidWorkSeal"
+  | "invalidCustomsSeal"
+  | "routeMismatch";
 
 export interface Flags {
   bribe: boolean;
@@ -163,6 +189,8 @@ export interface Flags {
   finalChoice: "west" | "neighbor" | "loyal" | null;
   metWest: boolean;
   metNeighbor: boolean;
+  guardReported: boolean;
+  commissionerScore: number;
 }
 
 export interface DayResult {
