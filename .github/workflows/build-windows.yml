@@ -59,15 +59,18 @@ jobs:
             src-tauri/target/release/bundle/nsis/Blazon-Please-*-setup.exe
 
       - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/exe-')
+        if: startsWith(github.ref, 'refs/tags/exe-') || github.ref == 'refs/heads/arena/01a0ed87-blazon-please'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
+          TAG="exe-${VERSION}"
+          if [[ "$GITHUB_REF" == refs/tags/exe-* ]]; then TAG="$GITHUB_REF_NAME"; fi
           node scripts/release-notes.mjs > notes.md
           cat notes.md
-          gh release create "$GITHUB_REF_NAME" \
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
             --title "Гербы, пожалуйста! v${VERSION}" \
             --notes-file notes.md \
             "src-tauri/target/release/blazon-please.exe" \
