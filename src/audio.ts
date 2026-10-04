@@ -1,6 +1,7 @@
 // Миниатюрный синтезатор звуков КПП — без аудиофайлов
 let ctx: AudioContext | null = null;
 let muted = false;
+let effectsVolume = Number(localStorage.getItem("blazon.effectsVolume") ?? 0.8);
 
 export function initAudio() {
   if (!ctx) {
@@ -16,8 +17,28 @@ export function initAudio() {
 export function setMuted(m: boolean) {
   muted = m;
 }
+export function setEffectsVolume(v: number) { effectsVolume = Math.max(0, Math.min(1, v)); localStorage.setItem("blazon.effectsVolume", String(effectsVolume)); }
+export function getEffectsVolume() { return effectsVolume; }
 export function isMuted() {
   return muted;
+}
+
+const SAMPLE = {
+  announce: "/audio/speech-announce.wav",
+  stamp: "/audio/stamp-down.wav",
+  barOpen: "/audio/stampbar-open.wav",
+  barClose: "/audio/stampbar-close.wav",
+  metalStart: "/audio/metal-dragstart0.wav",
+  metalStop: "/audio/metal-dragstop0.wav",
+  paperStart: "/audio/paper-dragstart0.wav",
+  paperStop: "/audio/paper-dragstop0.wav",
+} as const;
+
+function playSample(src: string, gain = 1) {
+  if (muted || effectsVolume <= 0) return;
+  const audio = new Audio(src);
+  audio.volume = Math.max(0, Math.min(1, effectsVolume * gain));
+  void audio.play().catch(() => {});
 }
 
 function noiseBuffer(duration: number) {
@@ -37,7 +58,7 @@ function playNoise(duration: number, filterFreq: number, gainPeak: number, type:
   filter.type = type;
   filter.frequency.value = filterFreq;
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(gainPeak, t);
+  gain.gain.setValueAtTime(gainPeak * effectsVolume, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   src.connect(filter).connect(gain).connect(ctx.destination);
   src.start(t);
@@ -52,7 +73,7 @@ function tone(freq: number, duration: number, type: OscillatorType, gainPeak: nu
   if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.0001, t);
-  gain.gain.exponentialRampToValueAtTime(gainPeak, t + 0.012);
+  gain.gain.exponentialRampToValueAtTime(gainPeak * effectsVolume, t + 0.012);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain).connect(ctx.destination);
   osc.start(t);
@@ -60,12 +81,16 @@ function tone(freq: number, duration: number, type: OscillatorType, gainPeak: nu
 }
 
 export const sfx = {
-  stamp() {
-    playNoise(0.16, 900, 0.5);
-    tone(110, 0.12, "sine", 0.35, 0, 48);
-  },
+  announce: () => playSample(SAMPLE.announce),
+  stamp: () => playSample(SAMPLE.stamp),
+  stampBarOpen: () => playSample(SAMPLE.barOpen, 0.9),
+  stampBarClose: () => playSample(SAMPLE.barClose, 0.9),
+  metalDragStart: () => playSample(SAMPLE.metalStart, 0.85),
+  metalDragStop: () => playSample(SAMPLE.metalStop, 0.85),
+  paperDragStart: () => playSample(SAMPLE.paperStart, 0.7),
+  paperDragStop: () => playSample(SAMPLE.paperStop, 0.75),
   paper() {
-    playNoise(0.22, 3200, 0.12, "bandpass");
+    playSample(SAMPLE.paperStop, 0.65);
   },
   walk() {
     playNoise(0.3, 500, 0.1);

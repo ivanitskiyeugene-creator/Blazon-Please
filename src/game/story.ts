@@ -39,6 +39,7 @@ export function agentEntrants(dayN: number, flags: Flags, dateShort: string, lan
           name,
           sex: "M",
           dob: west ? "03.04.14" : "19.08.09",
+          issued: `01.01.${Number(yy) - 2}`,
           expiry: `28.12.${yy}`,
           id: a.id,
         },
@@ -47,6 +48,7 @@ export function agentEntrants(dayN: number, flags: Flags, dateShort: string, lan
           passId: a.id,
           purpose: D.story.purpose,
           duration: D.story.duration,
+          issued: `01.10.${Number(yy) - 1}`,
           expiry: `30.09.${Number(yy) + 1}`,
         },
         // западный агент после дня 3 формально невъездной — моральная дилемма
@@ -85,8 +87,9 @@ export function pickEnding(flags: Flags, totals: { errors: number; correct: numb
   let key: Ending["key"];
   if (flags.finalChoice === "west") key = "west";
   else if (flags.finalChoice === "neighbor") key = "neighbor";
-  else if (flags.westTrust >= 4 || flags.bribe) key = "suspect";
-  else if (totals.errors <= 6) key = "loyal";
+  else if (flags.commissionerScore <= -2 || flags.westTrust >= 4 || (flags.bribe && flags.commissionerScore < 2)) key = "suspect";
+  // Чистосердечный ответ комиссару способен снять подозрение даже после ошибки.
+  else if (flags.commissionerScore >= 2 || totals.errors <= 6) key = "loyal";
   else key = "shift";
   const e = d.endings[key];
   return { key, title: e.title, tone: TONES[key], lines: e.lines };

@@ -6,9 +6,28 @@ export interface ChangeEntry {
   items: { ru: string[]; en: string[] };
 }
 
-export const APP_VERSION = "0.8.0";
+export const APP_VERSION = "1.3.0";
 
 export const CHANGELOG: ChangeEntry[] = [
+  {
+    version: "1.3.0", date: { ru: "слово и печать", en: "word and seal" }, tag: { ru: "ОСОБЫЙ ПОРЯДОК", en: "SPECIAL PROCEDURE" }, tone: "#c33a2b",
+    items: { ru: ["Устные цель и срок визита печатаются на физической ленте допроса.", "Дипломатические разрешения, вакцинация, убежище и личные посетители.", "Конфискация паспортов через отдельный металлический ящик.", "Вооружённое нападение переводит игру в вид сверху: возьми табельное оружие и останови нападающего."], en: ["Stated purpose and duration print on a physical interview strip.", "Diplomatic authorizations, vaccination, asylum and personal visitors.", "Passport confiscation through a dedicated metal box.", "An armed attack switches to top view: take the service weapon and stop the attacker."] },
+  },
+  {
+    version: "1.2.0", date: { ru: "расширенная граница", en: "expanded border" }, tag: { ru: "ТЫСЯЧИ ЛИЦ", en: "THOUSANDS OF FACES" }, tone: "#e8c34a",
+    items: { ru: ["Физические приборы досмотра, база розыска, отпечатки и измеритель.", "Больше имён, фамилий, внешностей и гендерных диалогов.", "Новые конфликты дат, печатей и маршрутов.", "Процедурные пятна кофе, чернил, жира, пальцев и сгибы на документах."], en: ["Physical search devices, wanted database, fingerprints and measuring station.", "More names, surnames, appearances and gendered dialogue.", "New date, seal and route conflicts.", "Procedural coffee, ink, grease, fingerprint and fold marks on documents."] },
+  },
+  {
+    version: "1.0.0", date: { ru: "полная служба", en: "full service" }, tag: { ru: "ГРАНИЦА ЖИВЁТ", en: "THE BORDER LIVES" }, tone: "#e8c34a",
+    items: { ru: ["Доска розыска и сравнение лиц.", "Обыск, контрабанда, отпечатки, рост и вес.", "Причина отказа обязательна; штрафы приходят мгновенно.", "Вооружённые нападения и расширенные решения о нуждах семьи.", "Раздельные мужские и женские реплики, даты выдачи и шесть новых видов несоответствий.", "Расширены имена, фамилии и внешности; документы получают процедурные следы кофе, чернил, пальцев, жира и сгибов."], en: ["Wanted board and facial matching.", "Searches, contraband, fingerprints, height and weight.", "Denials require evidence; citations arrive immediately.", "Armed attacks and deeper family-needs decisions.", "Separate male and female dialogue, issue dates, and six new mismatch types.", "Expanded names, surnames and appearances; documents receive procedural coffee, ink, fingerprint, grease and fold marks."] },
+  },
+  {
+    version: "0.9.2",
+    date: { ru: "29 сентября 2026", en: "September 29, 2026" },
+    tag: { ru: "ПРИКАЗ КОМИССАРА", en: "COMMISSAR'S ORDER" },
+    tone: "#a12622",
+    items: { ru: ["Справки с работы и транзитные декларации с новыми нарушениями.", "Редкие события очереди и визиты комиссара Краснограда с 45-секундным контролем.", "Раздельная громкость музыки и эффектов."], en: ["Employment certificates and transit declarations with new violations.", "Rare queue events and Commissar Krasnograd visits with a 45-second inspection timer.", "Separate music and effects volume controls."] },
+  },
   {
     version: "0.8.0",
     date: { ru: "кассета на столе", en: "the cassette on the desk" },

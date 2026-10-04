@@ -1,11 +1,11 @@
 import { useLayoutEffect, useRef } from "react";
 import type { PersonSpec } from "../game/types";
 
-const SKINS = ["#b88f70", "#9e7454", "#815238"];
-const SKIN_DARK = ["#8d674d", "#785139", "#643d2a"];
+const SKINS = ["#d0a283", "#b88f70", "#9e7454", "#815238", "#5f3828"];
+const SKIN_DARK = ["#a9785e", "#8d674d", "#785139", "#643d2a", "#45271d"];
 const HAIRS = ["#17120f", "#625b54", "#8a6a3d"];
-const COATS = ["#332c27", "#29362f", "#3a2828", "#27313b", "#4a3c28", "#2c251f"];
-const COAT_SHADOWS = ["#211c19", "#1b2722", "#281b1b", "#19232c", "#30271a", "#1d1815"];
+const COATS = ["#332c27", "#29362f", "#3a2828", "#27313b", "#4a3c28", "#2c251f", "#40364a", "#30444a"];
+const COAT_SHADOWS = ["#211c19", "#1b2722", "#281b1b", "#19232c", "#30271a", "#1d1815", "#292230", "#1d2d31"];
 
 const SPRITE_W = 48;
 const SPRITE_H = 60;
@@ -152,6 +152,10 @@ export function Person({
       rect(12, 12, 16, 2, "#211c18");
       rect(14, 12, 12, 1, "#806c52");
     }
+    if (spec.hairStyle === "crew") { rect(16, 5, 16, 3, hair); rect(14, 8, 19, 3, hair); rect(15, 11, 3, 4, hair); }
+    if (spec.hairStyle === "wave") { rect(15, 4, 17, 3, hair); rect(13, 7, 21, 4, hair); rect(14, 11, 5, 6, hair); rect(29, 9, 5, 7, hair); rect(20, 6, 4, 2, skin); }
+    if (spec.hairStyle === "braids") { rect(15, 5, 18, 6, hair); rect(13, 10, 5, 12, hair); rect(31, 10, 5, 12, hair); rect(12, 20, 4, 10, hair); rect(33, 20, 4, 10, hair); }
+    if (spec.hairStyle === "scarf") { rect(14, 4, 20, 5, "#6f3a32"); rect(12, 8, 24, 7, "#934c40"); rect(13, 14, 5, 10, "#6f3a32"); rect(32, 14, 4, 12, "#6f3a32"); }
     if (spec.hairStyle === "ushanka") {
       rect(13, 2, 22, 3, "#302820");
       rect(11, 5, 26, 7, "#5c5042");
@@ -186,6 +190,9 @@ export function Person({
       rect(19, 16, 1, 1, "#d8c9a8");
       rect(28, 16, 1, 1, "#d8c9a8");
     }
+
+    if (spec.facial === "scar") { rect(29, 12, 1, 5, "#6d3028"); rect(28, 17, 1, 4, "#6d3028"); }
+    if (spec.facial === "eyepatch") { rect(17, 15, 8, 5, ink); rect(14, 13, 4, 1, ink); rect(25, 18, 8, 1, ink); }
 
     if (spec.redScarf) {
       rect(15, 34, 18, 2, scarfDark);

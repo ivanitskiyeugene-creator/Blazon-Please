@@ -5,8 +5,10 @@ import { initAudio } from "./audio";
 import { getDays, START_CREDITS } from "./game/data";
 import { buildDay } from "./game/generator";
 import { agentEntrants, pickEnding } from "./game/story";
+import { commissionerVisit, createCommissionerEntrant } from "./game/commissioner";
+import { DebugConsole, type DebugCase } from "./components/DebugConsole";
 import { clearSave, EMPTY_FLAGS, loadSave, writeSave } from "./game/save";
-import type { DayResult, Flags, Notice, SaveData } from "./game/types";
+import type { DayResult, EntrantSpec, Flags, Notice, RareEventKind, SaveData } from "./game/types";
 import { I18nProvider, useI18n } from "./i18n";
 import { TitleScreen } from "./screens/TitleScreen";
 import { BriefingScreen } from "./screens/BriefingScreen";
@@ -31,6 +33,8 @@ function Game() {
   const [notices, setNotices] = useState<(Notice & { amount?: number })[]>([]);
   const [lastResult, setLastResult] = useState<DayResult | null>(null);
   const [lastBalance, setLastBalance] = useState(START_CREDITS);
+  const [debugCase, setDebugCase] = useState<DebugCase>(null);
+  const [debugRun, setDebugRun] = useState(0);
   const heatStreak = useRef(0);
 
   // Полноэкранный режим: F11 переключает окно (в браузере F11 обрабатывает сам браузер).
@@ -53,11 +57,62 @@ function Game() {
 
   // очередь дня: процедурная генерация + сюжетные визиты.
   // Смена языка пересобирает очередь по тому же зерну — люди те же, текст другой.
-  const entrants = useMemo(
-    () => buildDay(seed, day, agentEntrants(day.n, flags, day.dateShort, lang), lang),
+  const baseEntrants = useMemo(
+    () => {
+      const visits = agentEntrants(day.n, flags, day.dateShort, lang);
+      const commissioner = commissionerVisit(day.n, flags, lang, seed);
+      if (commissioner) visits.push(commissioner);
+      return buildDay(seed, day, visits, lang);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [seed, day.n, lang, flags.westTrust, flags.neighborTrust]
   );
+
+  const entrants = useMemo(() => {
+    if (!debugCase || baseEntrants.length === 0) return baseEntrants;
+    const makeRare = (kind: RareEventKind, index: number): EntrantSpec => {
+      const original = baseEntrants[index % baseEntrants.length];
+      const passport = { ...original.passport };
+      let permit = original.permit ? { ...original.permit } : undefined;
+      if (kind === "forgot_permit" && !permit) {
+        passport.country = "KRS";
+        permit = { name: passport.name, passId: passport.id, purpose: t.purposes[0], duration: t.durations[1], issued: "01.10.51", expiry: "30.12.52" };
+      }
+      const entrant: EntrantSpec = { ...original, passport, permit, rareEvent: kind, dialogue: t.rare[kind], agentOffer: undefined };
+      if (kind === "wrong_queue") entrant.wrongQueuePassport = { ...passport, country: passport.country === "KRS" ? "UGS" : "KRS" };
+      if (kind === "bribed_guard") entrant.agentOffer = { prompt: t.rareStage.bribed, options: [
+        { label: t.rareStage.report, reply: t.rareStage.reportReply, loyal: 1, guardReported: true },
+        { label: t.rareStage.silent, reply: t.rareStage.silentReply, loyal: -1, guardReported: false },
+      ] };
+      return entrant;
+    };
+    if (debugCase === "commissioner") return [createCommissionerEntrant(lang, true), ...baseEntrants];
+    if (debugCase === "campaign13") {
+      const make = (n: number) => ({ ...baseEntrants[n % baseEntrants.length], passport: { ...baseEntrants[n % baseEntrants.length].passport }, expected: "DENY" as const, mismatch: [] as [string,string][] });
+      const talk = make(0); talk.transcript = { purpose: t.purposes[0], duration: t.durations[0] }; talk.permit = { name: talk.passport.name, passId: talk.passport.id, purpose: t.purposes[1], duration: t.durations[1], issued: "01.10.51", expiry: "01.10.52" }; talk.mismatch=[["talk.purpose","w.purpose"]];
+      const dip = make(1); dip.diplomatic={name:dip.passport.name,passportId:dip.passport.id,countries:[dip.passport.country],seal:t.documents.diplomaticSeal}; dip.mismatch=[["d.countries","p.country"]];
+      const vac = make(2); vac.vaccination={name:vac.passport.name,passportId:vac.passport.id,vaccine:t.documents.vaccines[0],date:"01.01.49",validUntil:"01.01.50",seal:t.documents.healthSeal}; vac.mismatch=[["v.valid","cal.today"]];
+      const asylum=make(3); asylum.asylum=true;
+      const confiscate=make(4); confiscate.confiscatePassport=true;
+      const relation=make(5); relation.relation=t.documents.relations[0];
+      const attack=make(6); attack.special="attacker";
+      return [talk,dip,vac,asylum,confiscate,relation,attack];
+    }
+    if (debugCase === "inspection") {
+      const sample = (n: number) => ({ ...baseEntrants[n % baseEntrants.length], mismatch: [] as [string, string][], expected: "DENY" as const });
+      const wanted = sample(0); wanted.wanted = true; wanted.detainable = true; wanted.mismatch = [["face", "ref.wanted"]];
+      const fp = sample(1); fp.fingerprintMismatch = true; fp.mismatch = [["fp.print", "p.id"]];
+      const measure = sample(2); measure.declaredHeight = 170; measure.measuredHeight = 182; measure.declaredWeight = 70; measure.measuredWeight = 84; measure.mismatch = [["measure.actual", "measure.declared"]];
+      const scan = sample(3); scan.contraband = t.systems.contrabandItems[0]; scan.detainable = true; scan.mismatch = [["scan.cargo", "rule.contraband"]];
+      const attack = sample(4); attack.special = "attacker";
+      return [wanted, fp, measure, scan, attack];
+    }
+    if (debugCase === "all") {
+      const kinds: RareEventKind[] = ["forgot_permit", "nervous", "bribed_guard", "dual_passport", "wrong_queue"];
+      return [createCommissionerEntrant(lang, true), ...kinds.map(makeRare)];
+    }
+    return [makeRare(debugCase, 0), ...baseEntrants.slice(1)];
+  }, [baseEntrants, debugCase, debugRun, lang, t]);
 
   const persist = useCallback(
     (d: { seed: number; dayIdx: number; credits: number; flags: Flags; totals: Totals; heat: number }) => {
@@ -130,6 +185,8 @@ function Game() {
       if (d.loyalty) f.loyalty += d.loyalty;
       if (d.metWest) f.metWest = true;
       if (d.metNeighbor) f.metNeighbor = true;
+      if (d.guardReported !== undefined) f.guardReported = d.guardReported;
+      if (d.commissionerScore) f.commissionerScore += d.commissionerScore;
       if (d.finalChoice && (d.finalChoice !== "loyal" || !f.finalChoice)) f.finalChoice = d.finalChoice;
       return f;
     });
@@ -144,7 +201,7 @@ function Game() {
 
   // ---------- ведомость → следующий день ----------
   const handleLedgerNext = useCallback(
-    (newBalance: number, _fine: number, opts?: { heatSkipped?: boolean }) => {
+    (newBalance: number, _fine: number, opts?: { heatSkipped?: boolean; skipped?: string[] }) => {
       setCredits(newBalance);
       setLastBalance(newBalance);
       if (newBalance < 0) {
@@ -170,6 +227,8 @@ function Game() {
         list.push({ text: t.notices.heat2, amount: -6 });
         heatStreak.current = 0;
       }
+      if (opts?.skipped?.includes("food")) list.push({ text: t.notices.hunger, amount: -4 });
+      if (opts?.skipped?.includes("meds")) list.push({ text: t.notices.illness, amount: -7 });
       if (flags.westTrust >= 3 && DAYS[next].n >= 5) {
         list.push({ text: t.notices.vigilance, amount: 0 });
       }
@@ -195,9 +254,18 @@ function Game() {
 
   return (
     <div className="min-h-screen bg-[var(--color-ink)]">
+      <DebugConsole
+        day={day.n}
+        onDay={(n) => { setDebugCase(null); setDayIdx(n - 1); setNotices([]); setPhase("briefing"); }}
+        onCase={(kind) => { setDebugCase(kind); setDebugRun((v) => v + 1); setPhase("game"); }}
+        onCredits={() => setCredits(999)}
+        onScreen={(screen) => { setDebugRun((v) => v + 1); setPhase(screen); }}
+        onFlags={(preset) => setFlags(preset === "clean" ? { ...EMPTY_FLAGS } : preset === "suspicious" ? { ...EMPTY_FLAGS, bribe: true, westTrust: 4, commissionerScore: -2 } : { ...EMPTY_FLAGS, loyalty: 5, commissionerScore: 2 })}
+        onClose={() => setDebugCase(null)}
+      />
       <AnimatePresence mode="wait">
         <motion.div
-          key={phase + dayIdx + lang}
+          key={phase + dayIdx + lang + debugRun}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
