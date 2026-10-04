@@ -1,0 +1,9 @@
+import type { DiplomaticData, FieldKey, TranscriptData, VaccinationData } from "../game/types";
+import { useI18n } from "../i18n";
+import type { SelProps } from "./Docs";
+import { DocumentWear } from "./DocumentWear";
+
+function row(k: FieldKey, label: string, value: string, s: SelProps) { const c=s.proven.includes(k)?"fld fld-proven":s.sel.includes(k)?"fld fld-sel":"fld"; return <button className={`${c} doc-row w-full text-left text-[9px]`} onClick={()=>s.onSel(k)}><span className="doc-label">{label}</span><b>{value}</b></button>; }
+export function DiplomaticDoc({data,s}:{data:DiplomaticData;s:SelProps}){const{t}=useI18n();return <div className="doc diplomatic-doc w-[280px] p-3"><DocumentWear seed={data.passportId}/><h3>{t.ui.diplomatic.title}</h3>{row("d.name",t.ui.diplomatic.name,data.name,s)}{row("d.passId",t.ui.diplomatic.passId,data.passportId,s)}{row("d.countries",t.ui.diplomatic.countries,data.countries.join(" · "),s)}{row("d.seal",t.ui.diplomatic.seal,data.seal,s)}</div>}
+export function VaccinationDoc({data,s}:{data:VaccinationData;s:SelProps}){const{t}=useI18n();return <div className="doc vaccination-doc paper-tex w-[280px] p-3"><DocumentWear seed={data.passportId+data.vaccine}/><h3>{t.ui.vaccination.title}</h3>{row("v.name",t.ui.vaccination.name,data.name,s)}{row("v.passId",t.ui.vaccination.passId,data.passportId,s)}{row("v.vaccine",t.ui.vaccination.vaccine,data.vaccine,s)}{row("v.date",t.ui.vaccination.date,data.date,s)}{row("v.valid",t.ui.vaccination.valid,data.validUntil,s)}{row("v.seal",t.ui.vaccination.seal,data.seal,s)}</div>}
+export function TranscriptDoc({data,s}:{data:TranscriptData;s:SelProps}){const{t}=useI18n();return <div className="doc transcript-doc w-[250px] p-3"><h3>{t.ui.transcript.title}</h3>{row("talk.purpose",t.ui.transcript.purpose,data.purpose,s)}{row("talk.duration",t.ui.transcript.duration,data.duration,s)}<div className="transcript-teeth"/></div>}

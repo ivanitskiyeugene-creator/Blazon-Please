@@ -27,11 +27,11 @@ const DATE_SHORT = ["12.10.51", "13.10.51", "14.10.51", "15.10.51", "16.10.51", 
 const COUNT = [7, 8, 9, 9, 10, 10];
 const VIOLATIONS: DayConfig["violations"][] = [
   ["foreignNoPermit"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"],
-  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "futureBirth", "passportDateConflict", "permitDateConflict", "spokenPurposeMismatch", "spokenDurationMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "employmentExpired", "blockedEmployer", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "routeMismatch", "spokenPurposeMismatch", "spokenDurationMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "employmentExpired", "blockedEmployer", "forbiddenCargo", "closedDestination", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "invalidCustomsSeal", "routeMismatch", "spokenPurposeMismatch", "spokenDurationMismatch", "diplomaticCountryMissing", "invalidDiplomaticSeal", "vaccineExpired", "vaccineIdMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch", "employmentExpired", "blockedEmployer", "forbiddenCargo", "closedDestination", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "invalidCustomsSeal", "routeMismatch", "spokenPurposeMismatch", "spokenDurationMismatch", "diplomaticCountryMissing", "invalidDiplomaticSeal", "vaccineExpired", "vaccineIdMismatch"],
+  ["foreignNoPermit", "passportExpired", "permitExpired", "nameMismatch", "idMismatch", "westBanned", "fakeAtom", "fakeParty", "photoMismatch", "sexMismatch", "employmentExpired", "blockedEmployer", "forbiddenCargo", "closedDestination", "futureBirth", "passportDateConflict", "permitDateConflict", "invalidWorkSeal", "invalidCustomsSeal", "routeMismatch", "spokenPurposeMismatch", "spokenDurationMismatch", "diplomaticCountryMissing", "invalidDiplomaticSeal", "vaccineExpired", "vaccineIdMismatch"],
 ];
 
 /** Полные конфиги дней с текстами на выбранном языке. */
@@ -44,11 +44,14 @@ export function getDays(lang: Lang): DayConfig[] {
     headline: day.headline,
     subline: day.subline,
     body: day.body,
-    rules: day.rules.map((r) => ({
-      key: r.key,
-      text: d.rules[r.key as keyof typeof d.rules] ?? r.key,
-      isNew: r.isNew,
-    })),
+    rules: [
+      ...day.rules.map((r) => ({
+        key: r.key,
+        text: d.rules[r.key as keyof typeof d.rules] ?? r.key,
+        isNew: r.isNew,
+      })),
+      ...(i >= 3 ? [{ key: "diplomatic", text: d.rules.diplomatic, isNew: i === 3 }] : []),
+    ],
     expenses: day.expenses.map((e) => ({
       id: e.id,
       label: e.label,

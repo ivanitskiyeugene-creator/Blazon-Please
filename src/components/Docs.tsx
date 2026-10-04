@@ -3,6 +3,7 @@ import type { Decision, FieldKey, PartyCardData, PassportData, PermitData, Perso
 import { useI18n } from "../i18n";
 import { CountryEmblem, PartyEmblem } from "./Emblems";
 import { Person } from "./Person";
+import { DocumentWear } from "./DocumentWear";
 
 export interface SelProps {
   sel: FieldKey[];
@@ -38,6 +39,7 @@ export function PassportDoc({ data, person, s, stampMarks }: {
 
   return (
     <div className="select-none doc" style={{ width: 220, position: "relative", overflow: "hidden" }}>
+      <DocumentWear seed={`passport-${data.id}`} />
       {/* ОБЛОЖКА — компактная */}
       <div style={{
         background: c.color,
@@ -71,6 +73,7 @@ export function PassportDoc({ data, person, s, stampMarks }: {
             <Row k="p.name" label={t.ui.passport.name} value={data.name} s={s} />
             <Row k="p.sex" label={t.ui.passport.sex} value={data.sex === "M" ? t.ui.passport.male : t.ui.passport.female} s={s} />
             <Row k="p.dob" label={t.ui.passport.dob} value={data.dob} s={s} />
+            <Row k="p.issued" label={t.ui.passport.issued} value={data.issued} s={s} />
           </div>
         </div>
 
@@ -128,6 +131,7 @@ export function PermitDoc({ data, s }: { data: PermitData; s: SelProps }) {
   const { t } = useI18n();
   return (
     <div className="doc paper-tex w-[260px] select-none">
+      <DocumentWear seed={`permit-${data.passId}`} />
       <div className="px-2.5 py-2 relative">
         <div className="flex items-center justify-between mb-1">
           <div className="font-head text-[11px] tracking-widest" style={{ fontFamily: "var(--font-head)", color: "#7c1d18" }}>
@@ -139,6 +143,7 @@ export function PermitDoc({ data, s }: { data: PermitData; s: SelProps }) {
         <Row k="w.passId" label={t.ui.permit.passId} value={data.passId} s={s} />
         <Row k="w.purpose" label={t.ui.permit.purpose} value={data.purpose} s={s} />
         <Row k="w.duration" label={t.ui.permit.duration} value={data.duration} s={s} />
+        <Row k="w.issued" label={t.ui.permit.issued} value={data.issued} s={s} />
         <Row k="w.expiry" label={t.ui.permit.expiry} value={data.expiry} s={s} />
         <div className="absolute right-2 top-7 w-12 h-12 opacity-30 grid place-items-center text-center pointer-events-none"
           style={{ border: "2px solid #7c1d18", color: "#7c1d18", transform: "rotate(12deg)" }}>
@@ -156,6 +161,7 @@ export function PartyCardDoc({ data, s }: { data: PartyCardData; s: SelProps }) 
   const { t } = useI18n();
   return (
     <div className="doc select-none overflow-hidden w-[260px]" style={{ background: "#6e1613" }}>
+      <DocumentWear seed={`party-${data.name}`} />
       <div className="m-1 border-2 border-[#e8c34a55] px-2 py-1.5 flex items-center gap-2">
         <button type="button" className={`${cls("c.emblem", s)} shrink-0`}
           onClick={e => { e.stopPropagation(); s.onSel("c.emblem"); }}>

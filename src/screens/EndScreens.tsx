@@ -19,15 +19,17 @@ export function LedgerScreen({
   result: DayResult;
   creditsBefore: number;
   isLast: boolean;
-  onNext: (newBalance: number, fine: number, opts?: { heatSkipped?: boolean }) => void;
+  onNext: (newBalance: number, fine: number, opts?: { heatSkipped?: boolean; skipped?: string[] }) => void;
 }) {
   const { t } = useI18n();
   const [heatSkipped, setHeatSkipped] = useState(false);
+  const [skippedNeeds, setSkippedNeeds] = useState<string[]>([]);
+  const toggleNeed = (id: string) => setSkippedNeeds((v) => v.includes(id) ? v.filter((x) => x !== id) : [...v, id]);
 
   const pay = result.correct * PER_PAY;
   const fine = result.errors.length * ERROR_FINE;
   const isHeating = (id: string) => id === "heat";
-  const expenses = day.expenses.reduce((s, e) => s + (heatSkipped && isHeating(e.id) ? 0 : e.amount), 0);
+  const expenses = day.expenses.reduce((s, e) => s + ((heatSkipped && isHeating(e.id)) || skippedNeeds.includes(e.id) ? 0 : e.amount), 0);
   const total = creditsBefore + pay + result.bribeGain + result.detainBonus + result.evidenceBonus + result.agentCredits - fine - expenses;
   const broke = total < 0;
 
@@ -49,7 +51,7 @@ export function LedgerScreen({
       ? [{ label: t.ui.ledger.protocols(result.errors.length, ERROR_FINE), value: `-${fine} ₳`, tone: "var(--color-state2)" }]
       : []),
     ...day.expenses.map((e) =>
-      heatSkipped && isHeating(e.id)
+      (heatSkipped && isHeating(e.id)) || skippedNeeds.includes(e.id)
         ? { label: `${e.label} ${t.ui.ledger.disabled}`, value: "0 ₳", tone: "var(--color-ash)" }
         : { label: e.label, value: `-${e.amount} ₳`, tone: "var(--color-state2)" }
     ),
@@ -139,6 +141,11 @@ export function LedgerScreen({
             {heatSkipped ? t.ui.ledger.heatOff : t.ui.ledger.heatOn}
           </span>
         </motion.button>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          {day.expenses.filter((e) => !isHeating(e.id)).map((e) => <button key={e.id} className="px-3 py-2 border-2 border-dashed text-xs text-left" style={{ borderColor: skippedNeeds.includes(e.id) ? "#2e3450" : "#7c1d18" }} onClick={() => { sfx.ui(); toggleNeed(e.id); }}>
+            {e.label}: {skippedNeeds.includes(e.id) ? t.ui.ledger.disabled : `-${e.amount} ₳`}
+          </button>)}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -171,7 +178,7 @@ export function LedgerScreen({
           className="btn-soviet w-full mt-6 px-6 py-3.5 text-base inline-flex items-center justify-center gap-2"
           onClick={() => {
             sfx.stamp();
-            onNext(total, fine, { heatSkipped });
+            onNext(total, fine, { heatSkipped, skipped: skippedNeeds });
           }}
         >
           {broke ? t.ui.ledger.checkDebt : isLast ? t.ui.ledger.totals : t.ui.ledger.sleep(day.n + 1)}

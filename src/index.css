@@ -356,12 +356,11 @@ body {
 }
 @keyframes shake {
   0%, 100% { transform: translate(0, 0); }
-  20% { transform: translate(-5px, 2px); }
-  40% { transform: translate(4px, -3px); }
-  60% { transform: translate(-3px, -2px); }
-  80% { transform: translate(2px, 3px); }
+  25% { transform: translate(calc(-1.5px * var(--shake-power, 1)), calc(.5px * var(--shake-power, 1))); }
+  50% { transform: translate(calc(1.2px * var(--shake-power, 1)), calc(-.7px * var(--shake-power, 1))); }
+  75% { transform: translate(calc(-.7px * var(--shake-power, 1)), calc(.5px * var(--shake-power, 1))); }
 }
-.shake { animation: shake 0.32s ease both; }
+.shake { animation: shake 0.18s ease-out both; }
 
 @keyframes toastUp {
   0% { transform: translateY(14px); opacity: 0; }
@@ -691,3 +690,101 @@ svg:not(.lucide) {
   border: 3px solid var(--color-coal);
   border-radius: 0;
 }
+
+/* ---------- аппаратная панель звука ---------- */
+.audio-console {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 4px 9px 4px 11px;
+  border: 2px solid #493e33;
+  background: linear-gradient(#332a22, #1b1612);
+  box-shadow: inset 0 1px 0 rgba(216,201,168,.12), inset 0 -2px 0 #100d0a, 2px 2px 0 #0b0907;
+}
+.audio-console__bolt { position:absolute; left:3px; top:3px; width:4px; height:4px; background:#6b5d4e; box-shadow:0 16px 0 #6b5d4e; }
+.audio-console__divider { width:1px; height:17px; background:#493e33; box-shadow:1px 0 #100d0a; }
+.audio-channel { display:flex; align-items:center; gap:5px; color:var(--color-gold2); font-family:var(--font-pixel); font-size:7px; letter-spacing:.08em; }
+.audio-channel input[type="range"] { appearance:none; width:58px; height:12px; margin:0; cursor:pointer; background:transparent; }
+.audio-channel input[type="range"]::-webkit-slider-runnable-track { height:5px; border:1px solid #100d0a; background:linear-gradient(to right, var(--color-gold2) 0 var(--level), #17120f var(--level) 100%); box-shadow:inset 0 1px 2px #070605; }
+.audio-channel input[type="range"]::-webkit-slider-thumb { appearance:none; width:8px; height:13px; margin-top:-5px; border:1px solid #0b0907; border-radius:0; background:#8b7963; box-shadow:inset 2px 0 #b7a184, inset -2px 0 #493e33, 1px 1px #070605; }
+.audio-channel input[type="range"]::-moz-range-track { height:5px; border:1px solid #100d0a; background:#17120f; }
+.audio-channel input[type="range"]::-moz-range-progress { height:5px; background:var(--color-gold2); }
+.audio-channel input[type="range"]::-moz-range-thumb { width:8px; height:13px; border:1px solid #0b0907; border-radius:0; background:#8b7963; }
+.audio-channel input[type="range"]:focus-visible { outline:1px dashed var(--color-gold); outline-offset:3px; }
+
+/* Предметы физически въезжают/падают на поверхность вместо мгновенного появления. */
+.drag-doc { animation: document-drop .32s cubic-bezier(.16,.82,.3,1.18) both; transform-origin: 50% 0; }
+.item-arrive { animation: item-arrive .28s cubic-bezier(.2,.9,.35,1.2) both; }
+@keyframes document-drop { from { opacity:0; transform:translateY(-24px) rotate(-2deg) scale(.96); } 70% { opacity:1; transform:translateY(3px) rotate(.5deg) scale(1); } to { opacity:1; transform:none; } }
+@keyframes item-arrive { from { opacity:0; transform:translateY(14px) scale(.82); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .drag-doc, .item-arrive { animation:none; } }
+
+/* Папка комиссара — отдельный пиксельный реквизит поверх шинели. */
+.commissioner-folder { position:absolute; left:58%; top:54%; width:42px; height:54px; background:#67472b; border:4px solid #21160e; transform:rotate(-7deg); box-shadow:inset 4px 4px #967044; image-rendering:pixelated; }
+.commissioner-folder i { position:absolute; left:7px; top:-8px; width:22px; height:9px; background:#67472b; border:3px solid #21160e; border-bottom:0; }
+.commissioner-folder b { position:absolute; left:15px; top:19px; width:9px; height:9px; background:#a12622; border:2px solid #42100d; }
+
+/* Скрытая инженерная консоль: левый верхний угол, пароль 0207. */
+.debug-lock { position:fixed; z-index:9999; left:5px; top:5px; display:flex; opacity:.18; transition:opacity .15s; }
+.debug-lock:hover, .debug-lock:focus-within { opacity:1; }
+.debug-lock input { width:42px; height:22px; padding:2px 4px; color:#e8c34a; background:#100d0a; border:1px solid #493e33; font:8px var(--font-pixel); }
+.debug-lock button { height:22px; padding:0 5px; color:#6b5d4e; background:#1d1815; border:1px solid #493e33; font:7px var(--font-pixel); }
+.debug-console { position:fixed; z-index:9999; left:6px; top:6px; width:230px; max-height:calc(100vh - 12px); overflow:auto; padding:7px; color:#d8c9a8; background:#14100df5; border:2px solid #a12622; box-shadow:5px 5px 0 #070605; font:8px var(--font-pixel); }
+.debug-console header { display:flex; justify-content:space-between; align-items:center; padding-bottom:6px; color:#e8c34a; border-bottom:1px solid #493e33; }
+.debug-console header button { color:#c33a2b; font-size:14px; }
+.debug-title { margin:8px 0 4px; color:#6b5d4e; letter-spacing:.12em; }
+.debug-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:3px; }
+.debug-list { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+.debug-console button { min-height:24px; padding:3px; color:#d8c9a8; background:#262019; border:1px solid #493e33; }
+.debug-console button:hover, .debug-console button[data-on="true"] { color:#14100d; background:#e8c34a; border-color:#b98f2e; }
+
+/* Инспекторские системы 1.0 */
+.inspection-tools { display:flex; align-items:center; flex-wrap:wrap; gap:5px; padding:6px; border:2px solid #493e33; background:#17120f; font-size:8px; text-transform:uppercase; }
+.inspection-tools button { padding:5px 7px; border:1px solid #6b5d4e; color:#e8c34a; background:#262019; }
+.inspection-tools span { padding:4px 6px; color:#b8a98d; border-left:1px solid #493e33; }
+.inspection-tools .bad { color:#e06050; } .inspection-tools .ok { color:#7f9059; }
+.instant-citation { position:fixed; z-index:9000; right:14px; top:80px; width:min(330px,90vw); display:grid; gap:5px; padding:12px 30px 12px 12px; color:#351711; background:#d9c9a3; border:4px double #7c1d18; box-shadow:6px 6px #070605; font-size:10px; }
+.instant-citation b { color:#7c1d18; } .instant-citation button { position:absolute; right:7px; top:5px; color:#7c1d18; font-size:16px; }
+.emergency-banner { position:fixed; z-index:9500; left:50%; top:42%; width:min(760px,94vw); transform:translate(-50%,-50%) rotate(-1deg); padding:22px; text-align:center; color:#efe0c0; background:#7c1d18; border:6px double #160a07; box-shadow:10px 10px #070605; font:20px var(--font-head); animation:blink .55s steps(2) infinite; }
+
+/* Физические приборы досмотра — никаких абстрактных UI-кнопок. */
+.physical-inspection { display:grid; grid-template-columns:repeat(4,minmax(110px,1fr)); gap:7px; margin-bottom:8px; padding:7px; background:#100d0a; border:3px solid #332a22; box-shadow:inset 0 0 0 2px #070605; }
+.physical-inspection > div { position:relative; min-height:86px; padding:18px 7px 7px; background:linear-gradient(#393028,#211b16); border:2px solid #493e33; box-shadow:inset 2px 2px #5a4c3e, inset -2px -2px #120e0b; overflow:hidden; }
+.device-label { position:absolute; left:5px; top:4px; color:#8b7963; font:7px var(--font-pixel); letter-spacing:.1em; }
+.database-screen { position:relative; height:48px; display:flex; flex-direction:column; justify-content:center; gap:3px; padding:5px; color:#a4bd78; background:#11170d; border:3px solid #0a0806; box-shadow:inset 0 0 10px #000; cursor:crosshair; }
+.database-screen b { position:relative; z-index:2; font-size:8px; } .database-screen small { position:relative; z-index:2; opacity:.65; }
+.scanlines { position:absolute; inset:0; opacity:.2; background:repeating-linear-gradient(0deg,#93aa6c 0 1px,transparent 1px 3px); }
+.terminal-light { display:inline-block; width:6px; height:6px; margin:6px 5px 0 2px; background:#471814; box-shadow:0 0 0 1px #090605; }.terminal-light[data-on="true"]{background:#b73527;box-shadow:0 0 5px #b73527}.terminal-key{font-size:6px;color:#6b5d4e}
+.search-rail { height:30px; margin-top:3px; background:#17120f; border:2px inset #493e33; }
+.search-carriage { width:30px; height:26px; background:#756658; border:3px solid #211a16; cursor:grab; box-shadow:inset 3px 0 #aa977c; }.search-carriage i{display:block;width:4px;height:18px;margin:1px auto;background:#1a1511}
+.search-result,.measure-readout { margin-top:5px; padding:3px; color:#7f9059; background:#151a10; border:1px solid #070605; font-size:7px; white-space:nowrap; overflow:hidden; }.search-result[data-bad="true"]{color:#d04a38}
+.finger-pad { width:48px; height:43px; margin:2px auto; display:grid; place-items:center; color:#16100d; background:#080706; border:5px solid #5b4a3d; box-shadow:inset 0 0 0 3px #211a16; cursor:ns-resize; transition:transform .08s; }.finger-pad.is-down{transform:translateY(5px);box-shadow:inset 0 0 10px #000}.finger-pad.has-print{color:#b98f2e}.finger-whorl{font-size:24px;transform:scaleX(.7)}
+.print-card { position:absolute; left:7px; right:7px; bottom:-18px; height:22px; padding:4px; color:#2b241c; background:#cdbb92; border:1px solid #30251b; font-size:6px; transition:bottom .3s; }.print-card[data-out="true"]{bottom:5px}
+.height-column { position:absolute; left:13px; top:20px; width:10px; height:52px; background:repeating-linear-gradient(#b98f2e 0 1px,#30271f 1px 5px); border:2px solid #17120f; }.height-stop{position:absolute;left:-6px;top:0;width:46px;height:8px;background:#756658;border:2px solid #211a16;cursor:ns-resize}.measure-readout{margin-left:45px;margin-top:16px;white-space:normal;line-height:1.5}
+@media(max-width:900px){.physical-inspection{grid-template-columns:1fr 1fr}}
+
+/* Весь предъявитель — физическое поле сравнения с фотографией. */
+.person-select-target { position:absolute; z-index:9; left:7%; top:4%; width:86%; height:91%; cursor:crosshair; background:transparent; border:2px dashed transparent; outline:0; transition:border-color .12s, background .12s, box-shadow .12s; }
+.person-select-target span { position:absolute; left:50%; top:2px; transform:translateX(-50%); padding:3px 6px; opacity:0; color:#1b1510; background:#e8c34a; font:7px var(--font-pixel); text-transform:uppercase; white-space:nowrap; transition:opacity .12s; }
+.person-select-target:hover { border-color:rgba(232,195,74,.7); background:rgba(232,195,74,.06); }
+.person-select-target:hover span,.person-select-target.is-selected span,.person-select-target.is-proven span { opacity:1; }
+.person-select-target.is-selected { border:3px dashed #e8c34a; background:rgba(232,195,74,.12); box-shadow:inset 0 0 0 2px #211a16; }
+.person-select-target.is-proven { border:3px solid #c33a2b; background:rgba(195,58,43,.12); box-shadow:0 0 10px rgba(195,58,43,.45); }
+.person-select-target.is-proven span { color:#efe0c0; background:#a12622; }
+
+/* Процедурный износ документов: пятна зависят от номера бумаги и не прыгают между рендерами. */
+.document-wear { position:absolute; z-index:40; inset:0; overflow:hidden; pointer-events:none; mix-blend-mode:multiply; }
+.document-wear i { position:absolute; display:block; opacity:.32; }
+.wear-coffee { width:38px; height:38px; border:4px solid #76512d; border-radius:50%; box-shadow:inset 0 0 0 2px rgba(118,81,45,.25), 4px 3px 0 rgba(118,81,45,.12); transform:rotate(-17deg) scaleY(.72); }
+.wear-fold { top:-15%; width:2px; height:140%; background:linear-gradient(to right,transparent,#6d5b43,transparent); opacity:.16!important; transform:rotate(8deg); box-shadow:2px 0 rgba(255,255,255,.3); }
+.wear-ink { width:45px; height:11px; border-radius:45% 55% 48% 52%; background:#26334b; filter:blur(2px); transform:rotate(-8deg); }
+.wear-fingerprint { color:#5f4631; font:32px serif; line-height:1; transform:scaleX(.65) rotate(19deg); opacity:.2!important; }
+.wear-grease { width:55px; height:22px; border-radius:50%; background:radial-gradient(ellipse,#50432f55,transparent 70%); transform:rotate(11deg); }
+
+/* Системы 1.3: дипломатия, протоколы, конфискация и оборона поста сверху. */
+.diplomatic-doc{color:#d9c9a3;background:#263a42;border:3px double #b98f2e}.diplomatic-doc h3,.vaccination-doc h3,.transcript-doc h3{margin-bottom:8px;color:#7c1d18;font:11px var(--font-head);letter-spacing:.08em}.diplomatic-doc h3{color:#e8c34a}.vaccination-doc{color:#2b241c}.transcript-doc{color:#211a14;background:#d8c9a8;border-top:4px dotted #4b3b2b}.transcript-teeth{position:absolute;left:0;right:0;bottom:-4px;border-bottom:5px dotted #d8c9a8}
+.confiscation-box{position:relative;height:42px;margin:6px 0;padding:12px 55px 8px 12px;color:#b98f2e;background:#17120f;border:4px solid #493e33;cursor:pointer;font:8px var(--font-pixel);letter-spacing:.08em}.confiscation-box i{position:absolute;right:12px;top:8px;width:34px;height:18px;background:#070605;border:3px inset #493e33}.confiscation-box.is-full{color:#7f9059;box-shadow:inset 0 0 12px #000}.confiscation-box.is-full i{background:#5f1814}.asylum-note,.relation-note{margin:4px 0;padding:6px;border:2px dashed #b98f2e;color:#e8c34a;background:#2b241c;font-size:8px}.relation-note{border-color:#7c1d18;color:#d8c9a8}
+.combat-overlay{position:fixed;z-index:9900;inset:0;background:#090706ed;display:grid;place-items:center}.combat-title{position:absolute;top:8%;color:#e8c34a;font:18px var(--font-head);animation:blink .5s steps(2) infinite}.topdown-booth{position:relative;width:min(780px,90vw);height:min(500px,68vh);background:repeating-linear-gradient(90deg,#29231d 0 30px,#251f1a 30px 60px);border:12px solid #493e33;box-shadow:0 0 0 6px #070605}.topdown-booth:after{content:"";position:absolute;left:0;right:0;top:48%;height:22px;background:#59452f;border:5px solid #21170f}.topdown-inspector{position:absolute;left:18%;bottom:14%;width:54px;height:72px;background:#3a332c;border:5px solid #100d0a}.service-pistol{position:absolute;left:28%;bottom:18%;z-index:3;width:64px;height:42px;color:#8b7963;background:#17120f;border:4px solid #493e33;font-size:30px;transform:rotate(-12deg)}.service-pistol.is-armed{left:42%;bottom:38%;color:#e8c34a;box-shadow:0 0 15px #e8c34a}.topdown-attacker{position:absolute;right:14%;top:15%;z-index:3;width:70px;height:90px;background:#53221d;border:5px solid #100d0a}.topdown-attacker i{position:absolute;left:-38px;top:35px;width:45px;height:10px;background:#17120f;border:3px solid #5a4c3e}
+.wanted-portrait{position:absolute!important;right:3px;bottom:2px;z-index:3;width:32px;height:40px;overflow:hidden;border:1px solid #60734c;background:#182011}.wanted-portrait canvas{margin-top:0}
